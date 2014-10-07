@@ -1,7 +1,7 @@
 # lms.R
 #
 # created: Sep/11/2014, NU
-# last mod: Oct/10/2014, NU
+# last mod: Oct/07/2014, NU
 
 mu_lms <- function(model, z) {
     
@@ -101,49 +101,29 @@ estep_lms <- function(model, parameters, dat, m, k, ...) {
     P
 }
 
-loglikelihood <- function(model, parameters, data, m, k){
-
+# log likelihood function which will be optimized
+loglikelihood <- function(parameters, dat, model, P) {
+    
     quad <- quadrature(m, k)
     V <- quad$n
-
-    P <- estep_lms(model, parameters, data, m, k)
 
     mod.filled <- fill_model(model=model, parameters=parameters)
 
     res <- 0
     for(node.num in 1:m) {
         v.par    <- V[node.num,]
-        lls      <- dmvnorm(data, mean=mu_lms(model=mod.filled, z=v.par),
+        lls      <- dmvnorm(dat, mean=mu_lms(model=mod.filled, z=v.par),
                             sigma=sigma_lms(model=mod.filled, z=v.par),
                             log=TRUE) * P[,node.num]
         res      <- res + sum(lls)
     }
-    res
+
+    -res
 }
-# FIX ME: I do not give the correct minimum, since I calculate a different
-# P... (or because of something else...)
+
 
 mstep_lms <- function(model, parameters, dat, P, m, k, Hessian=FALSE, ...) {
 
-    # likelihood function which will be optimized
-    fun <- function(parameters, dat, model, P) {
-        
-        quad <- quadrature(m, k)
-        V <- quad$n
-  
-        mod.filled <- fill_model(model=model, parameters=parameters)
-
-        res <- 0
-        for(node.num in 1:m) {
-            v.par    <- V[node.num,]
-            lls      <- dmvnorm(dat, mean=mu_lms(model=mod.filled, z=v.par),
-                                sigma=sigma_lms(model=mod.filled, z=v.par),
-                                log=TRUE) * P[,node.num]
-            res      <- res + sum(lls)
-        }
-
-        -res
-    }
 
      # # optimizer
      # if (Hessian == FALSE){
@@ -166,8 +146,8 @@ mstep_lms <- function(model, parameters, dat, P, m, k, Hessian=FALSE, ...) {
     # TODO What about if Td and Te are not diagonal matrices?
     # TODO What about Psi, when eta > 1?
     # optimizer
-    est <- nlminb(start=parameters, objective=fun, dat=dat, model=model,
-                  P=P, upper=upper, lower=lower, ...)
+    est <- nlminb(start=parameters, objective=loglikelihhod, dat=dat,
+                  model=model, P=P, upper=upper, lower=lower, ...)
 
     # TODO Try out constrOptim and compare results...
     # ??? How to use boundaries in constrOptim?
@@ -194,7 +174,7 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, k=1, ...)
     # calculate n for mixture components
     n.mix <- ceiling(w*n)
     
-    # simulate data (compare Equation 15 in Klein & Moosbrugger (2000)
+    # simulate data (compare Equation 15 in Klein & Moosbrugger (2000))
     dat.sim <- sapply(1:m, function(i){
                            rmvnorm(n.mix[i], 
                            mean=mu_lms(model=object, z=V[i,]),
@@ -338,6 +318,20 @@ AIC.emRes <- function(object, ..., k=2){
         rownames(out) <- names(mlist)
     }
     out
+}
+
+coef.emRes <- function(object, ...){
+
+    coef <- object$par
+
+    # calculate Phi
+    A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
+    A[lower.tri(A, diag=TRUE)] <- coef[grep("A", names(coef))]
+    Phi <- A %*% t(A)
+    coef[grep("A", names(coef))] <- Phi[lower.tri(Phi, diag=TRUE)] 
+    names(coef)[grep("A", names(coef))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
+
+    coef
 }
 
 
