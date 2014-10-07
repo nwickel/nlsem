@@ -1,0 +1,11 @@
+Package: nonlin
+Version: 0.1
+Title: What the package does (short line)
+Author: First Last 
+Maintainer: "First Last <first.last@example.com> 
+Description: What the package does (paragraph)
+Depends: R (>= 3.0.1),
+         gaussquad,
+         mvtnorm,
+         nlme
+License: GPL (>= 2)

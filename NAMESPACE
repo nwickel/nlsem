@@ -1,0 +1,19 @@
+import(stats, mvtnorm, gaussquad)
+
+importFrom(nlme, fdHess)
+
+export(
+    specify_model, 
+    fill_matrices,
+    free_parameters,
+    fill_model,
+    em
+    )
+
+S3method(simulate, lmsFilled)
+S3method(summary, emRes)
+S3method(print, summary.emRes)
+S3method(logLik, emRes)
+S3method(anova, emRes)
+S3method(AIC, emRes)
+
