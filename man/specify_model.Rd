@@ -6,24 +6,28 @@
     Specify a structural equation model with constraints.
 }
 \usage{
-specify_model(num.x, num.y, num.xi, num.eta, xi, eta,
+specify_model(num.x, num.y, num.xi, num.eta, xi, eta, interaction="all",
               constraints="default", interc_obs=FALSE, interc_lat=FALSE)
 }
 \arguments{
-    \item{num.x}{Number of observed variables for xi.}
-    \item{num.y}{Number of observed variables for eta}
-    \item{num.xi}{Number of latent exogenous variabeles.}
-    \item{num.eta}{Number of latent endognous variables.}
-    \item{xi}{Which observed variables are indicators for which exogenous
+    \item{num.x}{number of observed variables for xi.}
+    \item{num.y}{number of observed variables for eta}
+    \item{num.xi}{number of latent exogenous variabeles.}
+    \item{num.eta}{number of latent endognous variables.}
+    \item{xi}{which observed variables are indicators for which exogenous
     variable. See Details}
-    \item{eta}{Which observed variables are indicators for which endogenous
+    \item{eta}{which observed variables are indicators for which endogenous
     variable. See Details.}
-    \item{constraints}{A vector of constraints. If set to "default"
+    \item{interaction}{define which interaction terms should be included.
+    Default is "all" which means that all interactions between exogenous
+    variables including quadratic terms are included. See Details for how
+    to enter interaction terms.}
+    \item{constraints}{a vector of constraints. If set to "default"
     (default) then parameters are constrained to common practice. See
     Details.}
-    \item{interc_obs}{Logical. If intercepts for measurement model should be
+    \item{interc_obs}{logical. If intercepts for measurement model should be
     estimated (mu's). Default is FALSE (intercepts are fixed at 0).}
-    \item{interc_lat}{Logical. If intercepts for latent variable model should be
+    \item{interc_lat}{logical. If intercepts for latent variable model should be
     estimated (alpha's). Default is FALSE (intercepts are fixed at 0).}
 }
 \examples{

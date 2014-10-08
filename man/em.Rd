@@ -25,7 +25,10 @@
 }
 \examples{
 # specify model
-specs <- specify_model(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3")
+specs <- specify_model(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                       xi="x1-x3,x4-x6", eta="y1-y3",
+                       interaction="xi1:xi2")
+
 model <- fill_matrices(specs)
 
 # simulate data

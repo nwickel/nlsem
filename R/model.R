@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Sep/30/2014, NU
+# last mod Oct/08/2014, NU
 
 grep_ind <- function(x){
     
@@ -13,8 +13,17 @@ grep_ind <- function(x){
     }
 }
 
+interaction_matrix <- function(x){
+    
+    rows <- as.numeric(gsub("^xi([0-9]+).*$", "\\1", x))
+    cols <- as.numeric(gsub("^xi.*:xi([0-9]+)$", "\\1", x))
+    mat  <- cbind(rows, cols)
+    mat
+
+}
+
 specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
-                          interaction="all" constraints="default",
+                          interaction="all", constraints="default",
                           interc_obs=FALSE, interc_lat=FALSE){
 
     # check arguments
@@ -54,11 +63,13 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
         xi.s <- strsplit(xi, ",")[[1]]
         xi.ind <- list()
         for (i in seq_len(num.xi)) xi.ind[[i]] <- grep_ind(xi.s[i])
+        # TODO Use sapply instead of loop!
 
         #eta.ind <- grep_ind(eta)
         eta.s <- strsplit(eta, ",")[[1]]
         eta.ind <- list()
         for (i in seq_len(num.eta)) eta.ind[[i]] <- grep_ind(eta.s[i])
+        # TODO Use sapply instead of loop!
         
         # create empty model matrices
         empty.model <- fill_matrices(specs)$matrices
@@ -86,12 +97,12 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
         empty.model$A[upper.tri(empty.model$A)] <- 0
         # Omega
         if (interaction == "all"){
-            empty.model$O[1,num.xi] <- NA
+            empty.model$O[upper.tri(empty.model$O, diag=TRUE)] <- NA
         } else {
-
-
+            interaction.s <- strsplit(interaction, ",")[[1]]
+            ind <- interaction_matrix(interaction.s)
+            empty.model$O[ind] <- NA
         }
-        ## FIX ME This does not work for more than one interaction effect!!!
         
         # nu's
         if (interc_obs == TRUE){
