@@ -6,16 +6,16 @@
 grep_ind <- function(x){
     
     if (length(strsplit(x, "-")[[1]]) > 1){
-        as.numeric(gsub("^.([0-9]).*([0-9,0-9])$", "\\1",
-        x)):as.numeric(gsub("^.([0-9]).*([0-9,0-9])$", "\\2", x))
+        as.numeric(gsub("^x([0-9]+).*x([0-9]+)$", "\\1",
+        x)):as.numeric(gsub("^x([0-9]+).*x([0-9]+)$", "\\2", x))
     } else {
         as.numeric(gsub("^.([0-9]).*$", "\\1", x))
     }
 }
 
 specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
-                          constraints="default", interc_obs=FALSE,
-                          interc_lat=FALSE){
+                          interaction="all" constraints="default",
+                          interc_obs=FALSE, interc_lat=FALSE){
 
     # check arguments
     if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
@@ -85,7 +85,12 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
         empty.model$A[1:dim(empty.model$A)[1],1:dim(empty.model$A)[2]] <- NA
         empty.model$A[upper.tri(empty.model$A)] <- 0
         # Omega
-        empty.model$O[1,num.xi] <- NA
+        if (interaction == "all"){
+            empty.model$O[1,num.xi] <- NA
+        } else {
+
+
+        }
         ## FIX ME This does not work for more than one interaction effect!!!
         
         # nu's
