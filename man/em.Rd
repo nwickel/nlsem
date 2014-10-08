@@ -6,8 +6,7 @@
     Fits a structural equation model with latent interaction effects using LMS.
 }
 \usage{
-    em(model, data, start, logger=FALSE, threshold=10e-7, max.iter=40, m=16,
-    k=1, ...)
+    em(model, data, start, logger=FALSE, threshold=10e-7, max.iter=40, m=16, ...)
 }
 \arguments{
     \item{model}{A specified structural equation model of class "lms".}
@@ -17,7 +16,6 @@
     \item{threshold}{Convergence threshold.}
     \item{max.iter}{Maximum number of Iterations before EM algorithm stops.}
     \item{m}{Number of nodes for Hermite-Gaussian quadrature.}
-    \item{k}{Dimension of node vector of Hermite-Gaussian quadrature.}
     \item{...}{Additional arguments. See Details.}
 }
 \references{

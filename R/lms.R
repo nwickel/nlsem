@@ -69,11 +69,12 @@ quadrature <- function(m, k) {
 }
 
 
-estep_lms <- function(model, parameters, dat, m, k, ...) {
+estep_lms <- function(model, parameters, dat, m, ...) {
 
     stopifnot(free_parameters(model) == length(parameters))
 
     mod.filled <- fill_model(model=model, parameters=parameters)
+    k <- get_k(mod.filled$matrices$O)
 
     quad <- quadrature(m, k)
 
@@ -94,20 +95,19 @@ estep_lms <- function(model, parameters, dat, m, k, ...) {
     P <- P / rowSums(P)   # divide each rho_j*phi(x_i, y_i) by whole density (row)
 
     stopifnot(all.equal(rowSums(P), rep(1, nrow(P))))
-    # ??? What is this for? What are we trying to check?
-    # Should all P's be near 1? Why?
-    # Anyway, this should get a meaningful error message TODO
+    # TODO Should get a meaningful error message
 
     P
 }
 
 # log likelihood function which will be optimized
-loglikelihood <- function(parameters, dat, model, P) {
+loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
     
     quad <- quadrature(m, k)
     V <- quad$n
 
     mod.filled <- fill_model(model=model, parameters=parameters)
+    k <- get_k(mod.filled$matrices$O)
 
     res <- 0
     for(node.num in 1:m) {
@@ -122,7 +122,7 @@ loglikelihood <- function(parameters, dat, model, P) {
 }
 
 
-mstep_lms <- function(model, parameters, dat, P, m, k, Hessian=FALSE, ...) {
+mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE, ...) {
 
 
      # # optimizer
@@ -146,14 +146,14 @@ mstep_lms <- function(model, parameters, dat, P, m, k, Hessian=FALSE, ...) {
     # TODO What about if Td and Te are not diagonal matrices?
     # TODO What about Psi, when eta > 1?
     # optimizer
-    est <- nlminb(start=parameters, objective=loglikelihhod, dat=dat,
+    est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
                   model=model, P=P, upper=upper, lower=lower, ...)
 
     # TODO Try out constrOptim and compare results...
     # ??? How to use boundaries in constrOptim?
 
     if (Hessian == TRUE){
-        est$hessian <- nlme::fdHess(pars=est$par, fun=fun, model=model,
+        est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood, model=model,
                                     dat=dat, P=P)
     }
     # TODO Maybe add analytical solution for Hessian matrix?
@@ -161,12 +161,13 @@ mstep_lms <- function(model, parameters, dat, P, m, k, Hessian=FALSE, ...) {
     est
 }
 
-simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, k=1, ...){
+simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
     
     # set seed
     set.seed(seed)
-    
+      
     # Gauss-Hermite quadrature
+    k <- get_k(object$matrices$O)
     quad <- quadrature(m=m, k=k)
     V <- quad$n
     w <- quad$w
@@ -210,9 +211,6 @@ summary.emRes <- function(object, ...){
 
     # standard errors
     s.error <- sqrt(diag(solve(object$Hessian)))
-    # TODO Do I have to take the neg. Hessian? Or do I already have
-    # the negativ Hessian? Covariance matrix is the inverse of the negative
-    # Hessian, isn't it?
     tvalue <- est / s.error
     pvalue <- 2 * pnorm(-abs(tvalue))
     # TODO Do I have to take it twice here? Is that because we only test if
@@ -291,8 +289,7 @@ anova.emRes <- function(object, ..., test=c("Chisq", "none")){
     rownames(out) <- 1:nt
     if (test == "none") out <- out[, 1:6]
     class(out) <- c("Anova", "data.frame")
-    attr(out, "heading") <- "Analysis of deviance table for LMS models\n"
-    # TODO LMS might be misleading here!!!
+    attr(out, "heading") <- "Analysis of deviance table for SEMs\n"
     # FIX ME Header does not show.
     out
 }
@@ -320,7 +317,7 @@ AIC.emRes <- function(object, ..., k=2){
     out
 }
 
-coef.emRes <- function(object, ...){
+coef.emRes <- coefficients.emRes <- function(object, ...){
 
     coef <- object$par
 

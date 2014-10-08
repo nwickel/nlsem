@@ -1,6 +1,6 @@
 
 em <- function(model, data, start, logger=FALSE, threshold=10e-7,
-                max.iter=40, m=16, k=1, ...) {
+                max.iter=40, m=16, ...) {
 
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm\n")
@@ -27,14 +27,14 @@ em <- function(model, data, start, logger=FALSE, threshold=10e-7,
         ll.old <- ll.new
 
         # E-step
-        P      <- estep_lms(model=model, parameters=start, dat=data, m=m, k=k, ...)
+        P      <- estep_lms(model=model, parameters=start, dat=data, m=m, ...)
   
         if(logger == TRUE){
             cat("Doing maximization-step \n")
         }
         
         # M-step
-        m.step <- mstep_lms(model=model, P=P, dat=data, parameters=start, m=m, k=k, ...)
+        m.step <- mstep_lms(model=model, P=P, dat=data, parameters=start, m=m, ...)
   
         if(logger == TRUE) {
             cat("Results of maximization \n")
@@ -62,7 +62,7 @@ em <- function(model, data, start, logger=FALSE, threshold=10e-7,
     cat("-----------------------------------\n")
     
     # Compute hessian of final parameters
-    final <- mstep_lms(model=model, P=P, dat=data, parameters=start, Hessian=TRUE, m=m, k=k, ...)
+    final <- mstep_lms(model=model, P=P, dat=data, parameters=start, Hessian=TRUE, m=m, ...)
 
     names(final$par) <- model$info$par.names
     

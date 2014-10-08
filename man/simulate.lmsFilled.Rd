@@ -6,7 +6,7 @@
     Simulate data from a structural equation model.
 }
 \usage{
-\method{simulate}{lmsFilled}(object, nsim=1, seed=NULL, n=400, m=16, k=1, ...)
+\method{simulate}{lmsFilled}(object, nsim=1, seed=NULL, n=400, m=16, ...)
 }
 \arguments{
     \item{object}{Structural equation model of class "lmsFilled".}
@@ -14,7 +14,6 @@
     \item{seed}{Set seed. Default is NULL.}
     \item{n}{Data for how many observations should be simulated.}
     \item{m}{Number of nodes for Hermite-Gaussian quadrature.}
-    \item{k}{Dimension of node vector of Hermite-Gaussian quadrature.}
     \item{...}{Additional arguments.}
 }
 \examples{

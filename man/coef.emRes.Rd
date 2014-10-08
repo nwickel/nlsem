@@ -1,5 +1,6 @@
 % File src/library/base/man/anova.emRes.Rd
 \name{coef.emRes}
+\alias{coef.emRes}
 \alias{coefficients.emRes}
 \title{Extract Model Coeffcients}
 \description{
@@ -7,6 +8,7 @@
     with \code{\link{em}}.}
 \usage{
 \method{coef}{emRes}(object, ...)
+\method{coefficients}{emRes}(object, ...)
 }
 \arguments{
     \item{object}{estimated structural equation model of class "emRes".}
