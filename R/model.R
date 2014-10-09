@@ -1,15 +1,15 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Oct/08/2014, NU
+# last mod Oct/09/2014, NU
 
 grep_ind <- function(x){
     
     if (length(strsplit(x, "-")[[1]]) > 1){
-        as.numeric(gsub("^x([0-9]+).*x([0-9]+)$", "\\1",
-        x)):as.numeric(gsub("^x([0-9]+).*x([0-9]+)$", "\\2", x))
+        as.numeric(gsub("^[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\1",
+        x)):as.numeric(gsub("^[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\2", x))
     } else {
-        as.numeric(gsub("^.([0-9]).*$", "\\1", x))
+        as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
     }
 }
 
@@ -19,7 +19,6 @@ interaction_matrix <- function(x){
     cols <- as.numeric(gsub("^xi.*:xi([0-9]+)$", "\\1", x))
     mat  <- cbind(rows, cols)
     mat
-
 }
 
 specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
@@ -102,6 +101,10 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
             interaction.s <- strsplit(interaction, ",")[[1]]
             ind <- interaction_matrix(interaction.s)
             empty.model$O[ind] <- NA
+            if (is.na(sum(empty.model$O[lower.tri(empty.model$O)]))){
+                empty.model$O <- t(empty.model$O)
+                # needed so we can specify either xi1:xi2 OR xi2:xi1
+            }
         }
         
         # nu's
