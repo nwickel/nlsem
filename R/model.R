@@ -79,7 +79,6 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
             empty.model$Lx[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
         }
         # Ly
-        #empty.model$Ly[eta.ind] <- c(1, rep(NA, length(eta.ind)-1))
         for (i in seq_len(num.eta)){
             empty.model$Ly[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
         }
@@ -103,8 +102,7 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
             empty.model$O[ind] <- NA
             if (is.na(sum(empty.model$O[lower.tri(empty.model$O)]))){
                 empty.model$O <- t(empty.model$O)
-                # needed so we can specify either xi1:xi2 OR xi2:xi1
-            }
+            }   # needed so we can specify either xi1:xi2 OR xi2:xi1
         }
         
         # nu's

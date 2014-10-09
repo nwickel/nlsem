@@ -25,7 +25,7 @@ pars.orig <- c(0.6, 0.7,                # Lx
               0.2,                      # Te
               0.2,                      # Psi
               0.49, 0.235, 0.64,        # A
-              0.7                       # Omega
+              0.7, 0.3, 0.3             # Omega
               )
 # put parameters in model
 mod.filled <- fill_model(model, pars.orig)
