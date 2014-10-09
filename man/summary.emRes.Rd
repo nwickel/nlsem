@@ -15,7 +15,7 @@
 }
 \examples{
 \dontrun{
-specs <- specify_model(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3")
+specs <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3")
 model <- fill_matrices(specs1)
 
 # starting parameters

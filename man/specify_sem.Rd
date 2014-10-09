@@ -1,12 +1,12 @@
-% File src/library/base/man/specify_model.Rd
-\name{specify_model}
-\alias{specify_model}
+% File src/library/base/man/specify_sem.Rd
+\name{specify_sem}
+\alias{specify_sem}
 \title{Specify a structural equation model}
 \description{
     Specify a structural equation model with constraints.
 }
 \usage{
-specify_model(num.x, num.y, num.xi, num.eta, xi, eta, interaction="all",
+specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, interaction="all",
               constraints="default", interc_obs=FALSE, interc_lat=FALSE)
 }
 \arguments{
@@ -32,7 +32,7 @@ specify_model(num.x, num.y, num.xi, num.eta, xi, eta, interaction="all",
 }
 \examples{
 # with default constraints
-specs <- specify_model(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3")
+specs <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3")
 
 # add custom constraints
 # example 1
@@ -43,6 +43,6 @@ constr <- c(1, NA, NA, 0, 0, 0, 0, 0, 0, 1, NA, NA, 1, NA, NA, NA, NA, 0, NA,
 specs$ustart <- constr
 
 # eaxmple 2 (in one step)
-specs <- specify_model(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3", constraints=constr)
+specs <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3", constraints=constr)
 }
 

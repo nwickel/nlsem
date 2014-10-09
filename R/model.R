@@ -21,7 +21,7 @@ interaction_matrix <- function(x){
     mat
 }
 
-specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
+specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
                           interaction="all", constraints="default",
                           interc_obs=FALSE, interc_lat=FALSE){
 
