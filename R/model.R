@@ -5,9 +5,9 @@
 
 grep_ind <- function(x){
     
-    if (length(strsplit(x, "-")[[1]]) > 1){
-        as.numeric(gsub("^[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\1",
-        x)):as.numeric(gsub("^[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\2", x))
+    if (length(unlist(strsplit(x, "-"))) > 1){
+        as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\1",
+        x)):as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\2", x))
     } else {
         as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
     }
@@ -15,8 +15,8 @@ grep_ind <- function(x){
 
 interaction_matrix <- function(x){
     
-    rows <- as.numeric(gsub("^xi([0-9]+).*$", "\\1", x))
-    cols <- as.numeric(gsub("^xi.*:xi([0-9]+)$", "\\1", x))
+    rows <- as.numeric(gsub("^.*xi([0-9]+):xi[0-9]+$", "\\1", x))
+    cols <- as.numeric(gsub("^.*xi.*:xi([0-9]+)$", "\\1", x))
     mat  <- cbind(rows, cols)
     mat
 }
@@ -59,13 +59,13 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
             1:(num.xi*num.xi))),
         ustart = 0)
 
-        xi.s <- strsplit(xi, ",")[[1]]
+        xi.s <- unlist(strsplit(xi, ","))
         xi.ind <- list()
         for (i in seq_len(num.xi)) xi.ind[[i]] <- grep_ind(xi.s[i])
         # TODO Use sapply instead of loop!
 
         #eta.ind <- grep_ind(eta)
-        eta.s <- strsplit(eta, ",")[[1]]
+        eta.s <- unlist(strsplit(eta, ","))
         eta.ind <- list()
         for (i in seq_len(num.eta)) eta.ind[[i]] <- grep_ind(eta.s[i])
         # TODO Use sapply instead of loop!
@@ -98,7 +98,7 @@ specify_model <- function(num.x, num.y, num.xi, num.eta, xi, eta,
         if (interaction == "all"){
             empty.model$O[upper.tri(empty.model$O, diag=TRUE)] <- NA
         } else {
-            interaction.s <- strsplit(interaction, ",")[[1]]
+            interaction.s <- unlist(strsplit(interaction, ","))
             ind <- interaction_matrix(interaction.s)
             empty.model$O[ind] <- NA
             if (is.na(sum(empty.model$O[lower.tri(empty.model$O)]))){
