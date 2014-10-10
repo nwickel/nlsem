@@ -74,8 +74,8 @@ estep_lms <- function(model, parameters, dat, m, ...) {
     stopifnot(free_parameters(model) == length(parameters))
 
     mod.filled <- fill_model(model=model, parameters=parameters)
-    k <- get_k(mod.filled$matrices$O)
 
+    k <- get_k(mod.filled$matrices$O)
     quad <- quadrature(m, k)
 
     V <- quad$n       # matrix of node vectors m x k
@@ -103,11 +103,11 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 # log likelihood function which will be optimized
 loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
     
+    k <- get_k(mod.filled$matrices$O)
     quad <- quadrature(m, k)
     V <- quad$n
 
     mod.filled <- fill_model(model=model, parameters=parameters)
-    k <- get_k(mod.filled$matrices$O)
 
     res <- 0
     for(node.num in 1:m) {
@@ -176,13 +176,14 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
     n.mix <- ceiling(w*n)
     
     # simulate data (compare Equation 15 in Klein & Moosbrugger (2000))
-    dat.sim <- sapply(1:m, function(i){
+    dat.sim <- sapply(1:length(w), function(i){
                            rmvnorm(n.mix[i], 
                            mean=mu_lms(model=object, z=V[i,]),
                            sigma=sigma_lms(model=object, z=V[i,]))
                            })
 
-    dat <- Reduce(rbind, dat.sim)[1:n,]         # ceiling "inflates" number of observations 
+    dat <- Reduce(rbind, dat.sim)[sample(n),]         # ceiling "inflates" number of observations 
+    # TODO This seems random --> better solution?
     dat
 }
 

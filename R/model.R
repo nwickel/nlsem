@@ -1,10 +1,10 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Oct/09/2014, NU
+# last mod Oct/09/2014, KN
 
 grep_ind <- function(x){
-    
+
     if (length(unlist(strsplit(x, "-"))) > 1){
         as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\1",
         x)):as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\2", x))
@@ -14,53 +14,79 @@ grep_ind <- function(x){
 }
 
 interaction_matrix <- function(x){
-    
+
     rows <- as.numeric(gsub("^.*xi([0-9]+):xi[0-9]+$", "\\1", x))
     cols <- as.numeric(gsub("^.*xi.*:xi([0-9]+)$", "\\1", x))
     mat  <- cbind(rows, cols)
     mat
 }
 
-specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
+specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", constraints="default",
                           interc_obs=FALSE, interc_lat=FALSE){
 
     # check arguments
     if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
-       || !is.numeric(num.eta)) { 
-        stop("Number of variables must be numeric.")
+       || !is.numeric(num.eta) || !is.numeric(num.groups)) {
+        stop("Number of variables or groups must be numeric.")
     } else if (num.x < num.xi || num.y < num.eta) {
         stop("The model contains not enough observed variables.")
     }
-    stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0)
-    
+    stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0, num.groups > 0)
+
+    # create list of matrices for each group (therefore index g)
+    empty.matrices <- list()
+    for (g in seq_len(num.groups)) {
+        Lx.matrix    <- matrix(0, nrow=num.x, ncol=num.xi)
+        Ly.matrix    <- matrix(0, nrow=num.y, ncol=num.eta)
+        G1.matrix    <- matrix(0, nrow=num.eta, ncol=num.xi)
+        #G2.matrix    <- matrix(0, nrow=num.eta, ncol=k) # k is needed
+        B.matrix     <- matrix(0, nrow=num.eta, ncol=num.eta)
+        Td.matrix    <- matrix(0, nrow=num.x, ncol=num.x)
+        Te.matrix    <- matrix(0, nrow=num.y, ncol=num.y)
+        Psi.matrix   <- matrix(0, nrow=num.eta, ncol=num.eta)
+        A.matrix     <- matrix(0, nrow=num.xi, ncol=num.xi)
+        vx.matrix    <- matrix(0, nrow=num.x, ncol=1)
+        vy.matrix    <- matrix(0, nrow=num.y, ncol=1)
+        alpha.matrix <- matrix(0, nrow=num.x, ncol=1)
+        O.matrix     <- matrix(0, nrow=num.xi, ncol=num.xi)
+        temp <- list(Lx=Lx.matrix, Ly=Ly.matrix, G1=G1.matrix, B=B.matrix,
+                     Td=Td.matrix, Te=Te.matrix, Psi=Psi.matrix, A=A.matrix,
+                     vx=vx.matrix, vy=vy.matrix, alpha=alpha.matrix,
+                     O=O.matrix)
+        empty.matrices[[g]] <- temp
+    }
+    names(empty.matrices) <- paste0("group",1:num.groups)
+
     if (is.numeric(constraints)){
 
-        # create data frame with variable names and constraints
-        specs <- data.frame(
-        label = c(paste0("Lx", 1:(num.x*num.xi)), paste0("Ly",
-            1:(num.y*num.eta)), paste0("G", 1:(num.xi*num.eta)), paste0("B",
-            1:(num.eta*num.eta)), paste0("Td", 1:(num.x*num.x)), paste0("Te",
-            1:(num.y*num.y)), paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
-            1:(num.xi*num.xi)), paste0("vx", 1:num.x), paste0("vy", 1:num.y),
-            paste0("alpha", 1:num.eta), paste0("t", 1:num.xi), paste0("O",
-            1:(num.xi*num.xi))),
-        ustart = constraints)
+        # # create data frame with variable names and constraints
+        # specs <- data.frame(
+        # label = c(paste0("Lx", 1:(num.x*num.xi)), paste0("Ly",
+        #     1:(num.y*num.eta)), paste0("G", 1:(num.xi*num.eta)), paste0("B",
+        #     1:(num.eta*num.eta)), paste0("Td", 1:(num.x*num.x)), paste0("Te",
+        #     1:(num.y*num.y)), paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
+        #     1:(num.xi*num.xi)), paste0("vx", 1:num.x), paste0("vy", 1:num.y),
+        #     paste0("alpha", 1:num.eta), paste0("t", 1:num.xi), paste0("O",
+        #     1:(num.xi*num.xi))),
+        # ustart = constraints)
+
     } else if (constraints == "default"){
     # default constraints
-        
-        specs <- data.frame(
-        label = c(paste0("Lx", 1:(num.x*num.xi)), paste0("Ly",
-            1:(num.y*num.eta)), paste0("G", 1:(num.xi*num.eta)), paste0("B",
-            1:(num.eta*num.eta)), paste0("Td", 1:(num.x*num.x)), paste0("Te",
-            1:(num.y*num.y)), paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
-            1:(num.xi*num.xi)), paste0("vx", 1:num.x), paste0("vy", 1:num.y),
-            paste0("alpha", 1:num.eta), paste0("t", 1:num.xi), paste0("O",
-            1:(num.xi*num.xi))),
-        ustart = 0)
+
+        # specs <- data.frame(
+        # label = c(paste0("Lx", 1:(num.x*num.xi)), paste0("Ly",
+        #     1:(num.y*num.eta)), paste0("G", 1:(num.xi*num.eta)), paste0("B",
+        #     1:(num.eta*num.eta)), paste0("Td", 1:(num.x*num.x)), paste0("Te",
+        #     1:(num.y*num.y)), paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
+        #     1:(num.xi*num.xi)), paste0("vx", 1:num.x), paste0("vy", 1:num.y),
+        #     paste0("alpha", 1:num.eta), paste0("t", 1:num.xi), paste0("O",
+        #     1:(num.xi*num.xi))),
+        # ustart = 0)
 
         xi.s <- unlist(strsplit(xi, ","))
         xi.ind <- list()
+        # TODO (KN) Test if length(xi.s) == num.xi
         for (i in seq_len(num.xi)) xi.ind[[i]] <- grep_ind(xi.s[i])
         # TODO Use sapply instead of loop!
 
@@ -69,57 +95,90 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
         eta.ind <- list()
         for (i in seq_len(num.eta)) eta.ind[[i]] <- grep_ind(eta.s[i])
         # TODO Use sapply instead of loop!
-        
-        # create empty model matrices
-        empty.model <- fill_matrices(specs)$matrices
+
+        # # create empty model matrices
+        # empty.model <- fill_matrices(specs)$matrices
 
         # fill in default constraints
-        # Lx
-        for (i in seq_len(num.xi)){
-            empty.model$Lx[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
-        }
-        # Ly
-        for (i in seq_len(num.eta)){
-            empty.model$Ly[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
-        }
-        # G
-        empty.model$G[1:dim(empty.model$G)[1],1:dim(empty.model$G)[2]] <- NA
-        # Td
-        empty.model$Td <- diag(NA, num.x)
-        # Te
-        empty.model$Te <- diag(NA, num.y)
-        # Psi
-        empty.model$Psi[1:dim(empty.model$Psi)[1],1:dim(empty.model$Psi)[2]] <- NA
-        # A
-        empty.model$A[1:dim(empty.model$A)[1],1:dim(empty.model$A)[2]] <- NA
-        empty.model$A[upper.tri(empty.model$A)] <- 0
-        # Omega
-        if (interaction == "all"){
-            empty.model$O[upper.tri(empty.model$O, diag=TRUE)] <- NA
-        } else {
-            interaction.s <- unlist(strsplit(interaction, ","))
-            ind <- interaction_matrix(interaction.s)
-            empty.model$O[ind] <- NA
-            if (is.na(sum(empty.model$O[lower.tri(empty.model$O)]))){
-                empty.model$O <- t(empty.model$O)
-            }   # needed so we can specify either xi1:xi2 OR xi2:xi1
-        }
-        
-        # nu's
-        if (interc_obs == TRUE){
-            empty.model$vx[1:num.x] <- NA
-            empty.model$vy[1:num.y] <- NA
-        }
-        # alpha
-        if (interc_lat == TRUE){
-            empty.model$alpha[1:dim(empty.model$alpha)[1],1:dim(empty.model$alpha)[2]] <- NA
-        }
+        for (g in seq_len(num.groups)) {
 
-        # put constraints in data frame
-        specs$ustart <- unlist(empty.model)
+            # Lx
+            for (i in seq_len(num.xi)){
+                empty.matrices[[g]]$Lx[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
+            }
+            # Ly
+            for (i in seq_len(num.eta)){
+                empty.matrices[[g]]$Ly[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
+            }
+            # G1
+            # why not:
+            # empty.matrices[[g]]$G1[1:num.eta,1:num.xi] <- NA
+            empty.matrices[[g]]$G1[1:dim(empty.matrices[[g]]$G1)[1],1:dim(empty.matrices[[g]]$G1)[2]] <- NA
+            # Td
+            empty.matrices[[g]]$Td <- diag(NA, num.x)
+            # Te
+            empty.matrices[[g]]$Te <- diag(NA, num.y)
+            # Psi
+            # why not:
+            # empty.matrices[[g]]$Psi[1:num.xi,1:num.xi]
+            empty.matrices[[g]]$Psi[1:dim(empty.matrices[[g]]$Psi)[1],1:dim(empty.matrices[[g]]$Psi)[2]] <- NA
+            # A
+            empty.matrices[[g]]$A[1:dim(empty.matrices[[g]]$A)[1],1:dim(empty.matrices[[g]]$A)[2]] <- NA
+            empty.matrices[[g]]$A[upper.tri(empty.matrices[[g]]$A)] <- 0
+            # Omega
+            if (interaction == "all"){
+                empty.matrices[[g]]$O[upper.tri(empty.matrices[[g]]$O, diag=TRUE)] <- NA
+            } else {
+                interaction.s <- unlist(strsplit(interaction, ","))
+                ind <- interaction_matrix(interaction.s)
+                empty.matrices[[g]]$O[ind] <- NA
+                if (is.na(sum(empty.matrices[[g]]$O[lower.tri(empty.matrices[[g]]$O)]))){
+                    empty.matrices[[g]]$O <- t(empty.matrices[[g]]$O)
+                }   # needed so we can specify either xi1:xi2 OR xi2:xi1
+            }
+            # nu's
+            if (interc_obs == TRUE){
+                empty.matrices[[g]]$vx[1:num.x] <- NA
+                empty.matrices[[g]]$vy[1:num.y] <- NA
+            }
+            # alpha
+            if (interc_lat == TRUE){
+                # why not:
+                # empty.model[[g]]$alpha[1:num.eta] <- NA
+                empty.matrices[[g]]$alpha[1:dim(empty.matrices[[g]]$alpha)[1],1:dim(empty.matrices[[g]]$alpha)[2]] <- NA
+            }
+            # # put constraints in data frame
+            # specs$ustart <- unlist(empty.model)
+        }
     } else {
         stop("constraints need to be a numeric vector or set to 'default'.")
     }
+
+    # group weights w
+    w <- matrix(NA, nrow=num.groups, ncol=1)
+
+    # create model with matrices and info
+    model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
+                                               num.x=num.x, num.y=num.y,
+                                               num.groups=num.groups,
+                                               w=w.matrix))
+    # TODO add par.names to info
+
+    # class of model
+    if (num.groups == 1) {
+        if (k == 0) {
+            stop("Model needs either more than one latent group or at least one
+                 latent interaction (f.ex. "xi1:xi2"). For other models please
+                 use lavaan or the like")
+        } else {
+            class(model) <- "lms"
+        }
+    } else if (k == 0) {
+        class(model) <- "stemm"
+    } else {
+        class(model) <- "nsemm"
+    }
+
     specs
 }
 
