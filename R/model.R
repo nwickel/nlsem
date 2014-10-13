@@ -12,7 +12,9 @@ grep_ind <- function(x){
             as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
         }
     }, warning = function(war) {
-        stop("Wrong input for specifying exogenous latent variables (xi). See ?specify_sem.")
+        # TODO more clear error message
+        stop("Wrong input for specifying exogenous or endogonous latent
+             variables (xi or etas). See ?specify_sem.")
     })
 }
 
@@ -93,13 +95,14 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
 
         # check if number of columns in constraints is equal to num.groups
         if (ncol(constraints) != num.groups) {
-            stop("data frame for constraints does not match number of
+            stop("Data frame for constraints does not match number of
                  latent groups. See ?specify_sem.")
         }
         # check if number of rows in constraints is correct
         if (nrow(constraints) != nrow(specs)) {
-            stop("data frame for constraints does not have correct number of
-                 rows. See ?specify_sem.")
+            print(specs)
+            stop("Data frame for constraints does not have correct number of
+                 rows. See correct number above or see ?specify_sem.")
         }
         # fill specs with constraints
         specs[,2:(num.groups+1)] <- constraints[,1:(num.groups)]
@@ -153,7 +156,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 matrices[[g]]$O[upper.tri(matrices[[g]]$O, diag=TRUE)] <- NA
             } else {
                 interaction.s <- unlist(strsplit(interaction, ","))
-                ind <- interaction_matrix(interaction.s)
+                ind <- calc_interaction_matrix(interaction.s)
                 matrices[[g]]$O[ind] <- NA
                 if (is.na(sum(matrices[[g]]$O[lower.tri(matrices[[g]]$O)]))){
                     matrices[[g]]$O <- t(matrices[[g]]$O)
@@ -178,7 +181,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
 
     # group weights w
-    w <- matrix(NA, nrow=num.groups, ncol=1)
+    w.matrix <- matrix(NA, nrow=num.groups, ncol=1)
 
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
@@ -275,6 +278,12 @@ fill_matrices <- function(dat){
                               O=O.matrix)
     }
     matrices
+}
+
+as_dataframe <- function(model) {
+    stopifnot(class(model) == "lms" || class(model) == "stemm" || class(model)
+              == "nsemm")
+    unlist(matrices)
 }
 
 free_parameters <- function(model) sum(unlist(lapply(model$matrices, is.na)))
