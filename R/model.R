@@ -84,9 +84,9 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             paste0("alpha", 1:num.eta), paste0("t", 1:num.xi), paste0("O",
             1:(num.xi*num.xi)))
     )
-    for (i in seq_len(num.groups)) {
+    for (g in seq_len(num.groups)) {
         ustart.temp <- data.frame(ustart = 0)
-        names(ustart.temp) <- paste0("group", i)
+        names(ustart.temp) <- paste0("group", g)
         specs <- cbind(specs, ustart.temp)
     }
 
@@ -283,7 +283,14 @@ fill_matrices <- function(dat){
 as_dataframe <- function(model) {
     stopifnot(class(model) == "lms" || class(model) == "stemm" || class(model)
               == "nsemm")
-    unlist(matrices)
+    specs <- data.frame(
+        label = names(unlist(model$matrices$group1)))
+    for (g in seq_len(length(model$matrices))) {
+        temp <- unlist(model$matrices[[g]], use.names=FALSE)
+        names(temp) <- paste0("group", g)
+        specs <- cbind(specs, temp)
+    }
+    specs
 }
 
 free_parameters <- function(model) sum(unlist(lapply(model$matrices, is.na)))
