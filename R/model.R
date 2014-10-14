@@ -45,6 +45,10 @@ sort_interaction_effects <- function(rows, cols){
 }
 
 test_omega <- function(Omega){
+    
+    if (any(is.na(diag(Omega)))){
+        stop("Can't handle quadratic interaction effects (yet). See ?specify_sem for details.")
+    }
 
     if (any(is.na(Omega))){
 
