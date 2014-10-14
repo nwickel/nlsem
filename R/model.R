@@ -202,14 +202,14 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             matrices[[g]]$A[upper.tri(matrices[[g]]$A)] <- 0
             # Omega
             if (interaction == "all"){
-                matrices[[g]]$O[upper.tri(matrices[[g]]$O, diag=TRUE)] <- NA
+                matrices[[g]]$O[upper.tri(matrices[[g]]$O)] <- NA
             } else if (interaction != "") {
                 interaction.s <- unlist(strsplit(interaction, ","))
                 ind <- calc_interaction_matrix(interaction.s)
                 matrices[[g]]$O[ind] <- NA
-                test_omega(matrices[[g]]$O[ind])
-                # check if O has row echelon form
             }
+            test_omega(matrices[[g]]$O)
+            # check if O has row echelon form
             # nu's
             if (interc_obs == TRUE){
                 matrices[[g]]$vx[1:num.x] <- NA
