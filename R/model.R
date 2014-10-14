@@ -44,32 +44,37 @@ sort_interaction_effects <- function(rows, cols){
     cbind(rows, cols)
 }
 
-test_omega <- function(omega){
+test_omega <- function(Omega){
+    
+    if (any(is.na(diag(Omega)))){
+        stop("Can't handle quadratic interaction effects (yet). See ?specify_sem for details.")
+    }
 
-    if (any(is.na(omega))){
+    if (any(is.na(Omega))){
 
-        ind <- which(is.na(omega), arr.ind=TRUE)
-        dim <- nrow(omega)
-        
+        ind <- which(is.na(Omega), arr.ind=TRUE)
+        dim <- nrow(Omega)
+        msg <- "Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details." 
+
         if (nrow(ind) == 1){
-            if (!is.na(omega[1, dim]))
-                stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+            if (!is.na(Omega[1, dim]))
+                stop(msg)
 
         } else {
             for (i in 2:nrow(ind)){
                 if(ind[i,1] >= ind[i-1,2]){
-                    stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+                    stop(msg)
                 } 
             }
             for (i in 1:max(ind[,1])){
-                if (max(which(is.na(omega[i,]))) < dim){
-                    stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+                if (max(which(is.na(Omega[i,]))) < dim){
+                    stop(msg)
                 }
             }
             if (max(ind[,1]) > 1){
                 for (i in 2:max(ind[,1])){
-                    if (min(which(is.na(omega[i-1,]))) >= min(which(is.na(omega[i,])))) {
-                        stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+                    if (min(which(is.na(Omega[i-1,]))) >= min(which(is.na(Omega[i,])))) {
+                        stop(msg)
                     }
                 }
             }
@@ -104,36 +109,39 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # create list of matrices for each group (therefore index g)
     matrices <- list()
     for (g in seq_len(num.groups)) {
-        Lx.matrix    <- matrix(0, nrow=num.x, ncol=num.xi)
-        Ly.matrix    <- matrix(0, nrow=num.y, ncol=num.eta)
-        G.matrix     <- matrix(0, nrow=num.eta, ncol=num.xi)
-        B.matrix     <- matrix(0, nrow=num.eta, ncol=num.eta)
-        Td.matrix    <- matrix(0, nrow=num.x, ncol=num.x)
-        Te.matrix    <- matrix(0, nrow=num.y, ncol=num.y)
-        Psi.matrix   <- matrix(0, nrow=num.eta, ncol=num.eta)
-        A.matrix     <- matrix(0, nrow=num.xi, ncol=num.xi)
-        vx.matrix    <- matrix(0, nrow=num.x, ncol=1)
-        vy.matrix    <- matrix(0, nrow=num.y, ncol=1)
-        alpha.matrix <- matrix(0, nrow=num.eta, ncol=1)
-        t.matrix     <- matrix(0, nrow=num.xi, ncol=1)
-        O.matrix     <- matrix(0, nrow=num.xi, ncol=num.xi)
-        temp <- list(Lx=Lx.matrix, Ly=Ly.matrix, G=G.matrix, B=B.matrix,
-                     Td=Td.matrix, Te=Te.matrix, Psi=Psi.matrix, A=A.matrix,
-                     vx=vx.matrix, vy=vy.matrix, alpha=alpha.matrix,
-                     t=t.matrix, O=O.matrix)
+        Lambda.x.matrix <- matrix(0, nrow=num.x, ncol=num.xi)
+        Lambda.y.matrix <- matrix(0, nrow=num.y, ncol=num.eta)
+        Gamma.matrix    <- matrix(0, nrow=num.eta, ncol=num.xi)
+        Beta.matrix     <- matrix(0, nrow=num.eta, ncol=num.eta)
+        Theta.d.matrix  <- matrix(0, nrow=num.x, ncol=num.x)
+        Theta.e.matrix  <- matrix(0, nrow=num.y, ncol=num.y)
+        Psi.matrix      <- matrix(0, nrow=num.eta, ncol=num.eta)
+        A.matrix        <- matrix(0, nrow=num.xi, ncol=num.xi)
+        nu.x.matrix     <- matrix(0, nrow=num.x, ncol=1)
+        nu.y.matrix     <- matrix(0, nrow=num.y, ncol=1)
+        alpha.matrix    <- matrix(0, nrow=num.eta, ncol=1)
+        tau.matrix      <- matrix(0, nrow=num.xi, ncol=1)
+        Omega.matrix    <- matrix(0, nrow=num.xi, ncol=num.xi)
+        temp <- list(Lambda.x=Lambda.x.matrix, Lambda.y=Lambda.y.matrix,
+                     Gamma=Gamma.matrix, Beta=Beta.matrix,
+                     Theta.d=Theta.d.matrix, Theta.e=Theta.e.matrix,
+                     Psi=Psi.matrix, A=A.matrix, nu.x=nu.x.matrix,
+                     nu.y=nu.y.matrix, alpha=alpha.matrix, tau=tau.matrix,
+                     Omega=Omega.matrix)
         matrices[[g]] <- temp
     }
     names(matrices) <- paste0("group",1:num.groups)
 
     # create data frame with variable names and one column for each group
     specs <- data.frame(
-        label = c(paste0("Lx", 1:(num.x*num.xi)), paste0("Ly",
-            1:(num.y*num.eta)), paste0("G", 1:(num.xi*num.eta)), paste0("B",
-            1:(num.eta*num.eta)), paste0("Td", 1:(num.x*num.x)), paste0("Te",
-            1:(num.y*num.y)), paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
-            1:(num.xi*num.xi)), paste0("vx", 1:num.x), paste0("vy", 1:num.y),
-            paste0("alpha", 1:num.eta), paste0("t", 1:num.xi), paste0("O",
-            1:(num.xi*num.xi)))
+        label = c(paste0("Lambda.x", 1:(num.x*num.xi)), paste0("Lambda.y",
+            1:(num.y*num.eta)), paste0("Gamma", 1:(num.xi*num.eta)),
+            paste0("Beta", 1:(num.eta*num.eta)), paste0("Theta.d",
+            1:(num.x*num.x)), paste0("Theta.e", 1:(num.y*num.y)),
+            paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
+            1:(num.xi*num.xi)), paste0("nu.x", 1:num.x), paste0("nu.y",
+            1:num.y), paste0("alpha", 1:num.eta), paste0("tau", 1:num.xi),
+            paste0("Omega", 1:(num.xi*num.xi)))
     )
     for (g in seq_len(num.groups)) {
         ustart.temp <- data.frame(ustart = 0)
@@ -179,21 +187,21 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         # fill in default constraints
         for (g in seq_len(num.groups)) {
 
-            # Lx
+            # Lambda.x
             for (i in seq_len(num.xi)){
-                matrices[[g]]$Lx[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
+                matrices[[g]]$Lambda.x[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
             }
-            # Ly
+            # Lambda.y
             for (i in seq_len(num.eta)){
-                matrices[[g]]$Ly[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
+                matrices[[g]]$Lambda.y[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
             }
-            # G
-            # TODO why not: matrices[[g]]$G[1:num.eta,1:num.xi] <- NA
-            matrices[[g]]$G[1:dim(matrices[[g]]$G)[1],1:dim(matrices[[g]]$G)[2]] <- NA
-            # Td
-            matrices[[g]]$Td <- diag(NA, num.x)
-            # Te
-            matrices[[g]]$Te <- diag(NA, num.y)
+            # Gamma
+            # TODO why not: matrices[[g]]$Gamma[1:num.eta,1:num.xi] <- NA
+            matrices[[g]]$Gamma[1:dim(matrices[[g]]$Gamma)[1],1:dim(matrices[[g]]$Gamma)[2]] <- NA
+            # Theta.d
+            matrices[[g]]$Theta.d <- diag(NA, num.x)
+            # Theta.e
+            matrices[[g]]$Theta.e <- diag(NA, num.y)
             # Psi
             # TODO why not: matrices[[g]]$Psi[1:num.xi,1:num.xi]
             matrices[[g]]$Psi[1:dim(matrices[[g]]$Psi)[1],1:dim(matrices[[g]]$Psi)[2]] <- NA
@@ -202,18 +210,18 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             matrices[[g]]$A[upper.tri(matrices[[g]]$A)] <- 0
             # Omega
             if (interaction == "all"){
-                matrices[[g]]$O[upper.tri(matrices[[g]]$O)] <- NA
+                matrices[[g]]$Omega[upper.tri(matrices[[g]]$Omega)] <- NA
             } else if (interaction != "") {
                 interaction.s <- unlist(strsplit(interaction, ","))
                 ind <- calc_interaction_matrix(interaction.s)
-                matrices[[g]]$O[ind] <- NA
+                matrices[[g]]$Omega[ind] <- NA
             }
-            test_omega(matrices[[g]]$O)
-            # check if O has row echelon form
+            test_omega(matrices[[g]]$Omega)
+            # check if Omega has row echelon form
             # nu's
             if (interc_obs){
-                matrices[[g]]$vx[1:num.x] <- NA
-                matrices[[g]]$vy[1:num.y] <- NA
+                matrices[[g]]$nu.x[1:num.x] <- NA
+                matrices[[g]]$nu.y[1:num.y] <- NA
             }
             # alpha
             if (interc_lat){
@@ -265,63 +273,65 @@ fill_matrices <- function(dat){
     stopifnot(is.data.frame(dat))
 
     # grep names
-    Lx    <- as.character(dat$label[grep("Lx", dat$label)])
-    Ly    <- as.character(dat$label[grep("Ly", dat$label)])
-    G     <- as.character(dat$label[grep("G", dat$label)])
-    B     <- as.character(dat$label[grep("B", dat$label)])
-    Td    <- as.character(dat$label[grep("Td", dat$label)])
-    Te    <- as.character(dat$label[grep("Te", dat$label)])
-    Psi   <- as.character(dat$label[grep("Psi", dat$label)])
-    A     <- as.character(dat$label[grep("A", dat$label)])
-    vx    <- as.character(dat$label[grep("vx", dat$label)])
-    vy    <- as.character(dat$label[grep("vy", dat$label)])
-    alpha <- as.character(dat$label[grep("alpha", dat$label)])
-    t     <- as.character(dat$label[grep("t", dat$label)])
-    O     <- as.character(dat$label[grep("O", dat$label)])
+    Lambda.x <- as.character(dat$label[grep("Lambda.x", dat$label)])
+    Lambda.y <- as.character(dat$label[grep("Lambda.y", dat$label)])
+    Gamma    <- as.character(dat$label[grep("Gamma", dat$label)])
+    Beta     <- as.character(dat$label[grep("Beta", dat$label)])
+    Theta.d  <- as.character(dat$label[grep("Theta.d", dat$label)])
+    Theta.e  <- as.character(dat$label[grep("Theta.e", dat$label)])
+    Psi      <- as.character(dat$label[grep("Psi", dat$label)])
+    A        <- as.character(dat$label[grep("A", dat$label)])
+    nu.x     <- as.character(dat$label[grep("nu.x", dat$label)])
+    nu.y     <- as.character(dat$label[grep("nu.y", dat$label)])
+    alpha    <- as.character(dat$label[grep("alpha", dat$label)])
+    tau      <- as.character(dat$label[grep("tau", dat$label)])
+    Omega    <- as.character(dat$label[grep("Omega", dat$label)])
 
     # number of latent and indicator variables
     # TODO could also be passed
-    num.x      <- length(vx)
-    num.y      <- length(vy)
-    num.xi     <- length(t)
+    num.x      <- length(nu.x)
+    num.y      <- length(nu.y)
+    num.xi     <- length(tau)
     num.eta    <- length(alpha)
     num.groups <- ncol(dat) - 1
 
     # create matrices
     matrices <- list()
     for (g in seq_len(num.groups)) {
-        Lx.matrix    <- matrix(dat[dat$label %in% Lx, paste0("group",g)],
-                               nrow=num.x, ncol=num.xi)
-        Ly.matrix    <- matrix(dat[dat$label %in% Ly, paste0("group",g)],
-                               nrow=num.y, ncol=num.eta)
-        G.matrix     <- matrix(dat[dat$label %in% G, paste0("group",g)],
-                               nrow=num.eta, ncol=num.xi)
-        B.matrix     <- matrix(dat[dat$label %in% B, paste0("group",g)],
-                               nrow=num.eta, ncol=num.eta)
-        Td.matrix    <- matrix(dat[dat$label %in% Td, paste0("group",g)],
-                               nrow=num.x, ncol=num.x)
-        Te.matrix    <- matrix(dat[dat$label %in% Te, paste0("group",g)],
-                               nrow=num.y, ncol=num.y)
-        Psi.matrix   <- matrix(dat[dat$label %in% Psi, paste0("group",g)],
-                               nrow=num.eta, ncol=num.eta)
-        A.matrix     <- matrix(dat[dat$label %in% A, paste0("group",g)],
-                               nrow=num.xi, ncol=num.xi)
-        vx.matrix    <- matrix(dat[dat$label %in% vx, paste0("group",g)],
-                               nrow=num.x, ncol=1)
-        vy.matrix    <- matrix(dat[dat$label %in% vy, paste0("group",g)],
-                               nrow=num.y, ncol=1)
-        alpha.matrix <- matrix(dat[dat$label %in% alpha, paste0("group",g)],
-                               nrow=num.eta, ncol=1)
-        t.matrix     <- matrix(dat[dat$label %in% t, paste0("group",g)],
-                               nrow=num.xi, ncol=1)
-        O.matrix     <- matrix(dat[dat$label %in% O, paste0("group",g)],
-                               nrow=num.xi, ncol=num.xi)
+        Lambda.x.matrix <- matrix(dat[dat$label %in% Lambda.x, paste0("group",g)],
+                                  nrow=num.x, ncol=num.xi)
+        Lambda.y.matrix <- matrix(dat[dat$label %in% Lambda.y, paste0("group",g)],
+                                  nrow=num.y, ncol=num.eta)
+        Gamma.matrix    <- matrix(dat[dat$label %in% Gamma, paste0("group",g)],
+                                  nrow=num.eta, ncol=num.xi)
+        Beta.matrix     <- matrix(dat[dat$label %in% Beta, paste0("group",g)],
+                                  nrow=num.eta, ncol=num.eta)
+        Theta.d.matrix  <- matrix(dat[dat$label %in% Theta.d, paste0("group",g)],
+                                  nrow=num.x, ncol=num.x)
+        Theta.e.matrix  <- matrix(dat[dat$label %in% Theta.e, paste0("group",g)],
+                                  nrow=num.y, ncol=num.y)
+        Psi.matrix      <- matrix(dat[dat$label %in% Psi, paste0("group",g)],
+                                  nrow=num.eta, ncol=num.eta)
+        A.matrix        <- matrix(dat[dat$label %in% A, paste0("group",g)],
+                                  nrow=num.xi, ncol=num.xi)
+        nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("group",g)],
+                                  nrow=num.x, ncol=1)
+        nu.y.matrix     <- matrix(dat[dat$label %in% nu.y, paste0("group",g)],
+                                  nrow=num.y, ncol=1)
+        alpha.matrix    <- matrix(dat[dat$label %in% alpha, paste0("group",g)],
+                                  nrow=num.eta, ncol=1)
+        tau.matrix      <- matrix(dat[dat$label %in% tau, paste0("group",g)],
+                                  nrow=num.xi, ncol=1)
+        Omega.matrix    <- matrix(dat[dat$label %in% Omega, paste0("group",g)],
+                                  nrow=num.xi, ncol=num.xi)
 
-        matrices[[g]] <- list(Lx=Lx.matrix, Ly=Ly.matrix, G=G.matrix,
-                              B=B.matrix, Td=Td.matrix, Te=Te.matrix,
-                              Psi=Psi.matrix, A=A.matrix, vx=vx.matrix,
-                              vy=vy.matrix, alpha=alpha.matrix, t=t.matrix,
-                              O=O.matrix)
+        matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+                              Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
+                              Beta=Beta.matrix, Theta.d=Theta.d.matrix,
+                              Theta.e=Theta.e.matrix, Psi=Psi.matrix,
+                              A=A.matrix, nu.x=nu.x.matrix,
+                              nu.y=nu.y.matrix, alpha=alpha.matrix,
+                              tau=tau.matrix, Omega=Omega.matrix)
     }
     matrices
 }

@@ -7,14 +7,14 @@ mu_lms <- function(model, z) {
     
     stopifnot(class(model) == "lmsFilled")
 
-    matrices <- model$matrices
-    k    <- get_k(matrices$O)         # number of nonzero rows in Omega
+    matrices <- model$matrices$group1
+    k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
     n    <- nrow(matrices$A)          # number of zero rows in Omega
     z.1  <- c(z, rep(0, n - k))       # [z_1 0]'
     A.z  <- matrices$A %*% z.1 
-    mu.x <- matrices$vx + matrices$Lx %*% A.z 
-    mu.y <- matrices$vy + matrices$Ly %*% (matrices$alpha + matrices$G %*% A.z +
-            t(A.z) %*% matrices$O %*% A.z)
+    mu.x <- matrices$nu.x + matrices$Lambda.x %*% A.z 
+    mu.y <- matrices$nu.y + matrices$Lambda.y %*% (matrices$alpha +
+            matrices$Gamma %*% A.z + t(A.z) %*% matrices$Omega %*% A.z)
     mu   <- c(mu.x, mu.y)
 
     mu
@@ -24,19 +24,20 @@ sigma_lms <- function(model, z) {
 
     stopifnot(class(model) == "lmsFilled")
 
-    matrices <- model$matrices
-    k     <- get_k(matrices$O)        # number of nonzero rows in Omega
+    matrices <- model$matrices$group1
+    k     <- get_k(matrices$Omega)    # number of nonzero rows in Omega
     n     <- nrow(matrices$A)         # number of zero rows in Omega
     z.1   <- c(z, rep(0, n - k))      # [z_1 0]'
     A.z   <- matrices$A %*% z.1 
     d.mat <- get_d(n=n, k=k)
-    Lx.A  <- matrices$Lx %*% matrices$A
-    temp  <- matrices$G %*% matrices$A + t(A.z) %*% matrices$O %*% matrices$A
-    s11   <- Lx.A %*% d.mat %*% t(Lx.A) + matrices$Td 
-    s12   <- Lx.A %*% d.mat %*% t(temp) %*% t(matrices$Ly)
+    Lx.A  <- matrices$Lambda.x %*% matrices$A
+    temp  <- matrices$Gamma %*% matrices$A + t(A.z) %*% matrices$Omega %*% matrices$A
+    s11   <- Lx.A %*% d.mat %*% t(Lx.A) + matrices$Theta.d 
+    s12   <- Lx.A %*% d.mat %*% t(temp) %*% t(matrices$Lambda.y)
     s21   <- t(s12)
-    s22   <- matrices$Ly %*% temp %*% d.mat %*% t(temp) %*% t(matrices$Ly) + 
-             matrices$Ly %*% matrices$Psi %*% t(matrices$Ly) + matrices$Te
+    s22   <- matrices$Lambda.y %*% temp %*% d.mat %*% t(temp) %*%
+             t(matrices$Lambda.y) + matrices$Lambda.y %*% matrices$Psi %*%
+             t(matrices$Lambda.y) + matrices$Theta.e
     sigma <- rbind(cbind(s11,s12), cbind(s21,s22))
     
     # check if sigma is symmetric
@@ -45,7 +46,7 @@ sigma_lms <- function(model, z) {
     sigma
 }
 
-get_k <- function(omega) which(rowSums(omega) == 0)[1] - 1
+get_k <- function(Omega) which(rowSums(Omega) == 0)[1] - 1
 
 get_d <- function(n, k) {
     mat <- diag(n)
@@ -71,11 +72,11 @@ quadrature <- function(m, k) {
 
 estep_lms <- function(model, parameters, dat, m, ...) {
 
-    stopifnot(free_parameters(model) == length(parameters))
+    stopifnot(count_free_parameters(model) == length(parameters))
 
     mod.filled <- fill_model(model=model, parameters=parameters)
 
-    k <- get_k(mod.filled$matrices$O)
+    k <- get_k(mod.filled$matrices$group1$Omega)
     quad <- quadrature(m, k)
 
     V <- quad$n       # matrix of node vectors m x k
@@ -103,7 +104,7 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 # log likelihood function which will be optimized
 loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
     
-    k <- get_k(mod.filled$matrices$O)
+    k <- get_k(mod.filled$matrices$group1$Omega)
     quad <- quadrature(m, k)
     V <- quad$n
 
@@ -138,12 +139,12 @@ mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE, ...) {
  
 
     # constrain variances to +Inf
-    upper <- rep(Inf, free_parameters(model))
-    lower <- rep(-Inf, free_parameters(model))
-    lower[grep("[Td, Te, Psi]", model$info$par.names)] <- 0
+    upper <- rep(Inf, count_free_parameters(model))
+    lower <- rep(-Inf, count_free_parameters(model))
+    lower[grep("[Theta.d, Theta.e, Psi]", model$info$par.names)] <- 0
     # TODO What about A? Does that have to be positiv as well??? Since Phi
     # should be...
-    # TODO What about if Td and Te are not diagonal matrices?
+    # TODO What about if Theta.d and Theta.e are not diagonal matrices?
     # TODO What about Psi, when eta > 1?
     # optimizer
     est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
@@ -167,7 +168,7 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
     set.seed(seed)
       
     # Gauss-Hermite quadrature
-    k <- get_k(object$matrices$O)
+    k <- get_k(object$matrices$group1$Omega)
     quad <- quadrature(m=m, k=k)
     V <- quad$n
     w <- quad$w
