@@ -3,7 +3,9 @@
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints="default",
-                         interc_obs=FALSE, interc_lat=FALSE)
+                         interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE)
+# runs without problem
+as.data.frame(lms_model)
 # runs without problem
 
 # ordinary lms with wrong input for observed variables
@@ -121,10 +123,77 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          interc_obs=FALSE, interc_lat=FALSE)
 # Wrong input for interaction. See ?specify_sem.
 
+# ordinary lms with (wrong) input for constraints
+# =============================================
+# nonsense string
+# ---------------
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints="def",
+                         interc_obs=FALSE, interc_lat=FALSE)
+# constraints need to be a data.frame or set to 'default'.
+
+# data.frame
+# ----------
+constraints <- data.frame(group1 = rep(0, 84))
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints=constraints,
+                         interc_obs=FALSE, interc_lat=FALSE, dataframe=TRUE)
+# runs without a problem
+
+# data.frame with wrong number of columns
+# ---------------------------------------
+constraints <- data.frame(group1 = rep(0, 84), group2 = rep(NA, 84))
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints=constraints,
+                         interc_obs=FALSE, interc_lat=FALSE)
+# Data frame for constraints does not match number of latent groups. See
+# ?specify_sem.
+
+# data.frame with wrong number of row
+# -----------------------------------
+constraints <- data.frame(rep(0, 50))
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints=constraints,
+                         interc_obs=FALSE, interc_lat=FALSE)
+rm(constraints)
+# Data frame for constraints does not have correct number of rows. See
+# correct number above or see ?specify_sem.
+
+# ordinary lms with nonsense input for interc_obs, interc_obs and dataframe
+# =========================================================================
+# (should be boolean)
+# ===================
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6",
+            eta="y1-y3", num.groups=1, interaction="xi1:xi2",
+            constraints="default", interc_obs="bla", interc_lat=FALSE)
+# Error in if (interc_obs) { : argument is not interpretable as logical
+
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints="default",
+                         interc_obs=TRUE, interc_lat="bla")
+# Error in if (interc_lat) { : argument is not interpretable as logical
+
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints="default",
+                         interc_obs=FALSE, interc_lat=FALSE, dataframe="bla")
+# Error in if (dataframe) { : argument is not interpretable as logical
+# TODO Errors are quite informative, so perhaps just leave them like that?
 
 
-
-
+# stemm model
+# ===========
+# nonsense input for num.groups
+# -----------------------------
+stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups="three",
+                         interaction="xi1:xi2", constraints="default",
+                         interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE)
 
 
 
