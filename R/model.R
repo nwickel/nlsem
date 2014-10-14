@@ -337,26 +337,34 @@ as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(obje
     specs
 }
 
-free_parameters <- function(model) sum(unlist(lapply(model$matrices, is.na)))
+count_free_parameters <- function(model) {
+    # w is not counted
+    res <- 0
+    for (g in seq_len(model$info$num.groups))
+    res <- res + sum(unlist(lapply(model$matrices[[g]], is.na)))
+    res
+    }
 
 fill_model <- function(model, parameters) {
-    
-    stopifnot(class(model) == "lms")
 
-    stopifnot(free_parameters(model) == length(parameters))
+    stopifnot(class(model) == "lms" || class(model) == "stemm"
+              || class(model) == "nsemm")
 
-    mod.unlist <- unlist(model$matrices)
-    mod.unlist[is.na(mod.unlist)] <- parameters
-    
-    specs <- data.frame(label=names(mod.unlist), ustart=mod.unlist)
+    stopifnot(count_free_parameters(model) == length(parameters))
 
-    out <- fill_matrices(specs)
-    out$info$par.names <- NULL
+    specs <- as.data.frame(model)
+    specs[is.na(specs)] <- parameters
 
-    class(out) <- "lmsFilled"
+    out_matrices <- fill_matrices(specs)
+    names(out_matrices) <- names(model$matrices)
 
+    out <- list(matrices = out_matrices, info = model$info)
+
+    switch(class(model),
+                 "lms" = {class(out) <- "lmsFilled"},
+                 "stemm" = {class(out) <- "stemmFilled"},
+                 "nsemm" = {class(out) <- "nsemmFilled"})
     out
-  
 }
 
 ## TODO Want fill_matrices to work with a data frame created with lavaanify()...

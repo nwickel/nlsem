@@ -1,12 +1,16 @@
+# =====================
+# Tests for specify_sem
+# =====================
+
 # ordinary lms
 # ============
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE)
-# runs without problem
+# OK runs without problem
 as.data.frame(lms_model)
-# runs without problem
+# OK runs without problem
 
 # ordinary lms with wrong input for observed variables
 # ====================================================
@@ -50,7 +54,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=1, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-# error: Interaction effects contain more xi's than defined.
+# OK error: Interaction effects contain more xi's than defined.
 
 # nonsense input for xi
 # ---------------------
@@ -58,7 +62,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x-x4", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-# Wrong input for specifying exogenous or endogonous latent variables (xi or
+# OK Wrong input for specifying exogenous or endogonous latent variables (xi or
 # etas). See ?specify_sem.
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1x2-x3x4", eta="y1-y3", num.groups=1,
@@ -79,7 +83,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y-y3", num.groups=1,
                          interaction="xi1:xi2", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-# Wrong input for specifying exogenous or endogonous latent variables (xi or
+# OK Wrong input for specifying exogenous or endogonous latent variables (xi or
 # etas). See ?specify_sem.
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1y3-y4", num.groups=1,
@@ -95,7 +99,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="all", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-# TODO this runs, but is it really a lms?
+# OK this runs
 
 # ""
 # --
@@ -103,9 +107,9 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-#   Model needs either more than one latent group or at least one latent
-#   interaction (e.g. 'xi1:xi2'). For other models please use lavaan or the
-#   like
+# OK Model needs either more than one latent group or at least one latent
+# interaction (e.g. 'xi1:xi2'). For other models please use lavaan or the
+# like
 
 # more interaction terms than xi's
 # --------------------------------
@@ -113,7 +117,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi2:xi3", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-# Interaction effects contain more xi's than defined.
+# OK Interaction effects contain more xi's than defined.
 
 # nonsense
 # --------
@@ -121,7 +125,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="x3:x4", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE)
-# Wrong input for interaction. See ?specify_sem.
+# OK Wrong input for interaction. See ?specify_sem.
 
 # ordinary lms with (wrong) input for constraints
 # =============================================
@@ -131,7 +135,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints="def",
                          interc_obs=FALSE, interc_lat=FALSE)
-# constraints need to be a data.frame or set to 'default'.
+# OK constraints need to be a data.frame or set to 'default'.
 
 # data.frame
 # ----------
@@ -140,7 +144,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints=constraints,
                          interc_obs=FALSE, interc_lat=FALSE, dataframe=TRUE)
-# runs without a problem
+# OK runs without a problem
 
 # data.frame with wrong number of columns
 # ---------------------------------------
@@ -149,7 +153,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
                          interaction="xi1:xi2", constraints=constraints,
                          interc_obs=FALSE, interc_lat=FALSE)
-# Data frame for constraints does not match number of latent groups. See
+# OK Data frame for constraints does not match number of latent groups. See
 # ?specify_sem.
 
 # data.frame with wrong number of row
@@ -160,7 +164,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          interaction="xi1:xi2", constraints=constraints,
                          interc_obs=FALSE, interc_lat=FALSE)
 rm(constraints)
-# Data frame for constraints does not have correct number of rows. See
+# OK Data frame for constraints does not have correct number of rows. See
 # correct number above or see ?specify_sem.
 
 # ordinary lms with nonsense input for interc_obs, interc_obs and dataframe
@@ -183,7 +187,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          interaction="xi1:xi2", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE, dataframe="bla")
 # Error in if (dataframe) { : argument is not interpretable as logical
-# TODO Errors are quite informative, so perhaps just leave them like that?
+# TODO Errors are quite informative, so just leave them like that
 
 
 # stemm model
@@ -194,7 +198,51 @@ stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups="three",
                          interaction="xi1:xi2", constraints="default",
                          interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE)
+# OK Number of variables or groups must be numeric.
 
+
+# ==============================================
+# Tests for count_free_parameters and fill_model
+# ==============================================
+
+# lms
+# ---
+lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
+                         interaction="xi1:xi2", constraints="default",
+                         interc_obs=FALSE, interc_lat=FALSE)
+class(lms_model)
+count_free_parameters(lms_model)
+parameters <- rep(5, 22)
+fill_model(lms_model, parameters)
+rm(parameters, lms_model)
+# OK
+
+# stemm
+# -----
+stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=3,
+                         interaction="", constraints="default",
+                         interc_obs=FALSE, interc_lat=FALSE)
+class(stemm_model)
+count_free_parameters(stemm_model)
+parameters <- rep(5, 63)
+fill_model(stemm_model, parameters)
+rm(parameters, stemm_model)
+# OK
+
+# nsemm
+# -----
+nsemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=3,
+                         interaction="xi1:xi2", constraints="default",
+                         interc_obs=FALSE, interc_lat=FALSE)
+class(nsemm_model)
+count_free_parameters(nsemm_model)
+parameters <- rep(5, 66)
+fill_model(nsemm_model, parameters)
+rm(parameters, nsemm_model)
+# OK
 
 
 # Parameters for specify_sem (nonlin)
