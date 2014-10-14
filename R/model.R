@@ -49,6 +49,12 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     if (max(interact.matrix) > num.xi) {
         stop("Interaction effects contain more xi's than defined.")
     }
+    # FIX ME specify_sem does not work with default interaction='all'
+    # anymore
+    # AND throws warning for interaction='':
+    # Warning message:
+    # In max(interact.matrix) : no non-missing arguments to max; returning -Inf
+    
 
     # create list of matrices for each group (therefore index g)
     matrices <- list()
@@ -195,7 +201,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     if (num.groups == 1) {
         if (interaction == "") {
             stop("Model needs either more than one latent group or at least one
-                 latent interaction (f.ex. 'xi1:xi2'). For other models please
+                 latent interaction (e.g. 'xi1:xi2'). For other models please
                  use lavaan or the like")
         } else {
             class(model) <- "lms"
@@ -292,6 +298,9 @@ as_dataframe <- function(model) {
     }
     specs
 }
+# TODO Not a good function name (too close to as.data.frame); maybe get_dataframe or maybe
+# sem_dataframe, etc. ... Another alternative would be to use as.data.frame
+# since it is a generic funtion...
 
 free_parameters <- function(model) sum(unlist(lapply(model$matrices, is.na)))
 
