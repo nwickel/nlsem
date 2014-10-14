@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Oct/11/2014, KN
+# last mod Oct/14/2014, KN
 
 grep_ind <- function(x){
     tryCatch({
@@ -45,16 +45,12 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0, num.groups > 0)
 
     # check if only defined xi's are in the interaction
-    interact.matrix <- calc_interaction_matrix(unlist(strsplit(interaction, ",")))
-    if (max(interact.matrix) > num.xi) {
-        stop("Interaction effects contain more xi's than defined.")
+    if (interaction != "all" && interaction != "") {
+        interact.matrix <- calc_interaction_matrix(unlist(strsplit(interaction, ",")))
+        if (max(interact.matrix) > num.xi) {
+            stop("Interaction effects contain more xi's than defined.")
+        }
     }
-    # FIX ME specify_sem does not work with default interaction='all'
-    # anymore
-    # AND throws warning for interaction='':
-    # Warning message:
-    # In max(interact.matrix) : no non-missing arguments to max; returning -Inf
-    
 
     # create list of matrices for each group (therefore index g)
     matrices <- list()
@@ -143,16 +139,14 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 matrices[[g]]$Ly[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
             }
             # G
-            # why not:
-            # matrices[[g]]$G[1:num.eta,1:num.xi] <- NA
+            # TODO why not: matrices[[g]]$G[1:num.eta,1:num.xi] <- NA
             matrices[[g]]$G[1:dim(matrices[[g]]$G)[1],1:dim(matrices[[g]]$G)[2]] <- NA
             # Td
             matrices[[g]]$Td <- diag(NA, num.x)
             # Te
             matrices[[g]]$Te <- diag(NA, num.y)
             # Psi
-            # why not:
-            # matrices[[g]]$Psi[1:num.xi,1:num.xi]
+            # TODO why not: matrices[[g]]$Psi[1:num.xi,1:num.xi]
             matrices[[g]]$Psi[1:dim(matrices[[g]]$Psi)[1],1:dim(matrices[[g]]$Psi)[2]] <- NA
             # A
             matrices[[g]]$A[1:dim(matrices[[g]]$A)[1],1:dim(matrices[[g]]$A)[2]] <- NA
@@ -160,7 +154,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             # Omega
             if (interaction == "all"){
                 matrices[[g]]$O[upper.tri(matrices[[g]]$O, diag=TRUE)] <- NA
-            } else {
+            } else if (interaction != "") {
                 interaction.s <- unlist(strsplit(interaction, ","))
                 ind <- calc_interaction_matrix(interaction.s)
                 matrices[[g]]$O[ind] <- NA
@@ -175,8 +169,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             }
             # alpha
             if (interc_lat == TRUE){
-                # why not:
-                # empty.model[[g]]$alpha[1:num.eta] <- NA
+                # TODO why not: empty.model[[g]]$alpha[1:num.eta] <- NA
                 matrices[[g]]$alpha[1:dim(matrices[[g]]$alpha)[1],1:dim(matrices[[g]]$alpha)[2]] <- NA
             }
             # put constraints in data frame
@@ -202,7 +195,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         if (interaction == "") {
             stop("Model needs either more than one latent group or at least one
                  latent interaction (e.g. 'xi1:xi2'). For other models please
-                 use lavaan or the like")
+                 use lavaan or the like.")
         } else {
             class(model) <- "lms"
         }
@@ -286,21 +279,16 @@ fill_matrices <- function(dat){
     matrices
 }
 
-as_dataframe <- function(model) {
-    stopifnot(class(model) == "lms" || class(model) == "stemm" || class(model)
-              == "nsemm")
+as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
     specs <- data.frame(
-        label = names(unlist(model$matrices$group1)))
-    for (g in seq_len(length(model$matrices))) {
-        temp <- unlist(model$matrices[[g]], use.names=FALSE)
+        label = names(unlist(object$matrices$group1)))
+    for (g in seq_len(length(object$matrices))) {
+        temp <- data.frame(unlist(object$matrices[[g]], use.names=FALSE))
         names(temp) <- paste0("group", g)
         specs <- cbind(specs, temp)
     }
     specs
 }
-# TODO Not a good function name (too close to as.data.frame); maybe get_dataframe or maybe
-# sem_dataframe, etc. ... Another alternative would be to use as.data.frame
-# since it is a generic funtion...
 
 free_parameters <- function(model) sum(unlist(lapply(model$matrices, is.na)))
 
