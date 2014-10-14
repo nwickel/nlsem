@@ -173,12 +173,12 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 matrices[[g]]$O[ind] <- NA
             }
             # nu's
-            if (interc_obs == TRUE){
+            if (interc_obs){
                 matrices[[g]]$vx[1:num.x] <- NA
                 matrices[[g]]$vy[1:num.y] <- NA
             }
             # alpha
-            if (interc_lat == TRUE){
+            if (interc_lat){
                 # TODO why not: empty.model[[g]]$alpha[1:num.eta] <- NA
                 matrices[[g]]$alpha[1:dim(matrices[[g]]$alpha)[1],1:dim(matrices[[g]]$alpha)[2]] <- NA
             }
@@ -245,7 +245,6 @@ fill_matrices <- function(dat){
     # TODO could also be passed
     num.x      <- length(vx)
     num.y      <- length(vy)
-    num.xi     <- length(t)
     num.xi     <- length(t)
     num.eta    <- length(alpha)
     num.groups <- ncol(dat) - 1
