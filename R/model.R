@@ -44,6 +44,42 @@ sort_interaction_effects <- function(rows, cols){
     cbind(rows, cols)
 }
 
+test_omega <- function(omega){
+
+    if (any(is.na(omega))){
+
+        ind <- which(is.na(omega), arr.ind=TRUE)
+        dim <- nrow(omega)
+        
+        if (nrow(ind) == 1){
+            if (!is.na(omega[1, dim]))
+                stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+
+        } else {
+            for (i in 2:nrow(ind)){
+                if(ind[i,1] >= ind[i-1,2]){
+                    stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+                } 
+            }
+            for (i in 1:max(ind[,1])){
+                if (max(which(is.na(omega[i,]))) < dim){
+                    stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+                }
+            }
+            if (max(ind[,1]) > 1){
+                for (i in 2:max(ind[,1])){
+                    if (min(which(is.na(omega[i-1,]))) >= min(which(is.na(omega[i,])))) {
+                        stop("Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details.")
+                    }
+                }
+            }
+        }
+        invisible(NULL)
+    } else {
+        invisible(NULL)
+    }
+}
+
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", constraints="default",
                           interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE){
@@ -171,6 +207,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 interaction.s <- unlist(strsplit(interaction, ","))
                 ind <- calc_interaction_matrix(interaction.s)
                 matrices[[g]]$O[ind] <- NA
+                test_omega(matrices[[g]]$O[ind])
+                # check if O has row echelon form
             }
             # nu's
             if (interc_obs){
