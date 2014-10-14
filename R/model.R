@@ -22,13 +22,26 @@ calc_interaction_matrix <- function(x){
     tryCatch({
         rows <- as.numeric(gsub("^.*xi([0-9]+):xi[0-9]+$", "\\1", x))
         cols <- as.numeric(gsub("^.*xi.*:xi([0-9]+)$", "\\1", x))
-        mat  <- cbind(rows, cols)
+        mat  <- sort_interaction_effects(rows, cols)
         mat
     }, warning = function(war) {
         stop("Wrong input for interaction. See ?specify_sem.")
     }, error = function(err) { # perhaps error catching is unnecessary
         stop("Wrong input for interaction. See ?specify_sem.")
     })
+}
+
+sort_interaction_effects <- function(rows, cols){
+    
+    for (i in seq_along(rows)){
+        if (rows[i] > cols[i]){
+            rows_i <- rows[i]
+            cols_i <- cols[i]
+            rows[i] <- cols_i
+            cols[i] <- rows_i
+        }
+    }
+    cbind(rows, cols)
 }
 
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
@@ -164,9 +177,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 interaction.s <- unlist(strsplit(interaction, ","))
                 ind <- calc_interaction_matrix(interaction.s)
                 matrices[[g]]$O[ind] <- NA
-                if (is.na(sum(matrices[[g]]$O[lower.tri(matrices[[g]]$O)]))){
-                    matrices[[g]]$O <- t(matrices[[g]]$O)
-                }   # needed so we can specify either xi1:xi2 OR xi2:xi1
             }
             # nu's
             if (interc_obs == TRUE){
