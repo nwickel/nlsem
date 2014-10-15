@@ -8,13 +8,14 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
     
-    ll.old   <- 0     # likelihood of the last iteration
-    ll.new   <- 1     # likelihood of the current iteration
+    ll.old   <- 0     # loglikelihood of the last iteration
+    ll.new   <- 1     # loglikelihood of the current iteration
     ll.ret   <- NULL
     num.iter <- 0     # number of iterations
     par.new  <- start
     par.old  <- 0
     
+    tryCatch({
     while(abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
     #while(sum((par.old - par.new)^2) > threshold) { # as long as no convergence reached
         if(ll.new - ll.old > 0.001 && num.iter > 3) {
@@ -26,7 +27,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
             cat("Doing expectation-step \n")
         }
   
-        # Update likelihood
+        # Update loglikelihood
         ll.old <- ll.new
         par.old <- par.new
 
@@ -42,7 +43,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
   
         if(logger == TRUE) {
             cat("Results of maximization \n")
-            cat(paste0("Final likelihood: ", -m.step$objective, "\n"))
+            cat(paste0("Final loglikelihood: ", round(-m.step$objective, 3), "\n"))
             cat(paste0("Convergence: ", m.step$convergence, "\n"))
             cat(paste0("Number of iterations: ", m.step$iterations, "\n"))
             cat("----------------------------------- \n")
@@ -54,13 +55,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         num.iter   <- num.iter + 1
   
         if(num.iter == max.iter) break
-        print(par.new)
     }
-
     cat("-----------------------------------\n")
     cat("EM completed \n")
-    cat(paste0("Previous Likelihood: ", -ll.old, "\n"))
-    cat(paste0("Final Likelihood: ", -ll.new,"\n"))
+    cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))
+    cat(paste0("Final loglikelihood: ", round(-ll.new, 3),"\n"))
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
     cat("Computing Hessian \n")
@@ -74,10 +73,13 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     out <- list(par=final$par, objective=-final$objective,
            convergence_final_step=final$convergence,
            message_final_step=final$message, Hessian=final$hessian$Hessian,
-           gradient=final$hessian$gradient, likelihoods=-ll.ret,
+           gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
            info=model$info[1:4])
   
     class(out) <- "emRes"
+    }, error=function(e){out <- list(par=par.new,
+                         objective=m.step$objective, loglikelihoods=-ll.ret)})
+                            
   
     out
 }

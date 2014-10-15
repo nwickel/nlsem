@@ -220,12 +220,12 @@ summary.emRes <- function(object, ...){
     est.table <- cbind(est, s.error, tvalue, pvalue)
     dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
 
-    # likelihoods
-    iterations   <- length(object$likelihoods) 
-    abs.change   <- c(0, abs(diff(object$likelihoods)))
-    rel.change   <- rel_change(object$likelihoods)
-    logLik.table <- cbind(object$likelihoods, abs.change, rel.change)
-    dimnames(logLik.table) <- list(1:iterations, c("loglikelihood", "absolute change", "relative change"))
+    # loglikelihoods
+    iterations   <- length(object$loglikelihoods) 
+    abs.change   <- c(0, diff(object$loglikelihoods))
+    rel.change   <- rel_change(object$loglikelihoods)
+    logLik.table <- cbind(object$loglikelihoods, abs.change, rel.change)
+    dimnames(logLik.table) <- list(1:iterations, c("loglikelihood", "difference", "relative change"))
 
     ans <- list(estimates=est.table,
                 iterations=iterations,
@@ -331,6 +331,16 @@ coef.emRes <- coefficients.emRes <- function(object, ...){
     names(coef)[grep("A", names(coef))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
 
     coef
+}
+
+plot.emRes <- function(x, y, ...){
+
+    plot(x$loglikelihoods, type="l", xlab="Number of iterations", 
+         ylab="log likelihood", axes=F)
+    axis(1, at=1:length(x$loglikelihoods))
+    axis(2)
+    box()
+
 }
 
 
