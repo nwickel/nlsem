@@ -104,11 +104,11 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 # log likelihood function which will be optimized
 loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
     
+    mod.filled <- fill_model(model=model, parameters=parameters)
+
     k <- get_k(mod.filled$matrices$group1$Omega)
     quad <- quadrature(m, k)
     V <- quad$n
-
-    mod.filled <- fill_model(model=model, parameters=parameters)
 
     res <- 0
     for(node.num in 1:m) {
