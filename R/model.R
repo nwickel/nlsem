@@ -243,8 +243,9 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                                                num.x=num.x, num.y=num.y,
                                                num.groups=num.groups,
                                                w=w.matrix))
-    # TODO add par.names to info
 
+    # TODO add par.names to info for all groups
+    
     # class of model
     # TODO testing if there is no interaction should probably be different
     if (num.groups == 1) {
@@ -253,6 +254,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                  latent interaction (e.g. 'xi1:xi2'). For other models please
                  use lavaan or the like.")
         } else {
+            model$info$par.names <- as.character(specs$label[is.na(specs$group1)])
             class(model) <- "lms"
         }
     } else if (interaction == "") {
