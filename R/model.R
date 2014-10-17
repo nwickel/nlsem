@@ -167,7 +167,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         specs[,2:(num.groups+1)] <- constraints[,1:(num.groups)]
 
         # fill matrices
-        matrices <- fill_matrices(specs)
+        matrices <- fill_matrices(specs, num.x, num.y, num.xi, num.eta,
+                                  num.groups)
 
     } else if (constraints == "default"){
     # default constraints
@@ -196,15 +197,13 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 matrices[[g]]$Lambda.y[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
             }
             # Gamma
-            # TODO why not: matrices[[g]]$Gamma[1:num.eta,1:num.xi] <- NA
-            matrices[[g]]$Gamma[1:dim(matrices[[g]]$Gamma)[1],1:dim(matrices[[g]]$Gamma)[2]] <- NA
+            matrices[[g]]$Gamma[1:num.eta,1:num.xi] <- NA
             # Theta.d
             matrices[[g]]$Theta.d <- diag(NA, num.x)
             # Theta.e
             matrices[[g]]$Theta.e <- diag(NA, num.y)
             # Psi
-            # TODO why not: matrices[[g]]$Psi[1:num.xi,1:num.xi]
-            matrices[[g]]$Psi[1:dim(matrices[[g]]$Psi)[1],1:dim(matrices[[g]]$Psi)[2]] <- NA
+            matrices[[g]]$Psi[1:num.eta,1:num.eta] <- NA
             # A
             matrices[[g]]$A[1:dim(matrices[[g]]$A)[1],1:dim(matrices[[g]]$A)[2]] <- NA
             matrices[[g]]$A[upper.tri(matrices[[g]]$A)] <- 0
@@ -225,8 +224,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             }
             # alpha
             if (interc_lat){
-                # TODO why not: empty.model[[g]]$alpha[1:num.eta] <- NA
-                matrices[[g]]$alpha[1:dim(matrices[[g]]$alpha)[1],1:dim(matrices[[g]]$alpha)[2]] <- NA
+                matrices[[g]]$alpha[1:num.eta] <- NA
             }
             # put constraints in data frame
             specs[,g+1] <- unlist(matrices[[g]])
@@ -238,23 +236,32 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # group weights w
     w.matrix <- matrix(NA, nrow=num.groups, ncol=1)
 
+    # names of free parameters
+    # TODO same structure for lms? model$info$par.names$group1
+    if (num.groups == 1) {
+        par.names <- as.character(specs$label[is.na(specs$group1)])
+    } else {
+        # one par.names string for each model, also in default
+        par.names <- list()
+        for (g in seq_len(num.groups)) {
+            par.names[[g]] <- as.character(specs$label[is.na(specs[,g+1])])
+        }
+        names(par.names) <- paste0("group",1:num.groups)
+    }
+
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
                                                num.groups=num.groups,
-                                               w=w.matrix))
+                                               par.names=par.names, w=w.matrix))
 
-    # TODO add par.names to info for all groups
-    
     # class of model
-    # TODO testing if there is no interaction should probably be different
     if (num.groups == 1) {
         if (interaction == "") {
             stop("Model needs either more than one latent group or at least one
                  latent interaction (e.g. 'xi1:xi2'). For other models please
                  use lavaan or the like.")
         } else {
-            model$info$par.names <- as.character(specs$label[is.na(specs$group1)])
             class(model) <- "lms"
         }
     } else if (interaction == "") {
@@ -270,32 +277,23 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
 }
 
-fill_matrices <- function(dat){
+fill_matrices <- function(dat, num.x, num.y, num.xi, num.eta, num.groups){
     
     stopifnot(is.data.frame(dat))
 
-    # grep names
-    Lambda.x <- as.character(dat$label[grep("Lambda.x", dat$label)])
-    Lambda.y <- as.character(dat$label[grep("Lambda.y", dat$label)])
-    Gamma    <- as.character(dat$label[grep("Gamma", dat$label)])
-    Beta     <- as.character(dat$label[grep("Beta", dat$label)])
-    Theta.d  <- as.character(dat$label[grep("Theta.d", dat$label)])
-    Theta.e  <- as.character(dat$label[grep("Theta.e", dat$label)])
-    Psi      <- as.character(dat$label[grep("Psi", dat$label)])
-    A        <- as.character(dat$label[grep("A", dat$label)])
-    nu.x     <- as.character(dat$label[grep("nu.x", dat$label)])
-    nu.y     <- as.character(dat$label[grep("nu.y", dat$label)])
-    alpha    <- as.character(dat$label[grep("alpha", dat$label)])
-    tau      <- as.character(dat$label[grep("tau", dat$label)])
-    Omega    <- as.character(dat$label[grep("Omega", dat$label)])
-
-    # number of latent and indicator variables
-    # TODO could also be passed
-    num.x      <- length(nu.x)
-    num.y      <- length(nu.y)
-    num.xi     <- length(tau)
-    num.eta    <- length(alpha)
-    num.groups <- ncol(dat) - 1
+    Lambda.x <- paste0("Lambda.x", 1:(num.x*num.xi))
+    Lambda.y <- paste0("Lambda.y", 1:(num.y*num.eta))
+    Gamma    <- paste0("Gamma", 1:(num.xi*num.eta))
+    Beta     <- paste0("Beta", 1:(num.eta*num.eta))
+    Theta.d  <- paste0("Theta.d", 1:(num.x*num.x))
+    Theta.e  <- paste0("Theta.e", 1:(num.y*num.y))
+    Psi      <- paste0("Psi", 1:(num.eta*num.eta))
+    A        <- paste0("A", 1:(num.xi*num.xi))
+    nu.x     <- paste0("nu.x", 1:num.x)
+    nu.y     <- paste0("nu.y", 1:num.y)
+    alpha    <- paste0("alpha", 1:num.eta)
+    tau      <- paste0("tau", 1:num.xi)
+    Omega    <- paste0("Omega", 1:(num.xi*num.xi))
 
     # create matrices
     matrices <- list()
@@ -335,6 +333,7 @@ fill_matrices <- function(dat){
                               nu.y=nu.y.matrix, alpha=alpha.matrix,
                               tau=tau.matrix, Omega=Omega.matrix)
     }
+    names(matrices) <- paste0("group",1:num.groups)
     matrices
 }
 
@@ -367,7 +366,9 @@ fill_model <- function(model, parameters) {
     specs <- as.data.frame(model)
     specs[is.na(specs)] <- parameters
 
-    out_matrices <- fill_matrices(specs)
+    out_matrices <- fill_matrices(specs, model$info$num.x, model$info$num.y,
+                                  model$info$num.xi, model$info$num.eta,
+                                  model$info$num.groups)
     names(out_matrices) <- names(model$matrices)
 
     out <- list(matrices = out_matrices, info = model$info)
