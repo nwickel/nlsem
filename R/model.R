@@ -215,8 +215,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                 ind <- calc_interaction_matrix(interaction.s)
                 matrices[[g]]$Omega[ind] <- NA
             }
-            test_omega(matrices[[g]]$Omega)
             # check if Omega has row echelon form
+            test_omega(matrices[[g]]$Omega)
             # nu's
             if (interc_obs){
                 matrices[[g]]$nu.x[1:num.x] <- NA
@@ -281,19 +281,19 @@ fill_matrices <- function(dat, num.x, num.y, num.xi, num.eta, num.groups){
     
     stopifnot(is.data.frame(dat))
 
-    Lambda.x <- paste0("Lambda.x", 1:(num.x*num.xi))
-    Lambda.y <- paste0("Lambda.y", 1:(num.y*num.eta))
-    Gamma    <- paste0("Gamma", 1:(num.xi*num.eta))
-    Beta     <- paste0("Beta", 1:(num.eta*num.eta))
-    Theta.d  <- paste0("Theta.d", 1:(num.x*num.x))
-    Theta.e  <- paste0("Theta.e", 1:(num.y*num.y))
-    Psi      <- paste0("Psi", 1:(num.eta*num.eta))
-    A        <- paste0("A", 1:(num.xi*num.xi))
-    nu.x     <- paste0("nu.x", 1:num.x)
-    nu.y     <- paste0("nu.y", 1:num.y)
-    alpha    <- paste0("alpha", 1:num.eta)
-    tau      <- paste0("tau", 1:num.xi)
-    Omega    <- paste0("Omega", 1:(num.xi*num.xi))
+    Lambda.x <- as.character(dat$label[grep("Lambda.x", dat$label)])
+    Lambda.y <- as.character(dat$label[grep("Lambda.y", dat$label)])
+    Gamma    <- as.character(dat$label[grep("Gamma", dat$label)])
+    Beta     <- as.character(dat$label[grep("Beta", dat$label)])
+    Theta.d  <- as.character(dat$label[grep("Theta.d", dat$label)])
+    Theta.e  <- as.character(dat$label[grep("Theta.e", dat$label)])
+    Psi      <- as.character(dat$label[grep("Psi", dat$label)])
+    A        <- as.character(dat$label[grep("A", dat$label)])
+    nu.x     <- as.character(dat$label[grep("nu.x", dat$label)])
+    nu.y     <- as.character(dat$label[grep("nu.y", dat$label)])
+    alpha    <- as.character(dat$label[grep("alpha", dat$label)])
+    tau      <- as.character(dat$label[grep("tau", dat$label)])
+    Omega    <- as.character(dat$label[grep("Omega", dat$label)])
 
     # create matrices
     matrices <- list()
@@ -366,9 +366,11 @@ fill_model <- function(model, parameters) {
     specs <- as.data.frame(model)
     specs[is.na(specs)] <- parameters
 
-    out_matrices <- fill_matrices(specs, model$info$num.x, model$info$num.y,
-                                  model$info$num.xi, model$info$num.eta,
-                                  model$info$num.groups)
+    out_matrices <- fill_matrices(specs, num.x=model$info$num.x,
+                                  num.y=model$info$num.y,
+                                  num.xi=model$info$num.xi,
+                                  num.eta=model$info$num.eta,
+                                  num.groups=model$info$num.groups)
     names(out_matrices) <- names(model$matrices)
 
     out <- list(matrices = out_matrices, info = model$info)
