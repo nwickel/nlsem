@@ -112,7 +112,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         Lambda.x.matrix <- matrix(0, nrow=num.x, ncol=num.xi)
         Lambda.y.matrix <- matrix(0, nrow=num.y, ncol=num.eta)
         Gamma.matrix    <- matrix(0, nrow=num.eta, ncol=num.xi)
-        Beta.matrix     <- matrix(0, nrow=num.eta, ncol=num.eta)
+        Beta.matrix     <- diag(1, nrow=num.eta, ncol=num.eta)
         Theta.d.matrix  <- matrix(0, nrow=num.x, ncol=num.x)
         Theta.e.matrix  <- matrix(0, nrow=num.y, ncol=num.y)
         Psi.matrix      <- matrix(0, nrow=num.eta, ncol=num.eta)
