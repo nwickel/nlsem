@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Oct/14/2014, KN
+# last mod Oct/20/2014, KN
 
 grep_ind <- function(x){
     tryCatch({
@@ -47,14 +47,16 @@ sort_interaction_effects <- function(rows, cols){
 test_omega <- function(Omega){
     
     if (any(is.na(diag(Omega)))){
-        stop("Can't handle quadratic interaction effects (yet). See ?specify_sem for details.")
+        stop("Can't handle quadratic interaction effects (yet). See
+             ?specify_sem for details.")
     }
 
     if (any(is.na(Omega))){
 
         ind <- which(is.na(Omega), arr.ind=TRUE)
         dim <- nrow(Omega)
-        msg <- "Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details." 
+        msg <- "Interactions are not well-defined. Please change order of xi's.
+        See ?specify_sem for details." 
 
         if (nrow(ind) == 1){
             if (!is.na(Omega[1, dim]))
@@ -109,6 +111,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # create list of matrices for each group (therefore index g)
     matrices <- list()
     for (g in seq_len(num.groups)) {
+        # TODO initialize matrices with default??
         Lambda.x.matrix <- matrix(0, nrow=num.x, ncol=num.xi)
         Lambda.y.matrix <- matrix(0, nrow=num.y, ncol=num.eta)
         Gamma.matrix    <- matrix(0, nrow=num.eta, ncol=num.xi)
@@ -116,19 +119,19 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         Theta.d.matrix  <- matrix(0, nrow=num.x, ncol=num.x)
         Theta.e.matrix  <- matrix(0, nrow=num.y, ncol=num.y)
         Psi.matrix      <- matrix(0, nrow=num.eta, ncol=num.eta)
+        Phi.matrix      <- matrix(0, nrow=num.xi, num.xi)
         A.matrix        <- matrix(0, nrow=num.xi, ncol=num.xi)
         nu.x.matrix     <- matrix(0, nrow=num.x, ncol=1)
         nu.y.matrix     <- matrix(0, nrow=num.y, ncol=1)
         alpha.matrix    <- matrix(0, nrow=num.eta, ncol=1)
         tau.matrix      <- matrix(0, nrow=num.xi, ncol=1)
         Omega.matrix    <- matrix(0, nrow=num.xi, ncol=num.xi)
-        temp <- list(Lambda.x=Lambda.x.matrix, Lambda.y=Lambda.y.matrix,
+        matrices[[g]] <- list(Lambda.x=Lambda.x.matrix, Lambda.y=Lambda.y.matrix,
                      Gamma=Gamma.matrix, Beta=Beta.matrix,
                      Theta.d=Theta.d.matrix, Theta.e=Theta.e.matrix,
-                     Psi=Psi.matrix, A=A.matrix, nu.x=nu.x.matrix,
-                     nu.y=nu.y.matrix, alpha=alpha.matrix, tau=tau.matrix,
-                     Omega=Omega.matrix)
-        matrices[[g]] <- temp
+                     Psi=Psi.matrix, Phi=Phi.matrix, A=A.matrix,
+                     nu.x=nu.x.matrix, nu.y=nu.y.matrix, alpha=alpha.matrix,
+                     tau=tau.matrix, Omega=Omega.matrix)
     }
     names(matrices) <- paste0("group",1:num.groups)
 
@@ -138,10 +141,10 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             1:(num.y*num.eta)), paste0("Gamma", 1:(num.xi*num.eta)),
             paste0("Beta", 1:(num.eta*num.eta)), paste0("Theta.d",
             1:(num.x*num.x)), paste0("Theta.e", 1:(num.y*num.y)),
-            paste0("Psi", 1:(num.eta*num.eta)), paste0("A",
-            1:(num.xi*num.xi)), paste0("nu.x", 1:num.x), paste0("nu.y",
-            1:num.y), paste0("alpha", 1:num.eta), paste0("tau", 1:num.xi),
-            paste0("Omega", 1:(num.xi*num.xi)))
+            paste0("Psi", 1:(num.eta*num.eta)), paste0("Phi", 1:(num.xi*num.xi)),
+            paste0("A", 1:(num.xi*num.xi)), paste0("nu.x", 1:num.x),
+            paste0("nu.y", 1:num.y), paste0("alpha", 1:num.eta),
+            paste0("tau", 1:num.xi), paste0("Omega", 1:(num.xi*num.xi)))
     )
     for (g in seq_len(num.groups)) {
         ustart.temp <- data.frame(ustart = 0)
@@ -174,13 +177,20 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # default constraints
 
         xi.s <- unlist(strsplit(xi, ","))
+        if (length(xi.s) != num.xi) {
+            stop("Number of xi's and assignation of x's to xi's does not match.
+                 See ?specify_sem.")
+        }
         xi.ind <- list()
-        # TODO Test if length(xi.s) == num.xi
         for (i in seq_len(num.xi)) xi.ind[[i]] <- grep_ind(xi.s[i])
         # TODO Use sapply instead of loop!
 
         #eta.ind <- grep_ind(eta)
         eta.s <- unlist(strsplit(eta, ","))
+        if (length(eta.s) != num.eta) {
+            stop("Number of eta's and assignation of y's to eta's does not match.
+                 See ?specify_sem.")
+        }
         eta.ind <- list()
         for (i in seq_len(num.eta)) eta.ind[[i]] <- grep_ind(eta.s[i])
         # TODO Use sapply instead of loop!
@@ -204,6 +214,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             matrices[[g]]$Theta.e <- diag(NA, num.y)
             # Psi
             matrices[[g]]$Psi[1:num.eta,1:num.eta] <- NA
+            # Phi
+            matrices[[g]]$Phi[1:num.xi,1:num.xi] <- NA
             # A
             matrices[[g]]$A[1:dim(matrices[[g]]$A)[1],1:dim(matrices[[g]]$A)[2]] <- NA
             matrices[[g]]$A[upper.tri(matrices[[g]]$A)] <- 0
@@ -312,6 +324,8 @@ fill_matrices <- function(dat, num.x, num.y, num.xi, num.eta, num.groups){
                                   nrow=num.y, ncol=num.y)
         Psi.matrix      <- matrix(dat[dat$label %in% Psi, paste0("group",g)],
                                   nrow=num.eta, ncol=num.eta)
+        Phi.matrix      <- matrix(dat[dat$label %in% Phi, paste0("group",g)],
+                                  nrow=num.xi, ncol=num.xi)
         A.matrix        <- matrix(dat[dat$label %in% A, paste0("group",g)],
                                   nrow=num.xi, ncol=num.xi)
         nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("group",g)],
@@ -329,7 +343,7 @@ fill_matrices <- function(dat, num.x, num.y, num.xi, num.eta, num.groups){
                               Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                               Beta=Beta.matrix, Theta.d=Theta.d.matrix,
                               Theta.e=Theta.e.matrix, Psi=Psi.matrix,
-                              A=A.matrix, nu.x=nu.x.matrix,
+                              Phi=Phi.matrix, A=A.matrix, nu.x=nu.x.matrix,
                               nu.y=nu.y.matrix, alpha=alpha.matrix,
                               tau=tau.matrix, Omega=Omega.matrix)
     }

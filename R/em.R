@@ -15,9 +15,8 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     par.new  <- start
     par.old  <- 0
     
-    tryCatch({
-    while(abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
-    #while(sum((par.old - par.new)^2) > threshold) { # as long as no convergence reached
+    while (abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
+    #while(sum((par.old - par.new)^2) > threshold) {
         if(ll.new - ll.old > 0.001 && num.iter > 3) {
             warning("Likelihood should be decreasing")
         }
@@ -77,9 +76,6 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
            info=model$info[1:4])
   
     class(out) <- "emRes"
-    }, error=function(e){out <- list(par=par.new,
-                         objective=m.step$objective, loglikelihoods=-ll.ret)})
-                            
   
     out
 }
