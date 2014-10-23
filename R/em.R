@@ -15,7 +15,27 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     par.new  <- start
     par.old  <- 0
     
-    tryCatch({
+    # when function aborts
+    on.exit({
+        cat("-----------------------------------\n")
+        cat("Computing Hessian \n")
+        cat("-----------------------------------\n")
+
+        final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
+                           Hessian=TRUE, m=m, ...)
+
+        names(final$par) <- model$info$par.names
+    
+        out <- list(par=final$par, objective=-final$objective,
+               convergence_final_step=final$convergence,
+               message_final_step=final$message, Hessian=final$hessian$Hessian,
+               gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
+               info=model$info[1:4])
+  
+        class(out) <- "emRes"
+        return(out)}
+    )
+    
     while(abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
     #while(sum((par.old - par.new)^2) > threshold) { # as long as no convergence reached
         if(ll.new - ll.old > 0.001 && num.iter > 3) {
@@ -77,9 +97,6 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
            info=model$info[1:4])
   
     class(out) <- "emRes"
-    }, error=function(e){out <- list(par=par.new,
-                         objective=m.step$objective, loglikelihoods=-ll.ret)})
-                            
   
     out
 }
