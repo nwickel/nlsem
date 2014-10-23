@@ -20,6 +20,15 @@ mu_stemm <- function(model, group) {
 }
 
 sigma_stemm <- function(model, group) {
+    stopifnot(class(model) == "stemmFilled")
+
+    matrices <- model$matrices[[group]]
+    
+    Ly.Binv <- matrices$Lambda.y %*% solve(matrices$Beta)
+
+    s11 <- Ly.Binv %*% (matrices$Gamma %*% matrices$Phi %*% t(matrices$Gamma) +
+                        matrices$Psi) %*% t(Ly.Binv) + matrices$Theta.e
+    s21 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Gamma) %*% t(Ly.Binv)
 
 }
 
