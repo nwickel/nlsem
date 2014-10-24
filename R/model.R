@@ -87,6 +87,15 @@ test_omega <- function(Omega){
     }
 }
 
+# x.s <- strsplit(x, ";")[[1]]        # in function or beforehand?
+
+rel_lat <- function(x){
+    
+    x.s <- strsplit(x, ">")
+    gsub("^.*(eta).*eta.*$", "\\1", x.s)
+
+}
+
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", interc_obs=FALSE,
                           interc_lat=FALSE){
