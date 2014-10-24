@@ -174,19 +174,19 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
     # Gamma
     # TODO specification for stemm
-    Gamma    <- matrix(NA, nrow=num.eta, ncol=num.xi)
+    Gamma <- matrix(NA, nrow=num.eta, ncol=num.xi)
     # Beta
-    Beta     <- diag(1, nrow=num.eta)
+    Beta <- diag(1, nrow=num.eta)
     # Theta.d
-    Theta.d  <- diag(NA, nrow=num.x)
+    Theta.d <- diag(NA, nrow=num.x)
     # Theta.e
     Theta.e <- diag(NA, nrow=num.y)
     # Psi
-    Psi     <- matrix(NA, nrow=num.eta, ncol=num.eta)
+    Psi <- matrix(NA, nrow=num.eta, ncol=num.eta)
     # Phi
     Phi <- matrix(NA, nrow=num.xi, num.xi)
     # A
-    A        <- matrix(NA, nrow=num.xi, ncol=num.xi)
+    A <- matrix(NA, nrow=num.xi, ncol=num.xi)
     A[upper.tri(A)] <- 0
     # nu's
     if (interc_obs){
@@ -204,9 +204,9 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
     # tau
     # TODO specify default constraints
-    tau      <- matrix(0, nrow=num.xi, ncol=1)
+    tau <- matrix(0, nrow=num.xi, ncol=1)
     # Omega
-    Omega    <- matrix(0, nrow=num.xi, ncol=num.xi)
+    Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
     if (interaction == "all"){
         Omega[upper.tri(Omega)] <- NA
     } else if (interaction != "") {
@@ -220,11 +220,24 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # make a list of the matrices for each group
     matrices <- list()
     for (g in seq_len(num.groups)) {
-    matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
-                          Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
-                          Theta.e=Theta.e, Psi=Psi, Phi=Phi, A=A,
-                          nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
-                          Omega=Omega)
+        if (model_class == "lms") {
+            matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
+                                  Gamma=Gamma, Theta.d=Theta.d,
+                                  Theta.e=Theta.e, Psi=Psi, A=A,
+                                  nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
+                                  Omega=Omega)
+        } else if (model_class == "stemm") {
+            matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
+                                  Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
+                                  Theta.e=Theta.e, Psi=Psi, Phi=Phi,
+                                  nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau)
+        } else {
+            matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
+                                  Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
+                                  Theta.e=Theta.e, Psi=Psi, Phi=Phi, A=A,
+                                  nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
+                                  Omega=Omega)
+        }
     }
     names(matrices) <- paste0("group",1:num.groups)
 
@@ -262,7 +275,7 @@ get_parnames <- function(model) {
 }
 
 fill_matrices <- function(dat){
-    
+
     stopifnot(is.data.frame(dat))
 
     Lambda.x <- as.character(dat$label[grep("Lambda.x", dat$label)])
@@ -272,6 +285,7 @@ fill_matrices <- function(dat){
     Theta.d  <- as.character(dat$label[grep("Theta.d", dat$label)])
     Theta.e  <- as.character(dat$label[grep("Theta.e", dat$label)])
     Psi      <- as.character(dat$label[grep("Psi", dat$label)])
+    Phi      <- as.character(dat$label[grep("Phi", dat$label)])
     A        <- as.character(dat$label[grep("A", dat$label)])
     nu.x     <- as.character(dat$label[grep("nu.x", dat$label)])
     nu.y     <- as.character(dat$label[grep("nu.y", dat$label)])
@@ -349,52 +363,67 @@ count_free_parameters <- function(model) {
     res
     }
 
-fill_model <- function(model, parameters) {
+fill_model <- function(model, parameters, version="new") {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm"
               || class(model) == "nsemm")
 
     stopifnot(count_free_parameters(model) == length(parameters))
 
+    if (version == "new") {
+        matrices <- model$matrices
 
-    for (g in seq_len(model$info$num.groups)) {
-        par.names <- model$info$par.names[[g]]
-        matrix.names <- unlist(lapply(par.names, function(x){
-                                      gsub("([0-9]*$)", "", x)}))
-        index <- unlist(lapply(par.names, function(x){
-                               res <- gsub("(^.*[A-Za-z])", "", x)
-                               if (res == "") res <- 1
-                               as.numeric(res) }))
-        # data <- data.frame(matrix.names=matrix.names, index=index,
-        #                    parameters=parameters)
-        for (i in seq_along(matrix.names)) {
-            for (j in seq_along(matrices)) {
-                if (names(matrices[j]) == matrix.names[i])
-                    matrices[[j]][index[i]] <- parameters[i]
+        for (g in seq_len(model$info$num.groups)) {
+            if (class(model) == "lms") {
+                par.names <- model$info$par.names
+            } else {
+                par.names <- model$info$par.names[[g]]
             }
+            # get names of matrices with free parameters
+            matrix.names <- unlist(lapply(par.names, function(x){
+                                          gsub("([0-9]*$)", "", x)}))
+            # get indices of free parameters within the matrices
+            index <- unlist(lapply(par.names, function(x){
+                                   res <- gsub("(^.*[A-Za-z])", "", x)
+                                   if (res == "") res <- 1
+                                   as.numeric(res) }))
+            matrices.g <- matrices[[g]] # to avoid multiple [[]]
+
+            num.filled.parameters <- 0
+            for (i in seq_along(matrix.names)) {
+                for (j in seq_along(matrices.g)) {
+                    if (names(matrices.g[j]) == matrix.names[i]){
+                        matrices.g[[j]][index[i]] <- parameters[i]
+                        num.filled.parameters <- num.filled.parameters + 1
+                    }
+                }
+            }
+            # cut parameters
+            parameters <- parameters[-(1:num.filled.parameters)]
+            matrices[[g]] <- matrices.g
         }
-        # TODO cut parameters or adjust index for parameters to group
-    }
-
-
+        out <- list(matrices=matrices, info=model$info)
+        switch(class(model),
+                     "lms" = {class(out) <- "lmsFilled"},
+                     "stemm" = {class(out) <- "stemmFilled"},
+                     "nsemm" = {class(out) <- "nsemmFilled"})
+        out
+    } else {
     # old fill_model
-    # specs <- as.data.frame(model)
-    # specs[is.na(specs)] <- parameters
+        specs <- as.data.frame(model)
+        specs[is.na(specs)] <- parameters
 
-    # out_matrices <- fill_matrices(specs, num.x=model$info$num.x,
-    #                               num.y=model$info$num.y,
-    #                               num.xi=model$info$num.xi,
-    #                               num.eta=model$info$num.eta,
-    #                               num.groups=model$info$num.groups)
-    # names(out_matrices) <- names(model$matrices)
+        out_matrices <- fill_matrices(specs)
+        names(out_matrices) <- names(model$matrices)
 
-    # out <- list(matrices = out_matrices, info = model$info)
+        out <- list(matrices = out_matrices, info = model$info)
 
-    # switch(class(model),
-    #              "lms" = {class(out) <- "lmsFilled"},
-    #              "stemm" = {class(out) <- "stemmFilled"},
-    #              "nsemm" = {class(out) <- "nsemmFilled"})
-    # out
+        switch(class(model),
+                     "lms" = {class(out) <- "lmsFilled"},
+                     "stemm" = {class(out) <- "stemmFilled"},
+                     "nsemm" = {class(out) <- "nsemmFilled"})
+        out
+    }
 }
 
 ## TODO Want fill_matrices to work with a data frame created with lavaanify()...

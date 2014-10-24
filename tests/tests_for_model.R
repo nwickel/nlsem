@@ -6,8 +6,8 @@
 # ============
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
-                         interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE)
+                         interaction="xi1:xi2",
+                         interc_obs=FALSE, interc_lat=FALSE)
 # OK runs without problem
 as.data.frame(lms_model)
 # OK runs without problem
@@ -18,7 +18,7 @@ as.data.frame(lms_model)
 # ----------------------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x4,x5-x8", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # TODO subscript out of bounds
 
@@ -26,7 +26,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # ----------------------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x2,x3-x4", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # TODO this runs, but should throw an error (?)
 
@@ -34,7 +34,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # -----------------------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y5", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # TODO subscript out of bounds
 
@@ -42,7 +42,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # -----------------------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y2", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # TODO this runs, but should throw an error (?)
 
@@ -52,7 +52,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # --------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=1, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK error: Interaction effects contain more xi's than defined.
 
@@ -60,13 +60,13 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=1, num.eta=1,
 # ---------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x-x4", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK Wrong input for specifying exogenous or endogonous latent variables (xi or
 # etas). See ?specify_sem.
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1x2-x3x4", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # TODO this runs, but should throw an error
 
@@ -74,20 +74,20 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # ---------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6",
             eta="y1-y3,y4-y6", num.groups=1, interaction="xi1:xi2",
-            constraints="default", interc_obs=FALSE, interc_lat=FALSE)
+            interc_obs=FALSE, interc_lat=FALSE)
 # TODO this should throw an error
 
 # nonsense input for eta
 # ----------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK Wrong input for specifying exogenous or endogonous latent variables (xi or
 # etas). See ?specify_sem.
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1y3-y4", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 # TODO subscript out of bounds
 
@@ -97,7 +97,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # -----
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="all", constraints="default",
+                         interaction="all",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK this runs
 
@@ -105,7 +105,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # --
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="", constraints="default",
+                         interaction="",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK Model needs either more than one latent group or at least one latent
 # interaction (e.g. 'xi1:xi2'). For other models please use lavaan or the
@@ -115,7 +115,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # --------------------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi2:xi3", constraints="default",
+                         interaction="xi2:xi3",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK Interaction effects contain more xi's than defined.
 
@@ -123,69 +123,29 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # --------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="x3:x4", constraints="default",
+                         interaction="x3:x4",
                          interc_obs=FALSE, interc_lat=FALSE)
 # OK Wrong input for interaction. See ?specify_sem.
 
-# ordinary lms with (wrong) input for constraints
-# =============================================
-# nonsense string
-# ---------------
-lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
-                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="def",
-                         interc_obs=FALSE, interc_lat=FALSE)
-# OK constraints need to be a data.frame or set to 'default'.
-
-# data.frame
-# ----------
-constraints <- data.frame(group1 = rep(0, 84))
-lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
-                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints=constraints,
-                         interc_obs=FALSE, interc_lat=FALSE, dataframe=TRUE)
-# OK runs without a problem
-
-# data.frame with wrong number of columns
-# ---------------------------------------
-constraints <- data.frame(group1 = rep(0, 84), group2 = rep(NA, 84))
-lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
-                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints=constraints,
-                         interc_obs=FALSE, interc_lat=FALSE)
-# OK Data frame for constraints does not match number of latent groups. See
-# ?specify_sem.
-
-# data.frame with wrong number of row
-# -----------------------------------
-constraints <- data.frame(rep(0, 50))
-lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
-                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints=constraints,
-                         interc_obs=FALSE, interc_lat=FALSE)
-rm(constraints)
-# OK Data frame for constraints does not have correct number of rows. See
-# correct number above or see ?specify_sem.
-
-# ordinary lms with nonsense input for interc_obs, interc_obs and dataframe
+# ordinary lms with nonsense input for interc_obs, interc_obs
 # =========================================================================
 # (should be boolean)
 # ===================
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6",
             eta="y1-y3", num.groups=1, interaction="xi1:xi2",
-            constraints="default", interc_obs="bla", interc_lat=FALSE)
+            interc_obs="bla", interc_lat=FALSE)
 # Error in if (interc_obs) { : argument is not interpretable as logical
 
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=TRUE, interc_lat="bla")
 # Error in if (interc_lat) { : argument is not interpretable as logical
 
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
-                         interc_obs=FALSE, interc_lat=FALSE, dataframe="bla")
+                         interaction="xi1:xi2",
+                         interc_obs=FALSE, interc_lat=FALSE)
 # Error in if (dataframe) { : argument is not interpretable as logical
 # TODO Errors are quite informative, so just leave them like that
 
@@ -196,8 +156,8 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # -----------------------------
 stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups="three",
-                         interaction="xi1:xi2", constraints="default",
-                         interc_obs=FALSE, interc_lat=FALSE, dataframe=FALSE)
+                         interaction="xi1:xi2",
+                         interc_obs=FALSE, interc_lat=FALSE)
 # OK Number of variables or groups must be numeric.
 
 
@@ -209,7 +169,7 @@ stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # ---
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=1,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 class(lms_model)
 count_free_parameters(lms_model)
@@ -222,7 +182,7 @@ rm(parameters, lms_model)
 # -----
 stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=3,
-                         interaction="", constraints="default",
+                         interaction="",
                          interc_obs=FALSE, interc_lat=FALSE)
 class(stemm_model)
 count_free_parameters(stemm_model)
@@ -235,7 +195,7 @@ rm(parameters, stemm_model)
 # -----
 nsemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=3,
-                         interaction="xi1:xi2", constraints="default",
+                         interaction="xi1:xi2",
                          interc_obs=FALSE, interc_lat=FALSE)
 class(nsemm_model)
 count_free_parameters(nsemm_model)
@@ -259,4 +219,4 @@ interc_lat <- TRUE
 interaction <- "all"
 
 specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups, interaction,
-            constraints="default", interc_obs, interc_lat)
+            interc_obs, interc_lat)
