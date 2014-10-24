@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Oct/20/2014, KN
+# last mod Oct/23/2014, KN
 
 grep_ind <- function(x){
     tryCatch({
@@ -227,6 +227,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     test_omega(Omega)
 
     # make a list of the matrices for each group
+    matrices <- list()
     for (g in seq_len(num.groups)) {
     matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                           Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
@@ -234,6 +235,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                           Omega=Omega)
     }
+    names(matrices) <- paste0("group",1:num.groups)
 
     # group weights w
     w <- matrix(NA, nrow=num.groups, ncol=1)
@@ -253,12 +255,11 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
 
     class(model) <- model_class
-
     model
 }
 
 get_parnames <- function(model) {
-    # TODO if this function is not needed in fill_matrices, mode into
+    # TODO if this function is not needed in fill_matrices, move into
     # specify_sem
     par.names <- list()
     for (g in seq_len(model$info$num.groups)) {
@@ -269,7 +270,7 @@ get_parnames <- function(model) {
     par.names
 }
 
-fill_matrices <- function(dat, num.x, num.y, num.xi, num.eta, num.groups){
+fill_matrices <- function(dat){
     
     stopifnot(is.data.frame(dat))
 
@@ -286,6 +287,13 @@ fill_matrices <- function(dat, num.x, num.y, num.xi, num.eta, num.groups){
     alpha    <- as.character(dat$label[grep("alpha", dat$label)])
     tau      <- as.character(dat$label[grep("tau", dat$label)])
     Omega    <- as.character(dat$label[grep("Omega", dat$label)])
+
+    # number of latent and indicator variables and groups
+    num.x      <- length(nu.x)
+    num.y      <- length(nu.y)
+    num.xi     <- length(tau)
+    num.eta    <- length(alpha)
+    num.groups <- ncol(dat) - 1
 
     # create matrices
     matrices <- list()
@@ -346,7 +354,7 @@ count_free_parameters <- function(model) {
     # w is not counted
     res <- 0
     for (g in seq_len(model$info$num.groups))
-    res <- res + sum(unlist(lapply(model$matrices[[g]], is.na)))
+        res <- res + sum(unlist(lapply(model$matrices[[g]], is.na)))
     res
     }
 
@@ -357,23 +365,45 @@ fill_model <- function(model, parameters) {
 
     stopifnot(count_free_parameters(model) == length(parameters))
 
-    specs <- as.data.frame(model)
-    specs[is.na(specs)] <- parameters
 
-    out_matrices <- fill_matrices(specs, num.x=model$info$num.x,
-                                  num.y=model$info$num.y,
-                                  num.xi=model$info$num.xi,
-                                  num.eta=model$info$num.eta,
-                                  num.groups=model$info$num.groups)
-    names(out_matrices) <- names(model$matrices)
+    for (g in seq_len(model$info$num.groups)) {
+        par.names <- model$info$par.names[[g]]
+        matrix.names <- unlist(lapply(par.names, function(x){
+                                      gsub("([0-9]*$)", "", x)}))
+        index <- unlist(lapply(par.names, function(x){
+                               res <- gsub("(^.*[A-Za-z])", "", x)
+                               if (res == "") res <- 1
+                               as.numeric(res) }))
+        # data <- data.frame(matrix.names=matrix.names, index=index,
+        #                    parameters=parameters)
+        for (i in seq_along(matrix.names)) {
+            for (j in seq_along(matrices)) {
+                if (names(matrices[j]) == matrix.names[i])
+                    matrices[[j]][index[i]] <- parameters[i]
+            }
+        }
+        # TODO cut parameters or adjust index for parameters to group
+    }
 
-    out <- list(matrices = out_matrices, info = model$info)
 
-    switch(class(model),
-                 "lms" = {class(out) <- "lmsFilled"},
-                 "stemm" = {class(out) <- "stemmFilled"},
-                 "nsemm" = {class(out) <- "nsemmFilled"})
-    out
+    # old fill_model
+    # specs <- as.data.frame(model)
+    # specs[is.na(specs)] <- parameters
+
+    # out_matrices <- fill_matrices(specs, num.x=model$info$num.x,
+    #                               num.y=model$info$num.y,
+    #                               num.xi=model$info$num.xi,
+    #                               num.eta=model$info$num.eta,
+    #                               num.groups=model$info$num.groups)
+    # names(out_matrices) <- names(model$matrices)
+
+    # out <- list(matrices = out_matrices, info = model$info)
+
+    # switch(class(model),
+    #              "lms" = {class(out) <- "lmsFilled"},
+    #              "stemm" = {class(out) <- "stemmFilled"},
+    #              "nsemm" = {class(out) <- "nsemmFilled"})
+    # out
 }
 
 ## TODO Want fill_matrices to work with a data frame created with lavaanify()...
