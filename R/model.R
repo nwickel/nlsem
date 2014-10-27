@@ -108,26 +108,10 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         }
     }
 
-    # create data frame with variable names and one column for each group
-    # specs <- data.frame(
-    #     label = c(paste0("Lambda.x", 1:(num.x*num.xi)), paste0("Lambda.y",
-    #         1:(num.y*num.eta)), paste0("Gamma", 1:(num.xi*num.eta)),
-    #         paste0("Beta", 1:(num.eta*num.eta)), paste0("Theta.d",
-    #         1:(num.x*num.x)), paste0("Theta.e", 1:(num.y*num.y)),
-    #         paste0("Psi", 1:(num.eta*num.eta)), paste0("Phi", 1:(num.xi*num.xi)),
-    #         paste0("A", 1:(num.xi*num.xi)), paste0("nu.x", 1:num.x),
-    #         paste0("nu.y", 1:num.y), paste0("alpha", 1:num.eta),
-    #         paste0("tau", 1:num.xi), paste0("Omega", 1:(num.xi*num.xi)))
-    # )
-    # for (g in seq_len(num.groups)) {
-    #     ustart.temp <- data.frame(ustart = 0)
-    #     names(ustart.temp) <- paste0("group", g)
-    #     specs <- cbind(specs, ustart.temp)
-    # }
-
     # class of model
     if (num.groups == 1) {
         if (interaction == "") {
+            # TODO should still work for stemm
             stop("Model needs either more than one latent group or at least one
                  latent interaction (e.g. 'xi1:xi2'). For other models please
                  use lavaan or the like.")
@@ -278,6 +262,8 @@ fill_matrices <- function(dat){
 
     stopifnot(is.data.frame(dat))
 
+    # TODO fit output to model class
+
     Lambda.x <- as.character(dat$label[grep("Lambda.x", dat$label)])
     Lambda.y <- as.character(dat$label[grep("Lambda.y", dat$label)])
     Gamma    <- as.character(dat$label[grep("Gamma", dat$label)])
@@ -345,14 +331,14 @@ fill_matrices <- function(dat){
 }
 
 as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
-    specs <- data.frame(
+    data <- data.frame(
         label = names(unlist(object$matrices$group1)))
     for (g in seq_len(length(object$matrices))) {
         temp <- data.frame(unlist(object$matrices[[g]], use.names=FALSE))
         names(temp) <- paste0("group", g)
-        specs <- cbind(specs, temp)
+        data <- cbind(data, temp)
     }
-    specs
+    data
 }
 
 count_free_parameters <- function(model) {
@@ -388,8 +374,8 @@ fill_model <- function(model, parameters, version="new") {
                                    if (res == "") res <- 1
                                    as.numeric(res) }))
             matrices.g <- matrices[[g]] # to avoid multiple [[]]
-
             num.filled.parameters <- 0
+
             for (i in seq_along(matrix.names)) {
                 for (j in seq_along(matrices.g)) {
                     if (names(matrices.g[j]) == matrix.names[i]){
@@ -409,7 +395,7 @@ fill_model <- function(model, parameters, version="new") {
                      "nsemm" = {class(out) <- "nsemmFilled"})
         out
     } else {
-    # old fill_model
+    # old fill_model (still here because it's slightly faster than new one)
         specs <- as.data.frame(model)
         specs[is.na(specs)] <- parameters
 
