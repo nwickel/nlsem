@@ -356,60 +356,34 @@ fill_model <- function(model, parameters, version="new") {
 
     stopifnot(count_free_parameters(model) == length(parameters))
 
-    if (version == "new") {
-        matrices <- model$matrices
+    matrices <- model$matrices
 
-        for (g in seq_len(model$info$num.groups)) {
-            if (class(model) == "lms") {
-                par.names <- model$info$par.names
-            } else {
-                par.names <- model$info$par.names[[g]]
-            }
-            # get names of matrices with free parameters
-            matrix.names <- unlist(lapply(par.names, function(x){
-                                          gsub("([0-9]*$)", "", x)}))
-            # get indices of free parameters within the matrices
-            index <- unlist(lapply(par.names, function(x){
-                                   res <- gsub("(^.*[A-Za-z])", "", x)
-                                   if (res == "") res <- 1
-                                   as.numeric(res) }))
-            matrices.g <- matrices[[g]] # to avoid multiple [[]]
-            num.filled.parameters <- 0
-
-            for (i in seq_along(matrix.names)) {
-                for (j in seq_along(matrices.g)) {
-                    if (names(matrices.g[j]) == matrix.names[i]){
-                        matrices.g[[j]][index[i]] <- parameters[i]
-                        num.filled.parameters <- num.filled.parameters + 1
-                    }
-                }
-            }
-            # cut parameters
-            parameters <- parameters[-(1:num.filled.parameters)]
-            matrices[[g]] <- matrices.g
+    for (g in seq_len(model$info$num.groups)) {
+        if (class(model) == "lms") {
+            par.names <- model$info$par.names
+        } else {
+            par.names <- model$info$par.names[[g]]
         }
-        out <- list(matrices=matrices, info=model$info)
-        switch(class(model),
-                     "lms" = {class(out) <- "lmsFilled"},
-                     "stemm" = {class(out) <- "stemmFilled"},
-                     "nsemm" = {class(out) <- "nsemmFilled"})
-        out
-    } else {
-    # old fill_model (still here because it's slightly faster than new one)
-        specs <- as.data.frame(model)
-        specs[is.na(specs)] <- parameters
+        matrices.g <- matrices[[g]] # to avoid multiple [[]]
 
-        out_matrices <- fill_matrices(specs)
-        names(out_matrices) <- names(model$matrices)
-
-        out <- list(matrices = out_matrices, info = model$info)
-
-        switch(class(model),
-                     "lms" = {class(out) <- "lmsFilled"},
-                     "stemm" = {class(out) <- "stemmFilled"},
-                     "nsemm" = {class(out) <- "nsemmFilled"})
-        out
+        for (j in seq_along(matrices.g)) {
+            matrix.j <- matrices.g[[j]]
+            # number ob NA's in matrix
+            num.nas <- length(matrix.j[is.na(matrix.j)])
+            if (num.nas > 0) {
+                matrix.j[is.na(matrix.j)] <- parameters[1:num.nas]
+                parameters <- parameters[-(1:num.nas)]
+                matrices.g[[j]] <- matrix.j
+            }
+        }
+        matrices[[g]] <- matrices.g
     }
+    out <- list(matrices=matrices, info=model$info)
+    switch(class(model),
+                 "lms" = {class(out) <- "lmsFilled"},
+                 "stemm" = {class(out) <- "stemmFilled"},
+                 "nsemm" = {class(out) <- "nsemmFilled"})
+    out
 }
 
 ## TODO Want fill_matrices to work with a data frame created with lavaanify()...
