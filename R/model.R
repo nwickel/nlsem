@@ -87,6 +87,24 @@ test_omega <- function(Omega){
     }
 }
 
+get_model_class <- function(num.groups, interaction) {
+    if (num.groups == 1) {
+            if (interaction == "") {
+                # TODO should still work for stemm
+                stop("Model needs either more than one latent group or at least one
+                     latent interaction (e.g. 'xi1:xi2'). For other models please
+                     use lavaan or the like.")
+            } else {
+                model_class <- "lms"
+            }
+        } else if (interaction == "") {
+            model_class <- "stemm"
+        } else {
+            model_class <- "nsemm"
+        }
+    model_class
+}
+
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", interc_obs=FALSE,
                           interc_lat=FALSE){
@@ -109,20 +127,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
 
     # class of model
-    if (num.groups == 1) {
-        if (interaction == "") {
-            # TODO should still work for stemm
-            stop("Model needs either more than one latent group or at least one
-                 latent interaction (e.g. 'xi1:xi2'). For other models please
-                 use lavaan or the like.")
-        } else {
-            model_class <- "lms"
-        }
-    } else if (interaction == "") {
-        model_class <- "stemm"
-    } else {
-        model_class <- "nsemm"
-    }
+    model_class <- get_model_class(num.groups, interaction)
 
     xi.s <- unlist(strsplit(xi, ","))
     if (length(xi.s) != num.xi) {
@@ -226,7 +231,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     names(matrices) <- paste0("group",1:num.groups)
 
     # group weights w
-    w <- matrix(NA, nrow=num.groups, ncol=1)
+    w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
 
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
@@ -258,7 +263,8 @@ get_parnames <- function(model) {
     par.names
 }
 
-fill_matrices <- function(dat){
+fill_matrices <- function(dat, model){
+    # TODO model is input here so "info" is not lost. Better solution required.
 
     stopifnot(is.data.frame(dat))
 
@@ -280,11 +286,16 @@ fill_matrices <- function(dat){
     Omega    <- as.character(dat$label[grep("Omega", dat$label)])
 
     # number of latent and indicator variables and groups
-    num.x      <- length(nu.x)
-    num.y      <- length(nu.y)
-    num.xi     <- length(tau)
-    num.eta    <- length(alpha)
-    num.groups <- ncol(dat) - 1
+    # num.x      <- length(nu.x)
+    # num.y      <- length(nu.y)
+    # num.xi     <- length(tau)
+    # num.eta    <- length(alpha)
+    # num.groups <- ncol(dat) - 1
+    num.x <- model$info$num.x
+    num.y <- model$info$num.y
+    num.xi <- model$info$num.xi
+    num.eta <- model$info$num.eta
+    num.groups <- model$info$num.groups
 
     # create matrices
     matrices <- list()
@@ -327,7 +338,12 @@ fill_matrices <- function(dat){
                               tau=tau.matrix, Omega=Omega.matrix)
     }
     names(matrices) <- paste0("group",1:num.groups)
-    matrices
+
+    model.new <- list(matrices=matrices, info=model$info)
+    model.new$info$par.names <- get_parnames(model) # TODO perhaps different for lms
+
+    class(model.new) <- class(model) # TODO this must not be the case!
+    model.new
 }
 
 as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
