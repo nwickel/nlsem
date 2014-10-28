@@ -268,8 +268,6 @@ fill_matrices <- function(dat, model){
 
     stopifnot(is.data.frame(dat))
 
-    # TODO fit output to model class
-
     Lambda.x <- as.character(dat$label[grep("Lambda.x", dat$label)])
     Lambda.y <- as.character(dat$label[grep("Lambda.y", dat$label)])
     Gamma    <- as.character(dat$label[grep("Gamma", dat$label)])
@@ -329,13 +327,31 @@ fill_matrices <- function(dat, model){
         Omega.matrix    <- matrix(dat[dat$label %in% Omega, paste0("group",g)],
                                   nrow=num.xi, ncol=num.xi)
 
-        matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
-                              Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
-                              Beta=Beta.matrix, Theta.d=Theta.d.matrix,
-                              Theta.e=Theta.e.matrix, Psi=Psi.matrix,
-                              Phi=Phi.matrix, A=A.matrix, nu.x=nu.x.matrix,
-                              nu.y=nu.y.matrix, alpha=alpha.matrix,
-                              tau=tau.matrix, Omega=Omega.matrix)
+        if (class(model) == "lms") {
+            matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+                                  Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
+                                  Theta.d=Theta.d.matrix,
+                                  Theta.e=Theta.e.matrix, Psi=Psi.matrix,
+                                  A=A.matrix, nu.x=nu.x.matrix,
+                                  nu.y=nu.y.matrix, alpha=alpha.matrix,
+                                  tau=tau.matrix, Omega=Omega.matrix)
+        } else if (class(model) == "stemm") {
+            matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+                                  Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
+                                  Beta=Beta.matrix, Theta.d=Theta.d.matrix,
+                                  Theta.e=Theta.e.matrix, Psi=Psi.matrix,
+                                  Phi=Phi.matrix, nu.x=nu.x.matrix,
+                                  nu.y=nu.y.matrix, alpha=alpha.matrix,
+                                  tau=tau.matrix)
+        } else {
+             matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
+                                   Beta=Beta.matrix, Theta.d=Theta.d.matrix,
+                                   Theta.e=Theta.e.matrix, Psi=Psi.matrix,
+                                   Phi=Phi.matrix, A=A.matrix, nu.x=nu.x.matrix,
+                                   nu.y=nu.y.matrix, alpha=alpha.matrix,
+                                   tau=tau.matrix, Omega=Omega.matrix)
+        }
     }
     names(matrices) <- paste0("group",1:num.groups)
 

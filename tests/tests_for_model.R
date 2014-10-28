@@ -223,5 +223,4 @@ interc_obs <- TRUE
 interc_lat <- TRUE
 # interaction <- "xi1:xi1, xi2:xi1"
 interaction <- "all"
-specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups, interaction,
-            interc_obs, interc_lat)
+specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups, interaction, interc_obs, interc_lat)
