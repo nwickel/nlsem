@@ -33,7 +33,7 @@ sigma_stemm <- function(model, group) {
     s22 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 
-    (!isSymmetric(sigma)) stop("Sigma has to be symmetric")
+    if (!isSymmetric(sigma)) stop("Sigma has to be symmetric")
 
     sigma
 }
