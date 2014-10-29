@@ -38,17 +38,17 @@ sigma_stemm <- function(model, group) {
     sigma
 }
 
-estep_stemm <- function(model, parameters, dat, ...) {
+estep_stemm <- function(model, parameters, dat) {
 
-    mod.filled <- fill_model(model=model, parameters=parameters)
+    model.filled <- fill_model(model=model, parameters=parameters)
 
     P <- NULL
-    for (g in seq_along(model$info$num.groups)) {
+    for (g in seq_len(model$info$num.groups)) {
         # group weight
         w.g <- model$info$w[g]
 
-        p.ij <- w.g * dmvnorm(dat, mean=mu_stemm(model, g),
-                              sigma=sigma_stemm(model, g))
+        p.ij <- w.g * dmvnorm(dat, mean=mu_stemm(model.filled, g),
+                              sigma=sigma_stemm(model.filled, g))
         P <- cbind(P, p.ij)
     }
     P <- P / rowSums(P)
@@ -63,8 +63,8 @@ simulate.stemmFilled <- function(object, nsim=1, seed=NULL, n=400, ...) {
     num.groups <- object$info$num.groups
     w <- object$info$w
 
-    dat.sim <- sapply(1:num.groups, function(g) {
-                      rmvnorm(n*w[g],
+    dat.sim <- lapply(1:num.groups, function(g) {
+                      rmvnorm(round(n*w[g]),
                               mean=mu_stemm(model=object, g),
                               sigma=sigma_stemm(model=object, g))
                               })

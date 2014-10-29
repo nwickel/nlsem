@@ -429,10 +429,8 @@ fill_model <- function(model, parameters, version="new") {
 # fill upper.tri of a (filled) matrix which should be symmetric
 fill_symmetric <- function(mat) {
     for (i in seq_len(nrow(mat))) {
-                for (j in seq_len(ncol(mat))) {
-                    if (i < j) {
+                for (j in i:ncol(mat)) {
                         mat[i,j] <- mat[j,i]
-                    }
                 }
             }
     mat
