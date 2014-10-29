@@ -172,8 +172,12 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     Theta.e <- diag(NA, nrow=num.y)
     # Psi
     Psi <- matrix(NA, nrow=num.eta, ncol=num.eta)
+    # Psi must be symmetrical, upper.tri = lower.tri -> in fill_model
+    Psi[upper.tri(Psi)] <- 0
     # Phi
     Phi <- matrix(NA, nrow=num.xi, num.xi)
+    # Phi must be symmetrical, upper.tri = lower.tri -> in fill_model
+    Phi[upper.tri(Phi)] <- 0
     # A
     A <- matrix(NA, nrow=num.xi, ncol=num.xi)
     A[upper.tri(A)] <- 0
@@ -356,7 +360,8 @@ fill_matrices <- function(dat, model){
     names(matrices) <- paste0("group",1:num.groups)
 
     model.new <- list(matrices=matrices, info=model$info)
-    model.new$info$par.names <- get_parnames(model) # TODO perhaps different for lms
+    model.new$info$par.names <- get_parnames(model.new)
+    # TODO perhaps different for lms
 
     class(model.new) <- class(model) # TODO this must not be the case!
     model.new
@@ -400,14 +405,17 @@ fill_model <- function(model, parameters, version="new") {
 
         for (j in seq_along(matrices.g)) {
             matrix.j <- matrices.g[[j]]
-            # number ob NA's in matrix
-            num.nas <- length(matrix.j[is.na(matrix.j)])
-            if (num.nas > 0) {
-                matrix.j[is.na(matrix.j)] <- parameters[1:num.nas]
-                parameters <- parameters[-(1:num.nas)]
+            # number of NA's in matrix
+            num.na <- length(matrix.j[is.na(matrix.j)])
+            if (num.na > 0) {
+                matrix.j[is.na(matrix.j)] <- parameters[1:num.na]
+                parameters <- parameters[-(1:num.na)]
                 matrices.g[[j]] <- matrix.j
             }
         }
+        # make 'symmetric' matrices symmetric
+        matrices.g$Psi <- fill_symmetric(matrices.g$Psi)
+        if (class(model) == "stemm") matrices.g$Phi <- fill_symmetric(matrices.g$Phi)
         matrices[[g]] <- matrices.g
     }
     out <- list(matrices=matrices, info=model$info)
@@ -416,6 +424,18 @@ fill_model <- function(model, parameters, version="new") {
                  "stemm" = {class(out) <- "stemmFilled"},
                  "nsemm" = {class(out) <- "nsemmFilled"})
     out
+}
+
+# fill upper.tri of a (filled) matrix which should be symmetric
+fill_symmetric <- function(mat) {
+    for (i in seq_len(nrow(mat))) {
+                for (j in seq_len(ncol(mat))) {
+                    if (i < j) {
+                        mat[i,j] <- mat[j,i]
+                    }
+                }
+            }
+    mat
 }
 
 ## TODO Want fill_matrices to work with a data frame created with lavaanify()...
