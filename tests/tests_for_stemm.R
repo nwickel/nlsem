@@ -29,8 +29,48 @@ parameters <- c(0.5158426, 0.2671909, 1.1394707, 0.9567445, 1.4950897,
                 0.7848908, 1.1258676, 0.6165608, 0.4482860, 1.3358925,
                 1.4823573, 1.3351624, 0.1592073, 0.2160227, 0.7526599)
 # parameters <- runif(count_free_parameters(model), 0.1, 1.5)
+
 model.filled <- fill_model(model, parameters)
-
 data <- simulate(model.filled)
-
 estep_stemm(model, parameters, data)
+
+
+# EMSEM example: STEMM model for structural equation models
+# =========================================================
+mod <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
+                     xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.groups=2,
+                     interaction="",
+                     interc_obs=FALSE, interc_lat=FALSE)
+dat <- as.data.frame(mod)
+
+dat[c(2,8,10,16),2:3] <- 1    # Lambda.x.21 & 42 and Lambda.y.21 & 42
+dat[18:19,2:3]        <- 0    # gamma.12 and gamma.21
+dat[22:23,2:3]        <- NA   # beta.12 and beta.21
+dat[c(58,62),2:3]     <- 0    # psi.21 and phi.21
+dat[65:72,2:3]        <- 1    # nu.x and nu.y
+dat[75:76,2:3]        <- NA   # tau
+
+model <- fill_matrices(dat, mod)
+parameters <- c(
+                # group 1
+                rep(0.5, 2),    # Gamma
+                c(-0.3, 0.7),   # Beta
+                rep(0.5, 10),   # Theta.d, Theta.e, Psi
+                rep(1, 4),      # Phi, tau
+                # group 2
+                rep(-0.5, 2),   # Gamma
+                c(0.7, -0.3),   # Beta
+                rep(0.5, 10),   # Theta.d, Theta.e, Psi
+                rep(1, 2),      # Phi
+                rep(4, 2)       # tau
+)
+# add noise
+parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
+
+model.filled <- fill_model(model, parameters)
+# data <- simulate(model.filled)
+data <-
+    as.matrix(read.table("/Users/Kathi/Documents/Studium/Psychologie/Diplomarbeit/stemm_data",
+                         header=TRUE))
+P <- estep_stemm(model, parameters, data)
+LL <- likelihood(model, parameters, data, P)
