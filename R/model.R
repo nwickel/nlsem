@@ -87,6 +87,14 @@ test_omega <- function(Omega){
     }
 }
 
+# x.s <- strsplit(x, ";")[[1]]        # in function or beforehand?
+
+rel_lat <- function(x){
+    
+    x.s <- strsplit(x, ">")
+    gsub("^.*(eta).*eta.*$", "\\1", x.s)
+}
+
 get_model_class <- function(num.groups, interaction) {
     if (num.groups == 1) {
             if (interaction == "") {
