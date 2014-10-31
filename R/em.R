@@ -52,15 +52,31 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         par.old <- par.new
 
         # E-step
-        P      <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
+        if (class(model) == "lms") {
+            P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
+        } else if (class(model) == "stemm") {
+            P <- estep_stemm(model=model, parameters=par.old, data=data)
+            w.g <- colSums(P) / nrow(data)
+            model$info$w <- w.g
+            # TODO this changes w from "matrix" to "numeric". Problematic?
+        } else {
+            stop("E-step not implemented for other classes than lms or stemm")
+        }
   
         if(logger == TRUE){
             cat("Doing maximization-step \n")
         }
         
         # M-step
-        m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old, m=m, ...)
-  
+        if (class(model) == "lms") {
+            m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old, m=m, ...)
+        } else if (class(model) == "stemm") {
+            m.step <- mstep_stemm(model=model, parameters=par.old, P=P, data=data, ...)
+        } else {
+            stop("M-step not implemented for other classes than lms or stemm")
+        }
+
+
         if(logger == TRUE) {
             cat("Results of maximization \n")
             cat(paste0("Final loglikelihood: ", round(-m.step$objective, 3), "\n"))
@@ -86,7 +102,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     cat("-----------------------------------\n")
     
     # Compute hessian of final parameters
-    final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new, Hessian=TRUE, m=m, ...)
+    if (class(model) == "lms") {
+        final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new, Hessian=TRUE, m=m, ...)
+    } else if (class(model) == "stemm") {
+        final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data, Hessian=TRUE, ...)
+    }
 
     names(final$par) <- model$info$par.names
     
