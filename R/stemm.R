@@ -38,6 +38,7 @@ sigma_stemm <- function(model, group) {
 }
 
 estep_stemm <- function(model, parameters, data) {
+    # TODO do I need the ... here?
 
     model.filled <- fill_model(model=model, parameters=parameters)
 
@@ -48,13 +49,14 @@ estep_stemm <- function(model, parameters, data) {
 
         p.ij <- w.g * dmvnorm(data, mean=mu_stemm(model.filled, g),
                               sigma=sigma_stemm(model.filled, g))
-        P <- cbind(P, p.ij)
+        P <- cbind(P, p.ij, deparse.level=0)
     }
     P <- P / rowSums(P)
     P
 }
 
-likelihood <- function(model, parameters, data, P) {
+likelihood_stemm <- function(model, parameters, data, P) {
+    # TODO model or model.filled as input parameter?
     model.filled <- fill_model(model, parameters)
     N <- nrow(data)
     res <- 0
@@ -70,6 +72,38 @@ likelihood <- function(model, parameters, data, P) {
                                            solve(sigma.g))) - 2*log(w.g)))
     }
     res
+}
+
+mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE, ...) {
+
+    # constrain parameters
+    # TODO do this somewhere else so it's only been done once and not every
+    # iteration
+    upper <- rep(Inf, count_free_parameters(model))
+    lower <- rep(-Inf, count_free_parameters(model))
+    # variances to (0, Inf)
+    start.index <- 0
+    for (g in seq_len(model$info$num.groups)) {
+        if (g == 1) {
+            indices <- c(grep("Theta", model$info$par.names[[g]]),
+                         grep("Psi", model$info$par.names[[g]]))
+        } else {
+            start.index <- start.index + length(model$info$par.names[[g-1]])
+            new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
+                                           grep("Psi", model$info$par.names[[g]]))
+            indices <- c(indices, new.indices)
+        }
+    }
+    lower[indices] <- 0
+
+    est <- nlminb(start=parameters, objective=likelihood_stemm, data=data,
+                  model=model, P=P, upper=upper, lower=lower, ...)
+
+    if (Hessian == TRUE){
+        est$hessian <- nlme::fdHess(pars=est$par, fun=likelihood_stemm,
+                                    model=model, data=data, P=P)
+    }
+    est
 }
 
 simulate.stemmFilled <- function(object, nsim=1, seed=NULL, n=400, ...) {
