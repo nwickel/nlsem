@@ -10,6 +10,7 @@ export(
     )
 
 S3method(simulate, lmsFilled)
+S3method(simulate, stemmFilled)
 S3method(summary, emRes)
 S3method(print, summary.emRes)
 S3method(logLik, emRes)
