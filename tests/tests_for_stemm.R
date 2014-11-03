@@ -70,7 +70,6 @@ parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 model.filled <- fill_model(model, parameters)
 # data <- simulate(model.filled)
 data <-
-    as.matrix(read.table("/Users/Kathi/Documents/Studium/Psychologie/Diplomarbeit/stemm_data",
-                         header=TRUE))
+    as.matrix(read.table("stemm_data", header=TRUE))
 P <- estep_stemm(model, parameters, data)
 LL <- likelihood(model, parameters, data, P)
