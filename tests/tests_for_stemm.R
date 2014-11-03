@@ -65,11 +65,13 @@ parameters <- c(
                 rep(4, 2)       # tau
 )
 # add noise
-parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
+# parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 
-model.filled <- fill_model(model, parameters)
+# model.filled <- fill_model(model, parameters)
 # data <- simulate(model.filled)
 data <-
     as.matrix(read.table("stemm_data", header=TRUE))
-P <- estep_stemm(model, parameters, data)
-LL <- likelihood(model, parameters, data, P)
+# P <- estep_stemm(model, parameters, data)
+# LL <- likelihood_stemm(model, parameters, data, P)
+
+res <- em(model, data, parameters, logger=TRUE)

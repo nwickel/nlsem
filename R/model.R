@@ -245,6 +245,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # group weights w
     w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
 
+    # bounds for parameters (variances to (0; Inf))
+
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
@@ -373,17 +375,6 @@ fill_matrices <- function(dat, model){
 
     class(model.new) <- class(model) # TODO this must not be the case!
     model.new
-}
-
-as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
-    data <- data.frame(
-        label = names(unlist(object$matrices$group1)))
-    for (g in seq_len(length(object$matrices))) {
-        temp <- data.frame(unlist(object$matrices[[g]], use.names=FALSE))
-        names(temp) <- paste0("group", g)
-        data <- cbind(data, temp)
-    }
-    data
 }
 
 count_free_parameters <- function(model) {
