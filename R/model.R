@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Oct/23/2014, KN
+# last mod Nov/03/2014, KN
 
 grep_ind <- function(x){
     tryCatch({
@@ -87,12 +87,41 @@ test_omega <- function(Omega){
     }
 }
 
-# x.s <- strsplit(x, ";")[[1]]        # in function or beforehand?
-
-rel_lat <- function(x){
+rel_lat <- function(x, num.eta, num.xi){
     
-    x.s <- strsplit(x, ">")
-    gsub("^.*(eta).*eta.*$", "\\1", x.s)
+    x.s       <- unlist(strsplit(x, ";"))
+    which.xi  <- which(grepl("xi", x.s))
+    which.eta <- which(!grepl("xi", x.s))
+    
+    G <- matrix(0, nrow=num.eta, ncol=num.xi)
+    for (i in which.xi){
+        xi.s <- unlist(strsplit(x.s[i], ">"))
+            if (length(xi.s) < 2){
+                stop("Latent variables misspecified. Must be of the form
+                'xi1>eta1'. See ?specify_sem for details.")
+            }
+        xis  <- unlist(strsplit(xi.s[1], ","))
+        etas <- unlist(strsplit(xi.s[2], ","))
+        ind.xi <- as.numeric(gsub("^.*xi([0-9]).*$", "\\1", xis))
+        ind.eta <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", etas))
+        G[ind.eta, ind.xi] <- NA
+    }
+    
+    B <- diag(1, num.eta)
+    for (i in which.eta){
+        eta.s <- unlist(strsplit(x.s[i], ">"))
+            if (length(eta.s) < 2){
+                stop("Latent variables misspecified. Must be of the form
+                'xi1>eta1'. See ?specify_sem for details.")
+            }
+        eta.rows <- unlist(strsplit(eta.s[1], ","))
+        eta.cols <- unlist(strsplit(eta.s[2], ","))
+        ind.rows <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.rows))
+        ind.cols <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.cols))
+        B[ind.rows, ind.cols] <- NA
+    }
+    out <- list(Gamma=G, Beta=B)
+    out
 }
 
 get_model_class <- function(num.groups, interaction) {
@@ -115,7 +144,7 @@ get_model_class <- function(num.groups, interaction) {
 
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", interc_obs=FALSE,
-                          interc_lat=FALSE){
+                          interc_lat=FALSE, relation_lat="default"){
 
     # check arguments
     if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
@@ -171,9 +200,20 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
     # Gamma
     # TODO specification for stemm
-    Gamma <- matrix(NA, nrow=num.eta, ncol=num.xi)
-    # Beta
-    Beta <- diag(1, nrow=num.eta)
+    if (relation_lat == "default"){
+        Gamma <- matrix(nrow=num.eta, ncol=num.xi)
+        # Beta
+        Beta <- diag(1, nrow=num.eta)
+    }
+    else {
+        GB <- rel_lat(relation_lat, num.eta=num.eta, num.xi=num.xi)
+        tryCatch({
+        Gamma <- GB[[grep("G", names(GB))]]}, error=function(e){
+        Gamma <- matrix(nrow=num.eta, ncol=num.xi);Gamma})
+        tryCatch({
+        Beta <- GB[[grep("B", names(GB))]]}, error=function(e){
+        Beta <- diag(1, nrow=num.eta);Beta})
+    }
     # Theta.d
     Theta.d <- diag(NA, nrow=num.x)
     # Theta.e
