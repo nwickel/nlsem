@@ -86,11 +86,13 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE, ...) {
     for (g in seq_len(model$info$num.groups)) {
         if (g == 1) {
             indices <- c(grep("Theta", model$info$par.names[[g]]),
-                         grep("Psi", model$info$par.names[[g]]))
+                         grep("Psi", model$info$par.names[[g]]),
+                         grep("Phi", model$info$par.names[[g]]))
         } else {
             start.index <- start.index + length(model$info$par.names[[g-1]])
             new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
-                                           grep("Psi", model$info$par.names[[g]]))
+                                           grep("Psi", model$info$par.names[[g]]),
+                                           grep("Phi", model$info$par.names[[g]]))
             indices <- c(indices, new.indices)
         }
     }
