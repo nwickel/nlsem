@@ -141,7 +141,8 @@ mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE, ...) {
     # constrain variances to +Inf
     upper <- rep(Inf, count_free_parameters(model))
     lower <- rep(-Inf, count_free_parameters(model))
-    lower[grep("[Theta.d, Theta.e, Psi]", model$info$par.names)] <- 0
+    lower[grep("Theta.[de]", model$info$par.names)] <- 0
+    lower[grep("Psi", model$info$par.names)] <- 0
     # TODO What about A? Does that have to be positiv as well??? Since Phi
     # should be...
     # TODO What about if Theta.d and Theta.e are not diagonal matrices?
