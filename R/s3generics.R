@@ -3,11 +3,38 @@
 # created Nov/03/2014, KN
 # last mod Nov/03/2014, KN
 
-simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
-    
+as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
+    data <- data.frame(
+        label = names(unlist(object$matrices$group1)))
+    for (g in seq_len(length(object$matrices))) {
+        temp <- data.frame(unlist(object$matrices[[g]], use.names=FALSE))
+        names(temp) <- paste0("group", g)
+        data <- cbind(data, temp)
+    }
+    data
+}
+
+simulate.stemmFilled <- function(object, nsim=1, seed=NULL, n=400, ...) {
+
     # set seed
     set.seed(seed)
-      
+
+    num.groups <- object$info$num.groups
+    w <- object$info$w
+
+    dat.sim <- lapply(1:num.groups, function(g) {
+                      rmvnorm(round(n*w[g]),
+                              mean=mu_stemm(model=object, g),
+                              sigma=sigma_stemm(model=object, g))
+                              })
+    Reduce(rbind, dat.sim)
+}
+
+simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
+
+    # set seed
+    set.seed(seed)
+
     # Gauss-Hermite quadrature
     k <- get_k(object$matrices$group1$Omega)
     quad <- quadrature(m=m, k=k)
@@ -16,7 +43,7 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
 
     # calculate n for mixture components
     n.mix <- ceiling(w*n)
-    
+
     # simulate data (compare Equation 15 in Klein & Moosbrugger (2000))
     dat.sim <- sapply(1:length(w), function(i){
                            rmvnorm(n.mix[i], 
@@ -30,20 +57,20 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
 }
 
 rel_change <- function(x){
-    
+
     rel.change <- numeric(length(x))
     for (i in 2:length(rel.change)){
-        
+
         rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
     }
     rel.change
 }
 
-summary.emRes <- function(object, ...){
-    
+summary.emEst <- function(object, ...){
+
     # estimates
     est <- object$par
-    
+
     # calculate Phi
     A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
     A[lower.tri(A, diag=TRUE)] <- est[grep("A", names(est))]
@@ -72,12 +99,12 @@ summary.emRes <- function(object, ...){
                 finallogLik=object$objective,
                 logLikelihoods=logLik.table)
 
-    class(ans) <- "summary.emRes"
+    class(ans) <- "summary.emEst"
 
     ans
 }
 
-print.summary.emRes <- function(x, digits=max(3, getOption("digits") - 3),
+print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
                                cs.ind=2:3, ...){
 
     cat("\nEstimates:\n")
@@ -89,7 +116,7 @@ print.summary.emRes <- function(x, digits=max(3, getOption("digits") - 3),
 
 }
 
-logLik.emRes <- function(object, ...){
+logLik.emEst <- function(object, ...){
     if(length(list(...)))
         warning("extra arguments discarded")
 
@@ -99,22 +126,22 @@ logLik.emRes <- function(object, ...){
     out
 }
 
-anova.emRes <- function(object, ..., test=c("Chisq", "none")){
+anova.emEst <- function(object, ..., test=c("Chisq", "none")){
 
     test <- match.arg(test)
     dots <- list(...)
     if (length(dots) == 0)
-        stop('anova is not implemented for a single "emRes" object')
-    
+        stop('anova is not implemented for a single "emEst" object')
+
     mlist <- list(object, ...)
     names(mlist) <- c(deparse(substitute(object)),
                 as.character(substitute(...[]))[2:length(mlist)])
-    if (any(!sapply(mlist, inherits, "emRes")))
-        stop('not all objects are of class "emRes"')
+    if (any(!sapply(mlist, inherits, "emEst")))
+        stop('not all objects are of class "emEst"')
     nt <- length(mlist)
 
     dflist <- sapply(mlist, function(x) length(x$par))
-    
+
     s <- order(dflist, decreasing=TRUE)
     mlist <- mlist[s]
     dflist <- dflist[s]
@@ -136,8 +163,8 @@ anova.emRes <- function(object, ..., test=c("Chisq", "none")){
     out
 }
 
-AIC.emRes <- function(object, ..., k=2){
-    
+AIC.emEst <- function(object, ..., k=2){
+
     dots <- list(...)
     if (length(dots) == 0){
         out <- as.numeric(-2*logLik(object) + k*length(object$par))
@@ -148,7 +175,7 @@ AIC.emRes <- function(object, ..., k=2){
         nt <- length(mlist)
 
         dflist <- sapply(mlist, function(x) length(x$par))
-        
+
         aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(x$par))
         s <- order(aic, decreasing=TRUE)
         aic <- aic[s]
@@ -159,7 +186,7 @@ AIC.emRes <- function(object, ..., k=2){
     out
 }
 
-coef.emRes <- coefficients.emRes <- function(object, ...){
+coef.emEst <- coefficients.emEst <- function(object, ...){
 
     coef <- object$par
 
@@ -173,7 +200,7 @@ coef.emRes <- coefficients.emRes <- function(object, ...){
     coef
 }
 
-plot.emRes <- function(x, y, ...){
+plot.emEst <- function(x, y, ...){
 
     plot(x$loglikelihoods, type="l", xlab="Number of iterations", 
          ylab="log likelihood", axes=F)
