@@ -72,11 +72,13 @@ summary.emEst <- function(object, ...){
     est <- object$par
 
     # calculate Phi
-    A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
-    A[lower.tri(A, diag=TRUE)] <- est[grep("A", names(est))]
-    Phi <- A %*% t(A)
-    est[grep("A", names(est))] <- Phi[lower.tri(Phi, diag=TRUE)] 
-    names(est)[grep("A", names(est))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
+    if (object$model.class == "lms") {
+        A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
+        A[lower.tri(A, diag=TRUE)] <- est[grep("A", names(est))]
+        Phi <- A %*% t(A)
+        est[grep("A", names(est))] <- Phi[lower.tri(Phi, diag=TRUE)] 
+        names(est)[grep("A", names(est))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
+    }
 
     # standard errors
     s.error <- sqrt(diag(solve(object$Hessian)))
@@ -191,12 +193,13 @@ coef.emEst <- coefficients.emEst <- function(object, ...){
     coef <- object$par
 
     # calculate Phi
-    A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
-    A[lower.tri(A, diag=TRUE)] <- coef[grep("A", names(coef))]
-    Phi <- A %*% t(A)
-    coef[grep("A", names(coef))] <- Phi[lower.tri(Phi, diag=TRUE)] 
-    names(coef)[grep("A", names(coef))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
-
+    if (object$model.class == "lms") {
+        A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
+        A[lower.tri(A, diag=TRUE)] <- coef[grep("A", names(coef))]
+        Phi <- A %*% t(A)
+        coef[grep("A", names(coef))] <- Phi[lower.tri(Phi, diag=TRUE)] 
+        names(coef)[grep("A", names(coef))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
+    }
     coef
 }
 
