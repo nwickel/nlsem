@@ -76,30 +76,9 @@ loglikelihood_stemm <- function(model, parameters, data, P) {
 
 mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE, ...) {
 
-    # constrain parameters
-    # TODO do this somewhere else so it's only been done once and not every
-    # iteration
-    upper <- rep(Inf, count_free_parameters(model))
-    lower <- rep(-Inf, count_free_parameters(model))
-    # variances to (0, Inf)
-    start.index <- 0
-    for (g in seq_len(model$info$num.groups)) {
-        if (g == 1) {
-            indices <- c(grep("Theta", model$info$par.names[[g]]),
-                         grep("Psi", model$info$par.names[[g]]),
-                         grep("Phi", model$info$par.names[[g]]))
-        } else {
-            start.index <- start.index + length(model$info$par.names[[g-1]])
-            new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
-                                           grep("Psi", model$info$par.names[[g]]),
-                                           grep("Phi", model$info$par.names[[g]]))
-            indices <- c(indices, new.indices)
-        }
-    }
-    lower[indices] <- 0
-
     est <- nlminb(start=parameters, objective=loglikelihood_stemm, data=data,
-                  model=model, P=P, upper=upper, lower=lower, ...)
+                  model=model, P=P, upper=model$info$bounds$upper,
+                  lower=model$info$bounds$lower, ...)
 
     if (Hessian == TRUE){
         est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_stemm,

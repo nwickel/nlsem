@@ -139,17 +139,18 @@ mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE, ...) {
  
 
     # constrain variances to +Inf
-    upper <- rep(Inf, count_free_parameters(model))
-    lower <- rep(-Inf, count_free_parameters(model))
-    lower[grep("Theta.[de]", model$info$par.names)] <- 0
-    lower[grep("Psi", model$info$par.names)] <- 0
+    # upper <- rep(Inf, count_free_parameters(model))
+    # lower <- rep(-Inf, count_free_parameters(model))
+    # lower[grep("Theta.[de]", model$info$par.names)] <- 0
+    # lower[grep("Psi", model$info$par.names)] <- 0
     # TODO What about A? Does that have to be positiv as well??? Since Phi
     # should be...
     # TODO What about if Theta.d and Theta.e are not diagonal matrices?
     # TODO What about Psi, when eta > 1?
     # optimizer
     est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
-                  model=model, P=P, upper=upper, lower=lower, ...)
+                  model=model, P=P, upper=model$info$bounds$upper,
+                  lower=model$info$bounds$lower, ...)
 
     # TODO Try out constrOptim and compare results...
     # ??? How to use boundaries in constrOptim?

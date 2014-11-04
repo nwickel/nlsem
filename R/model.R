@@ -132,14 +132,14 @@ get_model_class <- function(num.groups, interaction) {
                      latent interaction (e.g. 'xi1:xi2'). For other models please
                      use lavaan or the like.")
             } else {
-                model_class <- "lms"
+                model.class <- "lms"
             }
         } else if (interaction == "") {
-            model_class <- "stemm"
+            model.class <- "stemm"
         } else {
-            model_class <- "nsemm"
+            model.class <- "nsemm"
         }
-    model_class
+    model.class
 }
 
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
@@ -164,7 +164,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
 
     # class of model
-    model_class <- get_model_class(num.groups, interaction)
+    model.class <- get_model_class(num.groups, interaction)
 
     xi.s <- unlist(strsplit(xi, ","))
     if (length(xi.s) != num.xi) {
@@ -261,13 +261,13 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # make a list of the matrices for each group
     matrices <- list()
     for (g in seq_len(num.groups)) {
-        if (model_class == "lms") {
+        if (model.class == "lms") {
             matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, A=A,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                                   Omega=Omega)
-        } else if (model_class == "stemm") {
+        } else if (model.class == "stemm") {
             matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
@@ -285,23 +285,51 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # group weights w
     w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
 
-    # bounds for parameters (variances to (0; Inf))
-
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
                                                num.groups=num.groups,
-                                               par.names=list(), w=w))
+                                               par.names=list(), w=w,
+                                               bounds=list()))
 
     # add parameter names to model
     # if (num.groups == 1) {
-    if (model_class == "lms") {
+    if (model.class == "lms") {
         model$info$par.names <- get_parnames(model)$group1
     } else {
         model$info$par.names <- get_parnames(model)
     }
 
-    class(model) <- model_class
+    # bounds for parameters
+    upper <- rep(Inf, count_free_parameters(model))
+    lower <- rep(-Inf, count_free_parameters(model))
+    # variances to (0, Inf)
+    # TODO this works only for diagonal covariance matrices
+    if (model.class == "lms") {
+        lower[grep("Theta.[de]", model$info$par.names)] <- 0
+        lower[grep("Psi", model$info$par.names)] <- 0
+    } else if (model.class == "stemm") {
+        start.index <- 0
+        for (g in seq_len(model$info$num.groups)) {
+            if (g == 1) {
+                indices <- c(grep("Theta", model$info$par.names[[g]]),
+                             grep("Psi", model$info$par.names[[g]]),
+                             grep("Phi", model$info$par.names[[g]]))
+            } else {
+                start.index <- start.index + length(model$info$par.names[[g-1]])
+                new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
+                                               grep("Psi", model$info$par.names[[g]]),
+                                               grep("Phi", model$info$par.names[[g]]))
+                indices <- c(indices, new.indices)
+            }
+        }
+        lower[indices] <- 0
+        upper[indices] <- 1     # as in David's example
+    }
+    # TODO case for nsemm
+    model$info$bounds = list(upper=upper, lower=lower)
+
+    class(model) <- model.class
     model
 }
 
@@ -413,12 +441,11 @@ fill_matrices <- function(dat, model){
     model.new$info$par.names <- get_parnames(model.new)
     # TODO perhaps different for lms
 
-    class(model.new) <- class(model) # TODO this must not be the case!
+    class(model.new) <- class(model) # TOTHINK must this be the case?
     model.new
 }
 
 count_free_parameters <- function(model) {
-    # w is not counted
     res <- 0
     for (g in seq_len(model$info$num.groups))
         res <- res + sum(unlist(lapply(model$matrices[[g]], is.na)))
