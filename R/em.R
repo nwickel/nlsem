@@ -1,6 +1,6 @@
 
 em <- function(model, data, start, logger=FALSE, threshold=1e-05,
-                max.iter=40, m=16, ...) {
+                max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
 
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm\n")
@@ -23,7 +23,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
 
     if (class(model) == "lms") {
         final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
-                           Hessian=TRUE, m=m, ...)
+                           Hessian=TRUE, m=m, optimizer=optimizer, ...)
         names(final$par) <- model$info$par.names
     } else if (class(model) == "stemm") {
         final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
