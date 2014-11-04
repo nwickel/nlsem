@@ -102,7 +102,7 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 }
 
 # log likelihood function which will be optimized
-loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
+loglikelihood <- function(parameters, model, dat, P, m=16, ...) {
     
     mod.filled <- fill_model(model=model, parameters=parameters)
 
