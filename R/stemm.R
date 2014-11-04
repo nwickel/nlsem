@@ -55,7 +55,7 @@ estep_stemm <- function(model, parameters, data) {
     P
 }
 
-likelihood_stemm <- function(model, parameters, data, P) {
+loglikelihood_stemm <- function(model, parameters, data, P) {
     # TODO model or model.filled as input parameter?
     model.filled <- fill_model(model, parameters)
     N <- nrow(data)
@@ -98,29 +98,13 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE, ...) {
     }
     lower[indices] <- 0
 
-    est <- nlminb(start=parameters, objective=likelihood_stemm, data=data,
+    est <- nlminb(start=parameters, objective=loglikelihood_stemm, data=data,
                   model=model, P=P, upper=upper, lower=lower, ...)
 
     if (Hessian == TRUE){
-        est$hessian <- nlme::fdHess(pars=est$par, fun=likelihood_stemm,
+        est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_stemm,
                                     model=model, data=data, P=P)
     }
     est
-}
-
-simulate.stemmFilled <- function(object, nsim=1, seed=NULL, n=400, ...) {
-
-    # set seed
-    set.seed(seed)
-
-    num.groups <- object$info$num.groups
-    w <- object$info$w
-
-    dat.sim <- lapply(1:num.groups, function(g) {
-                      rmvnorm(round(n*w[g]),
-                              mean=mu_stemm(model=object, g),
-                              sigma=sigma_stemm(model=object, g))
-                              })
-    Reduce(rbind, dat.sim)
 }
 

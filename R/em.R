@@ -35,14 +35,15 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         }
         names(final$par) <- par.names
     }
+    model.class <- paste0("I am a ", class(model), " model!")
 
-        out <- list(par=final$par, objective=-final$objective,
+        out <- list(model=model.class, par=final$par, objective=-final$objective,
                convergence_final_step=final$convergence,
                message_final_step=final$message, Hessian=final$hessian$Hessian,
                gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
                info=model$info[1:4])
   
-        class(out) <- "emRes"
+        class(out) <- "emEst"
         return(out)}
     )
     
@@ -131,7 +132,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     #        gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
     #        info=model$info[1:4])
   
-    # class(out) <- "emRes"
+    # class(out) <- "emEst"
   
     # out
 }
