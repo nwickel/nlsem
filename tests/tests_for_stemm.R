@@ -72,6 +72,6 @@ parameters <- c(
 data <-
     as.matrix(read.table("stemm_data", header=TRUE))
 # P <- estep_stemm(model, parameters, data)
-# LL <- likelihood_stemm(model, parameters, data, P)
+# LL <- loglikelihood_stemm(model, parameters, data, P)
 
 res <- em(model, data, parameters, logger=TRUE)
