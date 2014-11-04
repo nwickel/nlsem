@@ -123,7 +123,8 @@ loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
 }
 
 
-mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE, ...) {
+mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE,
+                      optimizer, ...) {
 
 
      # # optimizer
@@ -148,9 +149,19 @@ mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE, ...) {
     # TODO What about if Theta.d and Theta.e are not diagonal matrices?
     # TODO What about Psi, when eta > 1?
     # optimizer
-    est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
-                  model=model, P=P, upper=model$info$bounds$upper,
+
+    optimizer <- match.arg(optimizer)
+    if (optimizer == "nlminb") {
+        est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
+                      model=model, P=P, upper=model$info$bounds$upper,
                   lower=model$info$bounds$lower, ...)
+    } else {
+        res <- optim()
+        est <- list()
+        est$convergence <- res$convergence # ??? check me
+        est$par <- res$est
+        est$objective <- res$value
+    }
 
     # TODO Try out constrOptim and compare results...
     # ??? How to use boundaries in constrOptim?

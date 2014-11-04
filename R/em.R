@@ -1,6 +1,6 @@
 
 em <- function(model, data, start, logger=FALSE, threshold=1e-05,
-                max.iter=40, m=16, ...) {
+                max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
 
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm\n")
@@ -21,26 +21,25 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         cat("Computing Hessian \n")
         cat("-----------------------------------\n")
 
-        if (class(model) == "lms") {
-            final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
-                               Hessian=TRUE, m=m, ...)
-            names(final$par) <- model$info$par.names
-        } else if (class(model) == "stemm") {
-            final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
-                                 Hessian=TRUE, ...)
-            par.names <- NULL
-            for (g in seq_len(model$info$num.groups)) {
-                par.names <- c(par.names, paste0("group", g, ".",
-                                                 model$info$par.names[[g]]))
-            }
-            names(final$par) <- par.names
+
+    if (class(model) == "lms") {
+        final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
+                           Hessian=TRUE, m=m, optimizer=optimizer, ...)
+        names(final$par) <- model$info$par.names
+    } else if (class(model) == "stemm") {
+        final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
+                             Hessian=TRUE, ...)
+        par.names <- NULL
+        for (g in seq_len(model$info$num.groups)) {
+            par.names <- c(par.names, paste0("group", g, ".",
+                                             model$info$par.names[[g]]))
         }
-        model.class <- paste0(class(model))
+        names(final$par) <- par.names
 
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
     
-        out <- list(model.class=model.class, par=final$par, objective=-final$objective,
+        out <- list(model.class=class(model), par=final$par, objective=-final$objective,
                convergence_final_step=final$convergence,
                message_final_step=final$message, Hessian=final$hessian$Hessian,
                gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
