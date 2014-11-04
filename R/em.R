@@ -28,7 +28,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         names(final$par) <- model$info$par.names
     } else if (class(model) == "stemm") {
         final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
-                             Hessian=TRUE, ...)
+                             Hessian=TRUE, optimizer=optimizer ...)
         par.names <- NULL
         for (g in seq_len(model$info$num.groups)) {
             par.names <- c(par.names, paste0("group", g, ".",
@@ -39,11 +39,15 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
     
-        out <- list(model.class=class(model), par=final$par, objective=-final$objective,
-               convergence_final_step=final$convergence,
-               message_final_step=final$message, Hessian=final$hessian$Hessian,
-               gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
-               info=model$info[1:4])
+        out <- list(model.class=class(model), par=final$par,
+                    objective=-final$objective,
+                    convergence_final_step=final$convergence,
+                    message_final_step=final$message,
+                    Hessian=final$hessian$Hessian,
+                    # TODO gradient is not returned by optim
+                    # gradient=final$hessian$gradient,
+                    loglikelihoods=-ll.ret,
+                    info=model$info[1:4])
   
         class(out) <- "emEst"
         return(out)}
@@ -82,9 +86,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         
         # M-step
         if (class(model) == "lms") {
-            m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old, m=m, ...)
+            m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old,
+                                m=m, optimizer=optimizer, ...)
         } else if (class(model) == "stemm") {
-            m.step <- mstep_stemm(model=model, parameters=par.old, P=P, data=data, ...)
+            m.step <- mstep_stemm(model=model, parameters=par.old, P=P,
+                                  data=data, optimizer=optimizer, ...)
         } else {
             stop("M-step not implemented for other classes than lms or stemm")
         }
@@ -112,31 +118,9 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     cat("-----------------------------------\n")
 
     # When EM is completed, on.exit above is called
-    # TODO should official version have the on.exit functionality? If not,
-    # uncomment the following part and delete on.exit
+    # TOTHINK should official version have the on.exit functionality? If not,
+    # move code from on.exit to here
 
-    # cat("-----------------------------------\n")
-    # cat("Computing Hessian \n")
-    # cat("-----------------------------------\n")
-    
-    # Compute hessian of final parameters
-    # if (class(model) == "lms") {
-    #     final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new, Hessian=TRUE, m=m, ...)
-    # } else if (class(model) == "stemm") {
-    #     final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data, Hessian=TRUE, ...)
-    # }
-
-    # names(final$par) <- model$info$par.names
-    # 
-    # out <- list(par=final$par, objective=-final$objective,
-    #        convergence_final_step=final$convergence,
-    #        message_final_step=final$message, Hessian=final$hessian$Hessian,
-    #        gradient=final$hessian$gradient, loglikelihoods=-ll.ret,
-    #        info=model$info[1:4])
-  
-    # class(out) <- "emEst"
-  
-    # out
 }
 
 

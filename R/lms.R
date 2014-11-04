@@ -123,7 +123,7 @@ loglikelihood <- function(model, parameters, dat, P, m=16, ...) {
 }
 
 
-mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE,
+mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
                       optimizer, ...) {
 
 
@@ -137,39 +137,34 @@ mstep_lms <- function(model, parameters, dat, P, m, Hessian=FALSE,
      #                 convergence=est$convergence, evaluations=est$counts,
      #                 message=est$message, hessian=est$hessian) }
      ## --> Alternative calculation of Hessian (does not require nlme)
- 
 
-    # constrain variances to +Inf
-    # upper <- rep(Inf, count_free_parameters(model))
-    # lower <- rep(-Inf, count_free_parameters(model))
-    # lower[grep("Theta.[de]", model$info$par.names)] <- 0
-    # lower[grep("Psi", model$info$par.names)] <- 0
-    # TODO What about A? Does that have to be positiv as well??? Since Phi
-    # should be...
-    # TODO What about if Theta.d and Theta.e are not diagonal matrices?
-    # TODO What about Psi, when eta > 1?
     # optimizer
-
     optimizer <- match.arg(optimizer)
+
     if (optimizer == "nlminb") {
         est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
                       model=model, P=P, upper=model$info$bounds$upper,
-                  lower=model$info$bounds$lower, ...)
+                      lower=model$info$bounds$lower, ...)
+        if (Hessian == TRUE){
+            est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood,
+                                        model=model, dat=dat, P=P)
+        }
     } else {
-        res <- optim()
-        est <- list()
-        est$convergence <- res$convergence # ??? check me
-        est$par <- res$est
-        est$objective <- res$value
+        est <- optim(par=parameters, fn=loglikelihood, model=model, dat=dat,
+                     P=P, upper=model$info$bounds$upper,
+                     lower=model$info$bounds$lower, method="L-BFGS-B", ...)
+        # fit est to nlminb output
+        names(est) <- gsub("value", "objective", names(est))
+        if (Hessian == TRUE){
+            est$hessian <- optimHess(est$par, fn=loglikelihood, model=model,
+                                     P=P, dat=dat)
+        }
     }
 
     # TODO Try out constrOptim and compare results...
     # ??? How to use boundaries in constrOptim?
 
-    if (Hessian == TRUE){
-        est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood, model=model,
-                                    dat=dat, P=P)
-    }
+
     # TODO Maybe add analytical solution for Hessian matrix?
 
     est

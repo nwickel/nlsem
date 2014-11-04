@@ -308,6 +308,10 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     if (model.class == "lms") {
         lower[grep("Theta.[de]", model$info$par.names)] <- 0
         lower[grep("Psi", model$info$par.names)] <- 0
+        # TODO What about A? Does that have to be positiv as well??? Since Phi
+        # should be...
+        # TODO What about if Theta.d and Theta.e are not diagonal matrices?
+        # TODO What about Psi, when eta > 1?
     } else if (model.class == "stemm") {
         start.index <- 0
         for (g in seq_len(model$info$num.groups)) {

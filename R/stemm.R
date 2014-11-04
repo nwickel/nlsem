@@ -55,7 +55,7 @@ estep_stemm <- function(model, parameters, data) {
     P
 }
 
-loglikelihood_stemm <- function(model, parameters, data, P) {
+loglikelihood_stemm <- function(parameters, model, data, P) {
     # TODO model or model.filled as input parameter?
     model.filled <- fill_model(model, parameters)
     N <- nrow(data)
@@ -74,15 +74,30 @@ loglikelihood_stemm <- function(model, parameters, data, P) {
     res
 }
 
-mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE, ...) {
+mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
+                        optimizer, ...) {
 
-    est <- nlminb(start=parameters, objective=loglikelihood_stemm, data=data,
-                  model=model, P=P, upper=model$info$bounds$upper,
-                  lower=model$info$bounds$lower, ...)
+    optimizer <- match.arg(optimizer)
 
-    if (Hessian == TRUE){
-        est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_stemm,
-                                    model=model, data=data, P=P)
+    if (optimizer == "nlminb") {
+        est <- nlminb(start=parameters, objective=loglikelihood_stemm, data=data,
+                      model=model, P=P, upper=model$info$bounds$upper,
+                      lower=model$info$bounds$lower, ...)
+
+        if (Hessian == TRUE){
+            est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_stemm,
+                                        model=model, data=data, P=P)
+        }
+    } else {
+        est <- optim(par=parameters, fn=loglikelihood_stemm, model=model,
+                     data=data, P=P, upper=model$info$bounds$upper,
+                     lower=model$info$bounds$lower, ...)
+        # fit est to nlminb output
+        names(est) <- gsub("value", "objective", names(est))
+        if (Hessian == TRUE) {
+            est$hessian <- optimHess(est$par, fn=loglikelihood_stemm, model=model,
+                                     P=P, data=data)
+        }
     }
     est
 }
