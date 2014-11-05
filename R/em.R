@@ -28,13 +28,14 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         names(final$par) <- model$info$par.names
     } else if (class(model) == "stemm") {
         final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
-                             Hessian=TRUE, optimizer=optimizer ...)
+                             Hessian=TRUE, optimizer=optimizer, ...)
         par.names <- NULL
         for (g in seq_len(model$info$num.groups)) {
             par.names <- c(par.names, paste0("group", g, ".",
                                              model$info$par.names[[g]]))
         }
         names(final$par) <- par.names
+    }
 
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
@@ -50,8 +51,8 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                     info=model$info[1:4])
   
         class(out) <- "emEst"
-        return(out)}
-    )
+        return(out)
+    })
     
     while(abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
     #while(sum((par.old - par.new)^2) > threshold) { # as long as no convergence reached
