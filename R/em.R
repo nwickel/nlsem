@@ -22,24 +22,24 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         cat("-----------------------------------\n")
 
 
-    if (class(model) == "lms") {
-        final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
-                           Hessian=TRUE, m=m, optimizer=optimizer, ...)
-        names(final$par) <- model$info$par.names
-    } else if (class(model) == "stemm") {
-        final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
-                             Hessian=TRUE, optimizer=optimizer, ...)
-        par.names <- NULL
-        for (g in seq_len(model$info$num.groups)) {
-            par.names <- c(par.names, paste0("group", g, ".",
-                                             model$info$par.names[[g]]))
+        if (class(model) == "lms") {
+            final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
+                               Hessian=TRUE, m=m, optimizer=optimizer, ...)
+            names(final$par) <- model$info$par.names
+        } else if (class(model) == "stemm") {
+            final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
+                                 Hessian=TRUE, optimizer=optimizer, ...)
+            par.names <- NULL
+            for (g in seq_len(model$info$num.groups)) {
+                par.names <- c(par.names, paste0("group", g, ".",
+                                                 model$info$par.names[[g]]))
+            }
+            names(final$par) <- par.names
         }
-        names(final$par) <- par.names
-    }
 
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
-    
+
         out <- list(model.class=class(model), par=final$par,
                     objective=-final$objective,
                     convergence_final_step=final$convergence,
@@ -49,22 +49,27 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                     # gradient=final$hessian$gradient,
                     loglikelihoods=-ll.ret,
                     info=model$info[1:4])
-  
+
+        # attach w for stemm and nsemm
+        if (class(model) == "stemm" || class(model) == "nsemm") {
+            out$info <- model$info[c(1:4,7)]
+        }
+
         class(out) <- "emEst"
         return(out)
     })
-    
+
     while(abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
     #while(sum((par.old - par.new)^2) > threshold) { # as long as no convergence reached
         if(ll.new - ll.old > 0.001 && num.iter > 3) {
             warning("Likelihood should be decreasing")
         }
-      
+
         if(logger == TRUE) {
             cat(paste("Iteration", num.iter+1, "\n"))
             cat("Doing expectation-step \n")
         }
-  
+
         # Update loglikelihood
         ll.old <- ll.new
         par.old <- par.new
@@ -77,6 +82,9 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
             w.g <- colSums(P) / nrow(data)
             model$info$w <- w.g
             # TODO this changes w from "matrix" to "numeric". Problematic?
+            if (logger == TRUE) {
+                cat("Group weights: ", round(w.g, digits=4), "\n")
+            }
         } else {
             stop("E-step not implemented for other classes than lms or stemm")
         }
