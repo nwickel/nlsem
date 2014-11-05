@@ -300,6 +300,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         model$info$par.names <- get_parnames(model)
     }
 
+    # TODO set parameters that do not vary between groups
+
     # bounds for parameters
     upper <- rep(Inf, count_free_parameters(model))
     lower <- rep(-Inf, count_free_parameters(model))
@@ -328,7 +330,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
             }
         }
         lower[indices] <- 0
-        upper[indices] <- 1     # as in David's example
     }
     # TODO case for nsemm
     model$info$bounds = list(upper=upper, lower=lower)

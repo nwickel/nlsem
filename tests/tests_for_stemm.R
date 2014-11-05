@@ -67,11 +67,16 @@ parameters <- c(
 # add noise
 # parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 
+# constrain upper bounds for variances to 1
+model$info$bounds$upper <- c(Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1)
+
 # model.filled <- fill_model(model, parameters)
 # data <- simulate(model.filled)
-data <-
-    as.matrix(read.table("stemm_data", header=TRUE))
-# P <- estep_stemm(model, parameters, data)
-# LL <- loglikelihood_stemm(model, parameters, data, P)
+data <- as.matrix(read.table("stemm_data", header=TRUE))
+P <- estep_stemm(model, parameters, data)
+LL <- loglikelihood_stemm(parameters, model, data, P)
 
-res <- em(model, data, parameters, logger=TRUE)
+res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")

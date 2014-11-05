@@ -101,6 +101,10 @@ summary.emEst <- function(object, ...){
                 finallogLik=object$objective,
                 logLikelihoods=logLik.table)
 
+    if (object$model.class == "stemm" || object$model.class == "nsemm") {
+        ans$group.weights <- object$info$w
+    }
+
     class(ans) <- "summary.emEst"
 
     ans
