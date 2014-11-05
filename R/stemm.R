@@ -75,7 +75,7 @@ loglikelihood_stemm <- function(parameters, model, data, P) {
 }
 
 mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
-                        optimizer, ...) {
+                        optimizer=c("nlminb", "optim"), ...) {
 
     optimizer <- match.arg(optimizer)
 
@@ -91,7 +91,7 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
     } else {
         est <- optim(par=parameters, fn=loglikelihood_stemm, model=model,
                      data=data, P=P, upper=model$info$bounds$upper,
-                     lower=model$info$bounds$lower, ...)
+                     lower=model$info$bounds$lower, method="L-BFGS-B", ...)
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
         if (Hessian == TRUE) {

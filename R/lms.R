@@ -124,7 +124,7 @@ loglikelihood <- function(parameters, model, dat, P, m=16, ...) {
 
 
 mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
-                      optimizer, ...) {
+                      optimizer=c("nlminb", "optim"), ...) {
 
 
      # # optimizer
