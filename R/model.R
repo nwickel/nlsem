@@ -46,10 +46,10 @@ sort_interaction_effects <- function(rows, cols){
 
 test_omega <- function(Omega){
     
-    if (any(is.na(diag(Omega)))){
-        stop("Can't handle quadratic interaction effects (yet). See
-             ?specify_sem for details.")
-    }
+    #if (any(is.na(diag(Omega)))){
+    #    stop("Can't handle quadratic interaction effects (yet). See
+    #         ?specify_sem for details.")
+    #}
 
     if (any(is.na(Omega))){
 
@@ -63,11 +63,11 @@ test_omega <- function(Omega){
                 stop(msg)
 
         } else {
-            for (i in 2:nrow(ind)){
-                if(ind[i,1] >= ind[i-1,2]){
-                    stop(msg)
-                }
-            }
+            # for (i in 2:nrow(ind)){
+            #     if(ind[i,1] >= ind[i-1,2]){
+            #         stop(msg)
+            #     }
+            # }
             for (i in 1:max(ind[,1])){
                 if (max(which(is.na(Omega[i,]))) < dim){
                     stop(msg)

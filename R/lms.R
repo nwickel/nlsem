@@ -10,7 +10,9 @@ mu_lms <- function(model, z) {
     matrices <- model$matrices$group1
     k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
     n    <- nrow(matrices$A)          # number of zero rows in Omega
-    z.1  <- c(z, rep(0, n - k))       # [z_1 0]'
+    if (k < n){
+        z.1  <- c(z, rep(0, n - k))   # [z_1 0]'
+    } else z.1 <- z
     A.z  <- matrices$A %*% z.1 
     mu.x <- matrices$nu.x + matrices$Lambda.x %*% A.z 
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% (matrices$alpha +
@@ -27,7 +29,9 @@ sigma_lms <- function(model, z) {
     matrices <- model$matrices$group1
     k     <- get_k(matrices$Omega)    # number of nonzero rows in Omega
     n     <- nrow(matrices$A)         # number of zero rows in Omega
-    z.1   <- c(z, rep(0, n - k))      # [z_1 0]'
+    if (k < n){
+        z.1  <- c(z, rep(0, n - k))   # [z_1 0]'
+    } else z.1 <- z
     A.z   <- matrices$A %*% z.1 
     d.mat <- get_d(n=n, k=k)
     Lx.A  <- matrices$Lambda.x %*% matrices$A
@@ -46,8 +50,18 @@ sigma_lms <- function(model, z) {
     sigma
 }
 
-get_k <- function(Omega) which(rowSums(Omega) == 0)[1] - 1
-
+#get_k <- function(Omega) which(rowSums(Omega) == 0)[1] - 1
+get_k <- function(Omega) {
+    if (any(is.na(Omega))){
+        out <-length(which(is.na(rowSums(Omega))))
+    } else {
+        if (any(rowSums(Omega) == 0)){
+            out <- which(rowSums(Omega) == 0)[1] - 1
+        } else out <- nrow(Omega)
+    }
+    out
+}
+    
 get_d <- function(n, k) {
     mat <- diag(n)
     mat[1:k, 1:k] <- 0
