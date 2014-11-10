@@ -1,3 +1,6 @@
+# em.R
+#
+# last mod: Nov/10/2014, NU
 
 em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                 max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {

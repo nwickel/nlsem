@@ -140,17 +140,16 @@ loglikelihood <- function(parameters, model, dat, P, m=16, ...) {
 mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
                       optimizer=c("nlminb", "optim"), ...) {
 
-
-     # # optimizer
-     # if (Hessian == FALSE){
-     #     est <- nlminb(start=parameters, objective=fun, dat=dat, model=model, P=P, ...)
-     #     out <- est
-     # } else {
-     #     est <- optim(par=parameters, fn=fun, dat=dat, model=model, P=P, hessian=TRUE, method="L-BFGS-B", ...)
-     #     out <- list(par=est$par, objective=est$value,
-     #                 convergence=est$convergence, evaluations=est$counts,
-     #                 message=est$message, hessian=est$hessian) }
-     ## --> Alternative calculation of Hessian (does not require nlme)
+    # # optimizer
+    # if (Hessian == FALSE){
+    #     est <- nlminb(start=parameters, objective=fun, dat=dat, model=model, P=P, ...)
+    #     out <- est
+    # } else {
+    #     est <- optim(par=parameters, fn=fun, dat=dat, model=model, P=P, hessian=TRUE, method="L-BFGS-B", ...)
+    #     out <- list(par=est$par, objective=est$value,
+    #                 convergence=est$convergence, evaluations=est$counts,
+    #                 message=est$message, hessian=est$hessian) }
+    ## --> Alternative calculation of Hessian (does not require nlme)
 
     # optimizer
     optimizer <- match.arg(optimizer)

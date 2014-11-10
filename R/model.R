@@ -3,145 +3,11 @@
 # created Sep/23/2014, NU
 # last mod Nov/03/2014, KN
 
-grep_ind <- function(x){
-    tryCatch({
-        if (length(unlist(strsplit(x, "-"))) > 1){
-            as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\1",
-            x)):as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\2", x))
-        } else {
-            as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
-        }
-    }, warning = function(war) {
-        # TODO more clear error message
-        stop("Wrong input for specifying exogenous or endogonous latent
-             variables (xi or etas). See ?specify_sem.")
-    })
-}
+#--------------- main functions ---------------
 
-calc_interaction_matrix <- function(x){
-    tryCatch({
-        rows <- as.numeric(gsub("^.*xi([0-9]+):xi[0-9]+$", "\\1", x))
-        cols <- as.numeric(gsub("^.*xi.*:xi([0-9]+)$", "\\1", x))
-        mat  <- sort_interaction_effects(rows, cols)
-        mat
-    }, warning = function(war) {
-        stop("Wrong input for interaction. See ?specify_sem.")
-    }, error = function(err) { # perhaps error catching is unnecessary
-        stop("Wrong input for interaction. See ?specify_sem.")
-    })
-}
-
-sort_interaction_effects <- function(rows, cols){
-    
-    for (i in seq_along(rows)){
-        if (rows[i] > cols[i]){
-            rows_i <- rows[i]
-            cols_i <- cols[i]
-            rows[i] <- cols_i
-            cols[i] <- rows_i
-        }
-    }
-    cbind(rows, cols)
-}
-
-test_omega <- function(Omega){
-    
-    #if (any(is.na(diag(Omega)))){
-    #    stop("Can't handle quadratic interaction effects (yet). See
-    #         ?specify_sem for details.")
-    #}
-
-    if (any(is.na(Omega))){
-
-        ind <- which(is.na(Omega), arr.ind=TRUE)
-        dim <- nrow(Omega)
-        msg <- "Interactions are not well-defined. Please change order of xi's.
-        See ?specify_sem for details."
-
-        if (nrow(ind) == 1){
-            if (!is.na(Omega[1, dim]))
-                stop(msg)
-
-        } else {
-            # for (i in 2:nrow(ind)){
-            #     if(ind[i,1] >= ind[i-1,2]){
-            #         stop(msg)
-            #     }
-            # }
-            for (i in 1:max(ind[,1])){
-                if (max(which(is.na(Omega[i,]))) < dim){
-                    stop(msg)
-                }
-            }
-            if (max(ind[,1]) > 1){
-                for (i in 2:max(ind[,1])){
-                    if (min(which(is.na(Omega[i-1,]))) >= min(which(is.na(Omega[i,])))) {
-                        stop(msg)
-                    }
-                }
-            }
-        }
-        invisible(NULL)
-    } else {
-        invisible(NULL)
-    }
-}
-
-rel_lat <- function(x, num.eta, num.xi){
-    
-    x.s       <- unlist(strsplit(x, ";"))
-    which.xi  <- which(grepl("xi", x.s))
-    which.eta <- which(!grepl("xi", x.s))
-    
-    G <- matrix(0, nrow=num.eta, ncol=num.xi)
-    for (i in which.xi){
-        xi.s <- unlist(strsplit(x.s[i], ">"))
-            if (length(xi.s) < 2){
-                stop("Latent variables misspecified. Must be of the form
-                'xi1>eta1'. See ?specify_sem for details.")
-            }
-        xis  <- unlist(strsplit(xi.s[1], ","))
-        etas <- unlist(strsplit(xi.s[2], ","))
-        ind.xi <- as.numeric(gsub("^.*xi([0-9]).*$", "\\1", xis))
-        ind.eta <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", etas))
-        G[ind.eta, ind.xi] <- NA
-    }
-    
-    B <- diag(1, num.eta)
-    for (i in which.eta){
-        eta.s <- unlist(strsplit(x.s[i], ">"))
-            if (length(eta.s) < 2){
-                stop("Latent variables misspecified. Must be of the form
-                'xi1>eta1'. See ?specify_sem for details.")
-            }
-        eta.rows <- unlist(strsplit(eta.s[1], ","))
-        eta.cols <- unlist(strsplit(eta.s[2], ","))
-        ind.rows <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.rows))
-        ind.cols <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.cols))
-        B[ind.rows, ind.cols] <- NA
-    }
-    out <- list(Gamma=G, Beta=B)
-    out
-}
-
-get_model_class <- function(num.groups, interaction) {
-    if (num.groups == 1) {
-            if (interaction == "") {
-                # TODO should still work for stemm
-                stop("Model needs either more than one latent group or at least one
-                     latent interaction (e.g. 'xi1:xi2'). For other models please
-                     use lavaan or the like.")
-            } else {
-                model.class <- "lms"
-            }
-        } else if (interaction == "") {
-            model.class <- "stemm"
-        } else {
-            model.class <- "nsemm"
-        }
-    model.class
-}
-
+# Function to define model specification for different SEMs with nonlinear
+# effects; possible objects classes are 'lms', 'stemm', 'nsemm'; exported
+# function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", interc_obs=FALSE,
                           interc_lat=FALSE, relation_lat="default"){
@@ -166,6 +32,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # class of model
     model.class <- get_model_class(num.groups, interaction)
 
+    # check latent variables and get indices for Lambda.x and Lambda.y
     xi.s <- unlist(strsplit(xi, ","))
     if (length(xi.s) != num.xi) {
         stop("Number of xi's and assignation of x's to xi's does not match.
@@ -173,9 +40,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
     xi.ind <- list()
     for (i in seq_len(num.xi)) xi.ind[[i]] <- grep_ind(xi.s[i])
-    # TODO Use sapply instead of loop!
+    ## --> TODO Use sapply instead of loop!
 
-    #eta.ind <- grep_ind(eta)
     eta.s <- unlist(strsplit(eta, ","))
     if (length(eta.s) != num.eta) {
         stop("Number of eta's and assignation of y's to eta's does not match.
@@ -183,26 +49,25 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
     eta.ind <- list()
     for (i in seq_len(num.eta)) eta.ind[[i]] <- grep_ind(eta.s[i])
-    # TODO Use sapply instead of loop!
+    ## --> TODO Use sapply instead of loop!
 
     # create matrices with default constraints
     # Lambda.x
-    # TODO catch misspecification
+    ## --> TODO catch misspecification
     Lambda.x <- matrix(0, nrow=num.x, ncol=num.xi)
     for (i in seq_len(num.xi)){
         Lambda.x[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
     }
     # Lambda.y
-    # TODO catch misspecification
+    ## --> TODO catch misspecification
     Lambda.y <- matrix(0, nrow=num.y, ncol=num.eta)
     for (i in seq_len(num.eta)){
         Lambda.y[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
     }
-    # Gamma
-    # TODO specification for stemm
+    # Gamma and Beta
+    ## --> TODO specification for stemm
     if (relation_lat == "default"){
         Gamma <- matrix(nrow=num.eta, ncol=num.xi)
-        # Beta
         Beta <- diag(1, nrow=num.eta)
     }
     else {
@@ -244,7 +109,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         alpha <- matrix(0, nrow=num.eta, ncol=1)
     }
     # tau
-    # TODO specify default constraints
+    ## --> TODO specify default constraints
     tau <- matrix(0, nrow=num.xi, ncol=1)
     # Omega
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
@@ -293,27 +158,26 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                                                bounds=list()))
 
     # add parameter names to model
-    # if (num.groups == 1) {
     if (model.class == "lms") {
         model$info$par.names <- get_parnames(model)$group1
     } else {
         model$info$par.names <- get_parnames(model)
     }
 
-    # TODO set parameters that do not vary between groups
+    ## --> TODO set parameters that do not vary between groups
 
     # bounds for parameters
     upper <- rep(Inf, count_free_parameters(model))
     lower <- rep(-Inf, count_free_parameters(model))
     # variances to (0, Inf)
-    # TODO this works only for diagonal covariance matrices
+    ## --> FIXME this works only for diagonal covariance matrices
     if (model.class == "lms") {
         lower[grep("Theta.[de]", model$info$par.names)] <- 0
         lower[grep("Psi", model$info$par.names)] <- 0
-        # TODO What about A? Does that have to be positiv as well??? Since Phi
+        ## --> TODO What about A? Does that have to be positiv as well??? Since Phi
         # should be...
-        # TODO What about if Theta.d and Theta.e are not diagonal matrices?
-        # TODO What about Psi, when eta > 1?
+        ## --> TODO What about if Theta.d and Theta.e are not diagonal matrices?
+        ## --> TODO What about Psi, when eta > 1?
     } else if (model.class == "stemm") {
         start.index <- 0
         for (g in seq_len(model$info$num.groups)) {
@@ -331,27 +195,17 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         }
         lower[indices] <- 0
     }
-    # TODO case for nsemm
+    ## --> TODO case for nsemm
     model$info$bounds = list(upper=upper, lower=lower)
 
     class(model) <- model.class
     model
 }
 
-get_parnames <- function(model) {
-    # TODO if this function is not needed in fill_matrices, move into
-    # specify_sem
-    par.names <- list()
-    for (g in seq_len(model$info$num.groups)) {
-        lst <- unlist(lapply(model$matrices[[g]], is.na))
-        par.names[[g]] <- names(lst[lst])
-    }
-    names(par.names) <- paste0("group", 1:model$info$num.groups)
-    par.names
-}
-
-fill_matrices <- function(dat, model){
-    # TODO model is input here so "info" is not lost. Better solution required.
+# Function to create model matrices from a dataframe with columns label
+# (for parameter labels) and group 1 to group n; only needed when user
+# wants to have full control over constraints, etc.; exported function
+fill_matrices <- function(dat){
 
     stopifnot(is.data.frame(dat))
 
@@ -371,16 +225,11 @@ fill_matrices <- function(dat, model){
     Omega    <- as.character(dat$label[grep("Omega", dat$label)])
 
     # number of latent and indicator variables and groups
-    # num.x      <- length(nu.x)
-    # num.y      <- length(nu.y)
-    # num.xi     <- length(tau)
-    # num.eta    <- length(alpha)
-    # num.groups <- ncol(dat) - 1
-    num.x <- model$info$num.x
-    num.y <- model$info$num.y
-    num.xi <- model$info$num.xi
-    num.eta <- model$info$num.eta
-    num.groups <- model$info$num.groups
+    num.x      <- length(nu.x)
+    num.y      <- length(nu.y)
+    num.xi     <- length(tau)
+    num.eta    <- length(alpha)
+    num.groups <- ncol(dat) - 1
 
     # create matrices
     matrices <- list()
@@ -414,7 +263,7 @@ fill_matrices <- function(dat, model){
         Omega.matrix    <- matrix(dat[dat$label %in% Omega, paste0("group",g)],
                                   nrow=num.xi, ncol=num.xi)
 
-        if (class(model) == "lms") {
+        if (num.groups == 1) {
             matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                   Theta.d=Theta.d.matrix,
@@ -422,7 +271,7 @@ fill_matrices <- function(dat, model){
                                   A=A.matrix, nu.x=nu.x.matrix,
                                   nu.y=nu.y.matrix, alpha=alpha.matrix,
                                   tau=tau.matrix, Omega=Omega.matrix)
-        } else if (class(model) == "stemm") {
+        } else if (all(is.na(Omega.matrix))) {
             matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                   Beta=Beta.matrix, Theta.d=Theta.d.matrix,
@@ -440,16 +289,42 @@ fill_matrices <- function(dat, model){
                                    tau=tau.matrix, Omega=Omega.matrix)
         }
     }
-    names(matrices) <- paste0("group",1:num.groups)
+    names(matrices) <- paste0("group", 1:num.groups)
 
-    model.new <- list(matrices=matrices, info=model$info)
-    model.new$info$par.names <- get_parnames(model.new)
-    # TODO perhaps different for lms
+    par.names <- list()
+    for (g in seq_len(num.groups)) {
+        group <- paste0("group",g)
+        par.names[[g]] <- as.character(dat$label[is.na(dat[,group])])
+    }
+    names(par.names) <- paste0("group", 1:num.groups)
+    w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
 
-    class(model.new) <- class(model) # TOTHINK must this be the case?
-    model.new
+    bounds <- list(upper=rep(Inf, length(which(is.na(unlist(dat[,-1]))))),
+                   lower=rep(-Inf, length(which(is.na(unlist(dat[,-1]))))))
+    # TODO Variances are not restricted, yet!
+
+    info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
+                 num.groups=num.groups, par.names=par.names, w=w,
+                 bounds=bounds)
+
+    model <- list(matrices=matrices, info=info)
+
+    if (num.groups == 1) {
+        model <- list(matrices=matrices, info=info)
+        class(model) <- "lms"
+    } else if (all(is.na(Omega.matrix))) {
+        model <- list(matrices=matrices, info=info)
+        class(model) <- "stemm"
+    } else {
+        model <- list(matrices=matrices, info=info)
+        class(model) <- "nsemm"
+    }
+        
+    model
 }
 
+# Function to count free parameters of a model created with specify_sem
+# (i.e. NAs in the model are counted); exported function
 count_free_parameters <- function(model) {
     res <- 0
     for (g in seq_len(model$info$num.groups))
@@ -457,6 +332,9 @@ count_free_parameters <- function(model) {
     res
     }
 
+# Function to fill a model created with specify_sem with parameters fiven
+# in a vector; mostly needed to simulate data from a prespecified model;
+# NOT exported
 fill_model <- function(model, parameters, version="new") {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm"
@@ -497,7 +375,168 @@ fill_model <- function(model, parameters, version="new") {
     out
 }
 
-# fill upper.tri of a (filled) matrix which should be symmetric
+#--------------- helper functions ---------------
+
+# all NOT exported
+
+# Function to grep indices for Lambda matrices from input that defines
+# which indicators are asociated with which latent variable
+grep_ind <- function(x){
+    tryCatch({
+        if (length(unlist(strsplit(x, "-"))) > 1){
+            as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\1",
+            x)):as.numeric(gsub("^.*[x,y]([0-9]+).*[x,y]([0-9]+)$", "\\2", x))
+        } else {
+            as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
+        }
+    }, warning = function(war) {
+        # TODO more clear error message
+        stop("Wrong input for specifying exogenous or endogonous latent
+             variables (xi or etas). See ?specify_sem.")
+    })
+}
+
+# Function that returns matrix which specifies which latent variables
+# interact with each other
+calc_interaction_matrix <- function(x){
+    tryCatch({
+        rows <- as.numeric(gsub("^.*xi([0-9]+):xi[0-9]+$", "\\1", x))
+        cols <- as.numeric(gsub("^.*xi.*:xi([0-9]+)$", "\\1", x))
+        mat  <- sort_interaction_effects(rows, cols)
+        mat
+    }, warning = function(war) {
+        stop("Wrong input for interaction. See ?specify_sem.")
+    }, error = function(err) { # perhaps error catching is unnecessary
+        stop("Wrong input for interaction. See ?specify_sem.")
+    })
+}
+
+# Function that ensures that interaction effects are in the correct order
+# when passed to Omega
+sort_interaction_effects <- function(rows, cols){
+    
+    for (i in seq_along(rows)){
+        if (rows[i] > cols[i]){
+            rows_i <- rows[i]
+            cols_i <- cols[i]
+            rows[i] <- cols_i
+            cols[i] <- rows_i
+        }
+    }
+    cbind(rows, cols)
+}
+
+# Function that tests if input for Omega is in the correct format; Omega
+# needs to be in row echelon form; returns nothing if Omega has the correct
+# form
+test_omega <- function(Omega){
+    
+    if (any(is.na(Omega))){
+
+        ind <- which(is.na(Omega), arr.ind=TRUE)
+        dim <- nrow(Omega)
+        msg <- "Interactions are not well-defined. Please change order of xi's.
+        See ?specify_sem for details."
+
+        if (nrow(ind) == 1){
+            if (!is.na(Omega[1, dim]))
+                stop(msg)
+
+        } else {
+            for (i in 1:max(ind[,1])){
+                if (max(which(is.na(Omega[i,]))) < dim){
+                    stop(msg)
+                }
+            }
+            if (max(ind[,1]) > 1){
+                for (i in 2:max(ind[,1])){
+                    if (min(which(is.na(Omega[i-1,]))) >= min(which(is.na(Omega[i,])))) {
+                        stop(msg)
+                    }
+                }
+            }
+        }
+        invisible(NULL)
+    } else {
+        invisible(NULL)
+    }
+}
+
+# Function that creates Beta and Gamma matrices according to the input
+# obtained by relation_lat; matrices define relationships for latent
+# variables except for interaction effects
+rel_lat <- function(x, num.eta, num.xi){
+    
+    x.s       <- unlist(strsplit(x, ";"))
+    which.xi  <- which(grepl("xi", x.s))
+    which.eta <- which(!grepl("xi", x.s))
+    
+    G <- matrix(0, nrow=num.eta, ncol=num.xi)
+    for (i in which.xi){
+        xi.s <- unlist(strsplit(x.s[i], ">"))
+            if (length(xi.s) < 2){
+                stop("Latent variables misspecified. Must be of the form
+                'xi1>eta1'. See ?specify_sem for details.")
+            }
+        xis  <- unlist(strsplit(xi.s[1], ","))
+        etas <- unlist(strsplit(xi.s[2], ","))
+        ind.xi <- as.numeric(gsub("^.*xi([0-9]).*$", "\\1", xis))
+        ind.eta <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", etas))
+        G[ind.eta, ind.xi] <- NA
+    }
+    
+    B <- diag(1, num.eta)
+    for (i in which.eta){
+        eta.s <- unlist(strsplit(x.s[i], ">"))
+            if (length(eta.s) < 2){
+                stop("Latent variables misspecified. Must be of the form
+                'xi1>eta1'. See ?specify_sem for details.")
+            }
+        eta.rows <- unlist(strsplit(eta.s[1], ","))
+        eta.cols <- unlist(strsplit(eta.s[2], ","))
+        ind.rows <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.rows))
+        ind.cols <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.cols))
+        B[ind.rows, ind.cols] <- NA
+    }
+    out <- list(Gamma=G, Beta=B)
+    out
+}
+
+# Function to define model class of a given specification; possible output:
+# 'lms', 'stemm', 'nsemm'
+get_model_class <- function(num.groups, interaction) {
+    if (num.groups == 1) {
+            if (interaction == "") {
+                # TODO should still work for stemm
+                stop("Model needs either more than one latent group or at least one
+                     latent interaction (e.g. 'xi1:xi2'). For other models please
+                     use lavaan or the like.")
+            } else {
+                model.class <- "lms"
+            }
+        } else if (interaction == "") {
+            model.class <- "stemm"
+        } else {
+            model.class <- "nsemm"
+        }
+    model.class
+}
+
+# Function to obtain parameter names from a given model; used in
+# specify_sem
+get_parnames <- function(model) {
+    ## --> TODO if this function is not needed in fill_matrices, move into
+    # specify_sem
+    par.names <- list()
+    for (g in seq_len(model$info$num.groups)) {
+        lst <- unlist(lapply(model$matrices[[g]], is.na))
+        par.names[[g]] <- names(lst[lst])
+    }
+    names(par.names) <- paste0("group", 1:model$info$num.groups)
+    par.names
+}
+
+# Function to fill upper.tri of a (filled) matrix which should be symmetric
 fill_symmetric <- function(mat) {
     for (i in seq_len(nrow(mat))) {
                 for (j in i:ncol(mat)) {
@@ -506,30 +545,4 @@ fill_symmetric <- function(mat) {
             }
     mat
 }
-
-## TODO Want fill_matrices to work with a data frame created with lavaanify()...
-
-# # specify model with lavaan
-# # needs certain labels to work properly
-# my.model <- '# measurement
-#             xi1 =~ 1*x1 + Lx1*x1 + Lx2*x2
-#             xi2 =~ 1*x3 + Lx3*x3 + Lx4*x4
-#             eta =~ 1*y + Ly1*y
-# 
-#             # structural
-#             !interaction := xi1*xi2
-#             eta ~ a1*1 + G1*xi1 + G2*xi2 
-# 
-#             # variances and covariances
-#             x1 ~~ Td1*x1
-#             x2 ~~ Td2*x2
-#             x3 ~~ Td3*x3
-#             x4 ~~ Td4*x4
-#             y ~~ 0*y + Te1*y
-#             eta ~~ Psi1*eta
-#             xi1 ~~ Phi1*xi1
-#             xi2 ~~ Phi2*xi2'
-# 
-# #lavaanify(myModel)
-# specs <- lavaanify(myModel)[,c("label", "ustart")]
 
