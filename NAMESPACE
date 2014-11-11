@@ -5,12 +5,12 @@ importFrom(nlme, fdHess)
 export(
     specify_sem, 
     count_free_parameters,
-    fill_model,
+    create_sem,
     em
     )
 
-S3method(simulate, lmsFilled)
-S3method(simulate, stemmFilled)
+S3method(simulate, lms)
+S3method(simulate, stemm)
 S3method(summary, emEst)
 S3method(print, summary.emEst)
 S3method(logLik, emEst)

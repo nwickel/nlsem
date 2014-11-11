@@ -16,23 +16,25 @@ as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(obje
     data
 }
 
-simulate.stemmFilled <- function(object, nsim=1, seed=NULL, n=400, ...) {
+simulate.stemm <- function(object, parameters, nsim=1, seed=NULL, n=400, ...) {
 
     # set seed
     set.seed(seed)
 
-    num.groups <- object$info$num.groups
-    w <- object$info$w
+    mod.filled <- fill_model(object, parameters)
+
+    num.groups <- mod.filled$info$num.groups
+    w <- mod.filled$info$w
 
     dat.sim <- lapply(1:num.groups, function(g) {
                       rmvnorm(round(n*w[g]),
-                              mean=mu_stemm(model=object, g),
-                              sigma=sigma_stemm(model=object, g))
+                              mean=mu_stemm(model=mod.filled, g),
+                              sigma=sigma_stemm(model=mod.filled, g))
                               })
     Reduce(rbind, dat.sim)
 }
 
-simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
+simulate.lms <- function(object, parameters, nsim=1, seed=NULL, n=400, m=16, ...) {
 
     # set seed
     set.seed(seed)
@@ -43,14 +45,16 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
     V <- quad$n
     w <- quad$w
 
+    mod.filled <- fill_model(object, parameters)
+
     # calculate n for mixture components
     n.mix <- ceiling(w*n)
 
-    # simulate data (compare Equation 15 in Klein & Moosbrugger (2000))
+    # simulate data (compare Equation 15 in Klein & Moosbrugger, 2000)
     dat.sim <- sapply(1:length(w), function(i){
                            rmvnorm(n.mix[i], 
-                           mean=mu_lms(model=object, z=V[i,]),
-                           sigma=sigma_lms(model=object, z=V[i,]))
+                           mean=mu_lms(model=mod.filled, z=V[i,]),
+                           sigma=sigma_lms(model=mod.filled, z=V[i,]))
                            })
 
     dat <- Reduce(rbind, dat.sim)[sample(n),]         # ceiling "inflates" number of observations 
@@ -58,7 +62,7 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
     dat
 }
 
-summary.emEst <- function(object, ...){
+summary.emEst <- function(object, ...) {
 
     # estimates
     est <- object$par
@@ -103,7 +107,7 @@ summary.emEst <- function(object, ...){
 }
 
 print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
-                               cs.ind=2:3, ...){
+                               cs.ind=2:3, ...) {
 
     cat("\nEstimates:\n")
     printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
@@ -124,7 +128,7 @@ logLik.emEst <- function(object, ...){
     out
 }
 
-anova.emEst <- function(object, ..., test=c("Chisq", "none")){
+anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
 
     test <- match.arg(test)
     dots <- list(...)
@@ -157,11 +161,11 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")){
     if (test == "none") out <- out[, 1:6]
     class(out) <- c("Anova", "data.frame")
     attr(out, "heading") <- "Analysis of deviance table for SEMs\n"
-    # FIX ME Header does not show.
+    # FIXME Header does not show
     out
 }
 
-AIC.emEst <- function(object, ..., k=2){
+AIC.emEst <- function(object, ..., k=2) {
 
     dots <- list(...)
     if (length(dots) == 0){
@@ -184,7 +188,7 @@ AIC.emEst <- function(object, ..., k=2){
     out
 }
 
-coef.emEst <- coefficients.emEst <- function(object, ...){
+coef.emEst <- coefficients.emEst <- function(object, ...) {
 
     coef <- object$par
 
@@ -199,7 +203,7 @@ coef.emEst <- coefficients.emEst <- function(object, ...){
     coef
 }
 
-plot.emEst <- function(x, y, ...){
+plot.emEst <- function(x, y, ...) {
 
     plot(x$loglikelihoods, type="l", xlab="Number of iterations", 
          ylab="log likelihood", axes=F)
@@ -213,7 +217,7 @@ plot.emEst <- function(x, y, ...){
 
 # calculates relative change defined as absolute difference divided by
 # maximum absolute value
-rel_change <- function(x){
+rel_change <- function(x) {
 
     rel.change <- numeric(length(x))
     for (i in 2:length(rel.change)){

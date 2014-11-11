@@ -205,7 +205,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
 # Function to create model matrices from a dataframe with columns label
 # (for parameter labels) and group 1 to group n; only needed when user
 # wants to have full control over constraints, etc.; exported function
-fill_matrices <- function(dat){
+create_sem <- function(dat){
 
     stopifnot(is.data.frame(dat))
 
@@ -332,10 +332,10 @@ count_free_parameters <- function(model) {
     res
     }
 
-# Function to fill a model created with specify_sem with parameters fiven
-# in a vector; mostly needed to simulate data from a prespecified model;
+# Function to fill a model created with specify_sem with parameters given
+# as a vector; mostly needed to simulate data from a prespecified model;
 # NOT exported
-fill_model <- function(model, parameters, version="new") {
+fill_model <- function(model, parameters) {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm"
               || class(model) == "nsemm")
