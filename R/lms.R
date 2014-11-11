@@ -89,7 +89,7 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 }
 
 # log likelihood function which will be optimized in M-step (see below)
-loglikelihood <- function(parameters, model, dat, P, m=16, ...) {
+loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
     
     mod.filled <- fill_model(model=model, parameters=parameters)
 
@@ -128,21 +128,21 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
     optimizer <- match.arg(optimizer)
 
     if (optimizer == "nlminb") {
-        est <- nlminb(start=parameters, objective=loglikelihood, dat=dat,
+        est <- nlminb(start=parameters, objective=loglikelihood_lms, dat=dat,
                       model=model, P=P, upper=model$info$bounds$upper,
                       lower=model$info$bounds$lower, ...)
         if (Hessian == TRUE){
-            est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood,
+            est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_lms,
                                         model=model, dat=dat, P=P)
         }
     } else {
-        est <- optim(par=parameters, fn=loglikelihood, model=model, dat=dat,
+        est <- optim(par=parameters, fn=loglikelihood_lms, model=model, dat=dat,
                      P=P, upper=model$info$bounds$upper,
                      lower=model$info$bounds$lower, method="L-BFGS-B", ...)
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
         if (Hessian == TRUE){
-            est$hessian <- optimHess(est$par, fn=loglikelihood, model=model,
+            est$hessian <- optimHess(est$par, fn=loglikelihood_lms, model=model,
                                      P=P, dat=dat)
         }
     }

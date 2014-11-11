@@ -7,6 +7,11 @@
 em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                 max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
 
+    if (!count_free_parameters(model) == length(start)){
+        stop("Number of starting parameters is not equal to number of free
+        parameters in model.")
+    }
+
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm\n")
     cat(paste("Threshold: ", threshold, "\n"))
