@@ -1,8 +1,12 @@
 # lms.R
 #
 # created: Sep/11/2014, NU
-# last mod: Oct/07/2014, NU
+# last mod: Nov/11/2014, NU
 
+#--------------- main functions ---------------
+
+# Calculate mu of multivariate normal distribution for joint vector of
+# indicators (see Equations 16 and 18, 19 in Klein & Moosbrugger, 2000)
 mu_lms <- function(model, z) {
     
     stopifnot(class(model) == "lmsFilled")
@@ -22,6 +26,8 @@ mu_lms <- function(model, z) {
     mu
 }
 
+# Calculate Sigma of multivariate normal distribution for joint vector of
+# indicators (see Equations 17 and 20-22 in Klein & Moosbrugger, 2000)
 sigma_lms <- function(model, z) {
 
     stopifnot(class(model) == "lmsFilled")
@@ -50,40 +56,7 @@ sigma_lms <- function(model, z) {
     sigma
 }
 
-#get_k <- function(Omega) which(rowSums(Omega) == 0)[1] - 1
-get_k <- function(Omega) {
-    if (any(is.na(Omega))){
-        out <-length(which(is.na(rowSums(Omega))))
-    } else {
-        if (any(rowSums(Omega) == 0)){
-            out <- which(rowSums(Omega) == 0)[1] - 1
-        } else out <- nrow(Omega)
-    }
-    out
-}
-    
-get_d <- function(n, k) {
-    mat <- diag(n)
-    mat[1:k, 1:k] <- 0
-    mat
-}
-
-quadrature <- function(m, k) {
-
-    one.dim         <- hermite.h.quadrature.rules(m)[[m]]
-    test            <- as.matrix(expand.grid(lapply(vector("list", k), function(x) {x <- 1:m; x})))
-    final.nodes     <- matrix(one.dim$x[test], ncol=k, byrow=FALSE)
-    permute.weights <- matrix(one.dim$w[test], ncol=k, byrow=FALSE)
-    final.weights   <- apply(permute.weights, 1, prod)
-
-    n               <- final.nodes * sqrt(2)
-    w               <- final.weights * pi^(-k/2)
-  
-    out <- list(n=n, w=w, k=k, m=m)
-    out
-}
-
-
+# Expectation step of EM-algorithm (see Klein & Moosbrugger, 2000)
 estep_lms <- function(model, parameters, dat, m, ...) {
 
     stopifnot(count_free_parameters(model) == length(parameters))
@@ -115,7 +88,7 @@ estep_lms <- function(model, parameters, dat, m, ...) {
     P
 }
 
-# log likelihood function which will be optimized
+# log likelihood function which will be optimized in M-step (see below)
 loglikelihood <- function(parameters, model, dat, P, m=16, ...) {
     
     mod.filled <- fill_model(model=model, parameters=parameters)
@@ -136,7 +109,7 @@ loglikelihood <- function(parameters, model, dat, P, m=16, ...) {
     -res
 }
 
-
+# Maximization step of EM-algorithm (see Klein & Moosbrugger, 2000)
 mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
                       optimizer=c("nlminb", "optim"), ...) {
 
@@ -182,4 +155,45 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
 
     est
 }
+
+#--------------- helper functions ---------------
+
+# Count number of rows that contain at least one element which is not 0 in
+# Omega
+get_k <- function(Omega) {
+    if (any(is.na(Omega))){
+        out <- length(which(is.na(rowSums(Omega))))
+    } else {
+        if (any(rowSums(Omega) == 0)){
+            out <- which(rowSums(Omega) == 0)[1] - 1
+        } else out <- nrow(Omega)
+    }
+    out
+}
+
+# Get matrix D which contains of 0's and has the identity matrix in its
+# lower right half (compare Equations 20-22 in Klein & Moosbrugger, 2000)
+get_d <- function(n, k) {
+    mat <- diag(n)
+    mat[1:k, 1:k] <- 0
+    mat
+}
+
+# Calculate weights and node points for mixture functions via Gauss-Hermite
+# quadrature as defined in Klein & Moosbrugger (2000)
+quadrature <- function(m, k) {
+
+    one.dim         <- hermite.h.quadrature.rules(m)[[m]]
+    test            <- as.matrix(expand.grid(lapply(vector("list", k), function(x) {x <- 1:m; x})))
+    final.nodes     <- matrix(one.dim$x[test], ncol=k, byrow=FALSE)
+    permute.weights <- matrix(one.dim$w[test], ncol=k, byrow=FALSE)
+    final.weights   <- apply(permute.weights, 1, prod)
+
+    n               <- final.nodes * sqrt(2)
+    w               <- final.weights * pi^(-k/2)
+  
+    out <- list(n=n, w=w, k=k, m=m)
+    out
+}
+
 
