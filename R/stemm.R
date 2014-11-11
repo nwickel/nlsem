@@ -1,8 +1,10 @@
 # stemm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Okt/30/2014, KN
+# last mod: Nov/11/2014, KN
 
+# Calculate mu of multivariate normal distribution for joint vector of
+# indicators (y, x). (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997)
 mu_stemm <- function(model, group) {
     stopifnot(class(model) == "stemmFilled")
 
@@ -18,6 +20,8 @@ mu_stemm <- function(model, group) {
     mu
 }
 
+# Calculate sigma of multivariate normal distribution for joint vector of
+# indicators (y, x). (See equation 5 in Jedidi, Jagpal & DeSarbo, 1997)
 sigma_stemm <- function(model, group) {
     stopifnot(class(model) == "stemmFilled")
 
@@ -28,7 +32,8 @@ sigma_stemm <- function(model, group) {
     s11 <- Ly.Binv %*% (matrices$Gamma %*% matrices$Phi %*% t(matrices$Gamma) +
                         matrices$Psi) %*% t(Ly.Binv) + matrices$Theta.e
     s12 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
-    s21 <- matrices$Lambda.x %*% t(matrices$Phi) %*% t(matrices$Gamma) %*% t(Ly.Binv)
+    s21 <- t(s12)
+    #s21 <- matrices$Lambda.x %*% t(matrices$Phi) %*% t(matrices$Gamma) %*% t(Ly.Binv)
     # TODO check if these formulae are correct!!!
     s22 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
@@ -38,6 +43,7 @@ sigma_stemm <- function(model, group) {
     sigma
 }
 
+# Expectation step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
 estep_stemm <- function(model, parameters, data) {
     # TODO do I need the ... here?
 
@@ -56,6 +62,7 @@ estep_stemm <- function(model, parameters, data) {
     P
 }
 
+# negative log likelihood function which will be optimized in M-step (see below)
 loglikelihood_stemm <- function(parameters, model, data, P) {
     # TODO model or model.filled as input parameter?
     model.filled <- fill_model(model, parameters)
@@ -75,6 +82,7 @@ loglikelihood_stemm <- function(parameters, model, data, P) {
     res
 }
 
+# Maximization step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
 mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
                         optimizer=c("nlminb", "optim"), ...) {
 
@@ -84,7 +92,6 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
         est <- nlminb(start=parameters, objective=loglikelihood_stemm, data=data,
                       model=model, P=P, upper=model$info$bounds$upper,
                       lower=model$info$bounds$lower, ...)
-
         if (Hessian == TRUE){
             est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_stemm,
                                         model=model, data=data, P=P)
