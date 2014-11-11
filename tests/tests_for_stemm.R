@@ -23,12 +23,15 @@ parameters <- c(0.5158426, 0.2671909, 1.1394707, 0.9567445, 1.4950897,
                 1.4823573, 1.3351624, 0.1592073, 0.2160227, 0.7526599)
 # parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 
-model.filled <- fill_model(model, parameters)
-data <- simulate(model.filled)
-P <- estep_stemm(model, parameters, data)
+data <- simulate(model, parameters)
+# P <- estep_stemm(model, parameters, data)
 
-res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+system.time({
+    res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+})
+system.time({
 res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
+})
 
 # EMSEM example: STEMM model for structural equation models
 # =========================================================
@@ -93,5 +96,9 @@ data <- as.matrix(read.table("stemm_data", header=TRUE))
 P <- estep_stemm(model, parameters, data)
 LL <- loglikelihood_stemm(parameters, model, data, P)
 
+system.time({
 res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+})
+system.time({
 res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
+})
