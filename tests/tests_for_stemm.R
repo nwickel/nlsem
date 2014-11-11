@@ -3,17 +3,10 @@
 
 # create model
 # ------------
-mod <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
+model <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
                      xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.groups=3,
-                     interaction="",
-                     interc_obs=FALSE, interc_lat=FALSE)
-
-dat <- as.data.frame(mod)
-
-# Gamma -> diagonal
-dat[18:19, 2:4] <- 0
-
-model <- fill_matrices(dat, mod)
+                     interaction="", interc_obs=FALSE, interc_lat=FALSE,
+                     relation_lat="xi1>eta1; xi2>eta2")
 
 # parameters for testing so sigma is positive definite for all groups
 parameters <- c(0.5158426, 0.2671909, 1.1394707, 0.9567445, 1.4950897,
@@ -32,8 +25,10 @@ parameters <- c(0.5158426, 0.2671909, 1.1394707, 0.9567445, 1.4950897,
 
 model.filled <- fill_model(model, parameters)
 data <- simulate(model.filled)
-estep_stemm(model, parameters, data)
+P <- estep_stemm(model, parameters, data)
 
+res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
 
 # EMSEM example: STEMM model for structural equation models
 # =========================================================
@@ -50,7 +45,7 @@ dat[c(58,62),2:3]     <- 0    # psi.21 and phi.21
 dat[65:72,2:3]        <- 1    # nu.x and nu.y
 dat[75:76,2:3]        <- NA   # tau
 
-model <- fill_matrices(dat, mod)
+model <- create_sem(dat)
 parameters <- c(
                 # group 1
                 rep(0.5, 2),    # Gamma
@@ -67,10 +62,30 @@ parameters <- c(
 # add noise
 # parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 
+# constrain lower bounds for variances to 0
+lower <- rep(-Inf, count_free_parameters(model))
+    start.index <- 0
+    for (g in seq_len(model$info$num.groups)) {
+        if (g == 1) {
+            indices <- c(grep("Theta", model$info$par.names[[g]]),
+                         grep("Psi", model$info$par.names[[g]]),
+                         grep("Phi", model$info$par.names[[g]]))
+        } else {
+            start.index <- start.index + length(model$info$par.names[[g-1]])
+            new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
+                                           grep("Psi", model$info$par.names[[g]]),
+                                           grep("Phi", model$info$par.names[[g]]))
+            indices <- c(indices, new.indices)
+        }
+    }
+    lower[indices] <- 0
+model$info$bounds$lower <- lower
 # constrain upper bounds for variances to 1
-model$info$bounds$upper <- c(Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1)
+upper <- rep(Inf, count_free_parameters(model))
+# upper[indices] <- 1
+# this leads to: Error in solve.default(matrices$Beta) : system is
+# computationally singular: reciprocal condition number = 0
+model$info$bounds$upper <- upper
 
 # model.filled <- fill_model(model, parameters)
 # data <- simulate(model.filled)
