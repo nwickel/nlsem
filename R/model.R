@@ -301,7 +301,7 @@ fill_matrices <- function(dat){
 
     bounds <- list(upper=rep(Inf, length(which(is.na(unlist(dat[,-1]))))),
                    lower=rep(-Inf, length(which(is.na(unlist(dat[,-1]))))))
-    # TODO Variances are not restricted, yet!
+    ## --> TODO Variances are not restricted, yet!
 
     info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
                  num.groups=num.groups, par.names=par.names, w=w,
@@ -390,7 +390,7 @@ grep_ind <- function(x){
             as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
         }
     }, warning = function(war) {
-        # TODO more clear error message
+        ## --> TODO clearer error message
         stop("Wrong input for specifying exogenous or endogonous latent
              variables (xi or etas). See ?specify_sem.")
     })
@@ -507,7 +507,7 @@ rel_lat <- function(x, num.eta, num.xi){
 get_model_class <- function(num.groups, interaction) {
     if (num.groups == 1) {
             if (interaction == "") {
-                # TODO should still work for stemm
+                ## --> TODO should still work for stemm
                 stop("Model needs either more than one latent group or at least one
                      latent interaction (e.g. 'xi1:xi2'). For other models please
                      use lavaan or the like.")
