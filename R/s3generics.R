@@ -1,7 +1,9 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Nov/03/2014, KN
+# last mod Nov/11/2014, NU
+
+#--------------- main functions ---------------
 
 as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
     data <- data.frame(
@@ -54,16 +56,6 @@ simulate.lmsFilled <- function(object, nsim=1, seed=NULL, n=400, m=16, ...){
     dat <- Reduce(rbind, dat.sim)[sample(n),]         # ceiling "inflates" number of observations 
     # TODO This seems random --> better solution?
     dat
-}
-
-rel_change <- function(x){
-
-    rel.change <- numeric(length(x))
-    for (i in 2:length(rel.change)){
-
-        rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
-    }
-    rel.change
 }
 
 summary.emEst <- function(object, ...){
@@ -216,3 +208,19 @@ plot.emEst <- function(x, y, ...){
     box()
 
 }
+
+#--------------- helper functions ---------------
+
+# calculates relative change defined as absolute difference divided by
+# maximum absolute value
+rel_change <- function(x){
+
+    rel.change <- numeric(length(x))
+    for (i in 2:length(rel.change)){
+
+        rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
+    }
+    rel.change
+}
+
+
