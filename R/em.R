@@ -12,6 +12,13 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         parameters in model.")
     }
 
+    if (model$ == "lms"){
+        n.na <- length(which(is.na(model$matrices$group1$Omega)))
+        if (any(start[-c(1:(length(start) - 3))] == 0)){
+            stop("Starting parameters for Omega should not be 0.")
+        }
+    }
+
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm\n")
     cat(paste("Threshold: ", threshold, "\n"))
