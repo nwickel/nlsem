@@ -1,7 +1,9 @@
 # em.R
 #
-# last mod: Nov/10/2014, NU
+# last mod: Nov/11/2014, NU
 
+# Performs EM-algorithm for different models of class 'lms', 'stemm', and
+# soon 'nsemm'
 em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                 max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
 
