@@ -102,3 +102,25 @@ res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
 system.time({
 res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
 })
+
+
+# small model
+# ------------
+model <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
+                     xi="x1-x2,x3-x4", eta="y1-y2", num.groups=2,
+                     interaction="", interc_obs=FALSE, interc_lat=FALSE,
+                     relation_lat="xi1,xi2>eta1")
+
+parameters <- runif(count_free_parameters(model), 0.1, 1.5)
+
+data <- simulate(model, parameters)
+# P <- estep_stemm(model, parameters, data)
+
+system.time({
+    res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+})
+system.time({
+res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
+})
+
+
