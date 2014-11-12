@@ -132,8 +132,8 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
                       model=model, P=P, upper=model$info$bounds$upper,
                       lower=model$info$bounds$lower, ...)
         if (Hessian == TRUE){
-            est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_lms,
-                                        model=model, dat=dat, P=P)
+            est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
+                                        model=model, dat=dat, P=P)$Hessian
         }
     } else {
         est <- optim(par=parameters, fn=loglikelihood_lms, model=model, dat=dat,

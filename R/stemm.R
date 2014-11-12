@@ -93,8 +93,8 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
                       model=model, P=P, upper=model$info$bounds$upper,
                       lower=model$info$bounds$lower, ...)
         if (Hessian == TRUE){
-            est$hessian <- nlme::fdHess(pars=est$par, fun=loglikelihood_stemm,
-                                        model=model, data=data, P=P)
+            est$hessian <- fdHess(pars=est$par, fun=loglikelihood_stemm,
+                                        model=model, data=data, P=P)$Hessian
         }
     } else {
         est <- optim(par=parameters, fn=loglikelihood_stemm, model=model,

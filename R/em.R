@@ -61,9 +61,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                     objective=-final$objective,
                     convergence_final_step=final$convergence,
                     message_final_step=final$message,
-                    Hessian=final$hessian$Hessian,
-                    # TODO gradient is not returned by optim
-                    # gradient=final$hessian$gradient,
+                    Hessian=final$hessian,
                     loglikelihoods=-ll.ret,
                     info=model$info[1:4])
 
