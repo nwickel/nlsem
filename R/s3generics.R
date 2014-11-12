@@ -80,8 +80,6 @@ summary.emEst <- function(object, ...) {
     s.error <- sqrt(diag(solve(object$Hessian)))
     tvalue <- est / s.error
     pvalue <- 2 * pnorm(-abs(tvalue))
-    # TODO Do I have to take it twice here? Is that because we only test if
-    # different from 0 and do not care about direction?
     est.table <- cbind(est, s.error, tvalue, pvalue)
     dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
 
