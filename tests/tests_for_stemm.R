@@ -103,6 +103,14 @@ system.time({
 res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
 })
 
+# Estimating the model above
+# on HPC:
+#    user  system elapsed 
+# 441.125   0.426 438.858 
+# on macserver
+#    User      System verstrichen 
+# 260.083       4.278     264.511 
+
 
 # small model
 # ------------
@@ -114,7 +122,7 @@ model <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
 parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 
 data <- simulate(model, parameters)
-# P <- estep_stemm(model, parameters, data)
+P <- estep_stemm(model, parameters, data)
 
 system.time({
     res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
