@@ -5,18 +5,18 @@
 
 #--------------- main functions ---------------
 
-as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(object, ...) {
+as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(x, ...) {
     data <- data.frame(
-        label = names(unlist(object$matrices$group1)))
-    for (g in seq_len(length(object$matrices))) {
-        temp <- data.frame(unlist(object$matrices[[g]], use.names=FALSE))
+        label = names(unlist(x$matrices$group1)))
+    for (g in seq_len(length(x$matrices))) {
+        temp <- data.frame(unlist(x$matrices[[g]], use.names=FALSE))
         names(temp) <- paste0("group", g)
         data <- cbind(data, temp)
     }
     data
 }
 
-simulate.stemm <- function(object, parameters, nsim=1, seed=NULL, n=400, ...) {
+simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
     # set seed
     set.seed(seed)
@@ -34,7 +34,7 @@ simulate.stemm <- function(object, parameters, nsim=1, seed=NULL, n=400, ...) {
     Reduce(rbind, dat.sim)
 }
 
-simulate.lms <- function(object, parameters, nsim=1, seed=NULL, n=400, m=16, ...) {
+simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
 
     # set seed
     set.seed(seed)
@@ -79,7 +79,7 @@ summary.emEst <- function(object, ...) {
     # standard errors
     s.error <- sqrt(diag(solve(object$Hessian)))
     tvalue <- est / s.error
-    value <- 2 * pnorm(-abs(tvalue))
+    pvalue <- 2 * pnorm(-abs(tvalue))
     est.table <- cbind(est, s.error, tvalue, pvalue)
     dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
 
