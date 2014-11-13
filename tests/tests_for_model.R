@@ -163,9 +163,9 @@ stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # OK Number of variables or groups must be numeric.
 
 
-# ==============================================
-# Tests for count_free_parameters and fill_model
-# ==============================================
+# ===============================
+# Tests for count_free_parameters
+# ===============================
 
 # lms
 # ---
@@ -176,7 +176,6 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 class(lms_model)
 count_free_parameters(lms_model)
 parameters <- 1:count_free_parameters(lms_model)
-fill_model(lms_model, parameters)
 rm(parameters, lms_model)
 # OK
 
@@ -189,7 +188,6 @@ stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 class(stemm_model)
 count_free_parameters(stemm_model)
 parameters <- 1:count_free_parameters(stemm_model)
-fill_model(stemm_model, parameters)
 rm(parameters, stemm_model)
 # OK
 
@@ -202,7 +200,6 @@ nsemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 class(nsemm_model)
 count_free_parameters(nsemm_model)
 parameters <- 1:count_free_parameters(nsemm_model)
-fill_model(nsemm_model, parameters)
 rm(parameters, nsemm_model)
 # OK
 

@@ -7,14 +7,14 @@
     Simulate data from a structural equation mixture model.
 }
 \usage{
-\method{simulate}{lms}(object, parameters, nsim=1, seed=NULL, n=400, m=16, ...)
-\method{simulate}{stemm}(object, parameters, nsim=1, seed=NULL, n=400, m=16, ...)
+\method{simulate}{lms}(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...)
+\method{simulate}{stemm}(object, nsim=1, seed=NULL, n=400, parameters, ...)
 }
 \arguments{
     \item{object}{structural equation model of class 'lms' or 'stemm'.}
     \item{parameters}{'true' parameters which should be used to simulate
     data.}
-    \item{nsim}{number of response vectors to simulate.  Defaults to ‘1’.}
+    \item{nsim}{number of response vectors to simulate.  Defaults to '1'.}
     \item{seed}{set seed. Default is NULL.}
     \item{n}{data for how many observations should be simulated.}
     \item{m}{number of nodes for Hermite-Gaussian quadrature. Only needed
@@ -32,6 +32,6 @@ pars.orig <- c(.6, .5, .4, .5, .4, .6, .5, .2, .6, .7, .3, .2, .5, .7, .3, .4,
                 .6, .2, .3, .4, .6, .8)
 
 # simulate data from model
-dat <- simulate(model, pars.orig)
+dat <- simulate(model, parameters=pars.orig)
 }
 

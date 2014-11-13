@@ -40,10 +40,10 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     \code{xi2}. And accordingly for the endogenous variables \code{eta}.
 
     Interactions between latent exogenous variables are defined like
-    \code{interaction='xi1:xi2,xi1:xi1}. It is important to note, that
+    \code{interaction='xi1:xi2,xi1:xi1'}. It is important to note, that
     interactions must always start with \code{xi1} and build from there. A
-    definitin like \code{interaction='xi1:xi2,xi2:xi3} is not feasible and
-    must be changed to \code{interaction='xi1:xi2,xi1:xi3} (by simple
+    definitin like \code{interaction='xi1:xi2,xi2:xi3'} is not feasible and
+    must be changed to \code{interaction='xi1:xi2,xi1:xi3'} (by simple
     switching \code{xi1} and \code{xi2} in my definitions).
 
     \code{relation_lat} defines which latent variables influence each
@@ -68,7 +68,7 @@ model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", et
 # create data frame
 specs <- as.data.frame(model)
 # and add custom constraints
-constr <- c(1, NA, NA, 0, 0, 0, 0, 0, 0, 1, NA, NA, 1, NA, NA, NA, NA, 0, NA,
+constr <- c(1, NA, NA, 0, 0, 0, 0, 0, 0, 1, NA, NA, 1, NA, NA, NA, NA, NA,
     0, 0, 0, 0, 0, 0, NA, 0, 0, 0, 0, 0, 0, NA, 0, 0, 0, 0, 0, 0, NA, 0, 0, 0,
     0, 0, 0, NA, 0, 0, 0, 0, 0, 0, NA, NA, 0, 0, 0, NA, 0, 0, 0, NA, NA, NA,
     NA, 0, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0, 0, 0, 0, NA, 0)

@@ -11,9 +11,8 @@
 }
 \arguments{
     \item{dat}{Dataframe with first column \code{label} and one column for
-    each group labeled \code{group1}, \code{group2} and so on. See Details.
-
-     and \code{\link{fill_matrices}}}
+    each group labeled \code{group1}, \code{group2} and so on. See
+    Details.}
 }
 \details{
     Labels on column \code{label} need to be labeled in a certain way.

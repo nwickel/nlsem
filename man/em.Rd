@@ -8,7 +8,7 @@ mixture structural equation models}
     mixture approaches (LMS, STEMM, NSEMM).
 }
 \usage{
-    em(model, data, start, logger=FALSE, threshold=10e-5, max.iter=40,
+    em(model, data, start, logger=FALSE, threshold=1e-05, max.iter=40,
        m=16, optimizer=c("nlminb", "optim"), ...)
 }
 \arguments{
@@ -37,8 +37,8 @@ mixture structural equation models}
     \item{loglikelihoods}{loglikelihoods obtained during each iteratin of
     EM algorithm}
     \item{info}{list of number of exogenous (\code{num.xi}) and endogenous
-    (\code{num.eta}) variables and of indicators (\code(num.x) and
-    \code(num.y)). Corresponds to specifications given to
+    (\code{num.eta}) variables and of indicators (\code{num.x} and
+    \code{num.y}). Corresponds to specifications given to
     \code{\link{specify_sem}} when specifiying structural equation model.}
 }
 \details{
@@ -51,6 +51,7 @@ mixture structural equation models}
     Additional arguments can be passed to \dots for these optimizers, like
     iterations etc. See documentation for \code{\link{optim}} and
     \code{\link{nlminb}}.
+}
 \references{
     Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
     latent interaction effects with the LMS method. \emph{Psychometrika, 65},
@@ -81,7 +82,7 @@ pars.orig <- c(0.6, 0.7, 0.8, 0.7,                                   # Lx
               0.7                                                    # Omega
               )
 
-dat <- simulate(model, pars.orig)
+dat <- simulate(model, parameters=pars.orig)
 
 # fit model
 pars.start <- runif(22, 0.4, 0.6)
