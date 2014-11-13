@@ -79,7 +79,7 @@ summary.emEst <- function(object, ...) {
     # standard errors
     s.error <- sqrt(diag(solve(object$Hessian)))
     tvalue <- est / s.error
-    pvalue <- 2 * pnorm(-abs(tvalue))
+    value <- 2 * pnorm(-abs(tvalue))
     est.table <- cbind(est, s.error, tvalue, pvalue)
     dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
 
