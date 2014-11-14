@@ -20,7 +20,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     }
 
     cat("-----------------------------------\n")
-    cat("Starting EM-algorithm\n")
+    cat("Starting EM-algorithm for ", class(model), "\n")
     cat(paste("Threshold: ", threshold, "\n"))
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
