@@ -412,31 +412,47 @@ sort_interaction_effects <- function(rows, cols){
 # row echelon form; returns nothing if Omega has the correct form
 test_omega <- function(Omega){
     
-    if (any(is.na(Omega))){
+    if (anyNA(Omega)){
 
-        ind <- which(is.na(Omega), arr.ind=TRUE)
-        dim <- nrow(Omega)
+        interactions <- Omega
+        diag(interactions) <- 0
+        ind <- which(is.na(interactions), arr.ind=TRUE)
+        dim <- nrow(interactions)
         msg <- "Interactions are not well-defined. Please change order of xi's.
         See ?specify_sem for details."
 
+        # test if any rows are 0 in between interaction effects
+        na.r <- rowSums(interactions)
+        for (i in seq_along(na.r)){
+            if (!is.na(na.r[i]))
+                if (is.na(sum(na.r[-c(1:i)])))
+                    stop(msg)
+        }
+
         if (nrow(ind) == 1){
-            if (!is.na(Omega[1, dim]))
+            if (!is.na(interactions[1, dim]))
                 stop(msg)
 
         } else {
-            for (i in 1:max(ind[,1])){
-                if (max(which(is.na(Omega[i,]))) < dim){
-                    stop(msg)
-                }
-            }
             if (max(ind[,1]) > 1){
                 for (i in 2:max(ind[,1])){
-                    if (min(which(is.na(Omega[i-1,]))) >= min(which(is.na(Omega[i,])))) {
+                    if (min(which(is.na(interactions[i-1,]))) >=
+                    min(which(is.na(interactions[i,])))) {
                         stop(msg)
                     }
                 }
             }
         }
+
+        # test if quadratic effects are defined for xi's that are not
+        # involved in interactions
+        diag.o <- diag(Omega)
+        na.c <- colSums(interactions)
+        for (i in 2:dim){
+            if (!is.na(na.c[i]) & is.na(diag.o[i]))
+                stop("Quadratic effects defined for xi's which are not
+                involved in any interactions.")
+            }
         invisible(NULL)
     } else {
         invisible(NULL)
