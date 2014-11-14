@@ -42,7 +42,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     Interactions between latent exogenous variables are defined like
     \code{interaction='xi1:xi2,xi1:xi1'}. It is important to note, that
     interactions must always start with \code{xi1} and build from there. A
-    definitin like \code{interaction='xi1:xi2,xi2:xi3'} is not feasible and
+    definition like \code{interaction='xi1:xi2,xi2:xi3'} is not feasible and
     must be changed to \code{interaction='xi1:xi2,xi1:xi3'} (by simple
     switching \code{xi1} and \code{xi2} in my definitions).
 

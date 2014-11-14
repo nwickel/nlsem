@@ -38,7 +38,13 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
              See ?specify_sem.")
     }
     xi.ind <- list()
-    for (i in seq_len(num.xi)) xi.ind[[i]] <- grep_ind(xi.s[i])
+    for (i in seq_len(num.xi)) {
+        xi.ind[[i]] <- grep_ind(xi.s[i])
+        if (max(xi.ind[[i]]) > num.x) {
+            stop("Number of x's assinged to xi exceeds x's specified. See
+                 ?specify_sem")
+        }
+    }
     ## --> TODO Use sapply instead of loop!
 
     eta.s <- unlist(strsplit(eta, ","))
@@ -47,7 +53,13 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
              See ?specify_sem.")
     }
     eta.ind <- list()
-    for (i in seq_len(num.eta)) eta.ind[[i]] <- grep_ind(eta.s[i])
+    for (i in seq_len(num.eta)) {
+        eta.ind[[i]] <- grep_ind(eta.s[i])
+        if (max(eta.ind[[i]]) > num.y) {
+            stop("Number of y's assinged to eta exceeds y's specified. See
+                 ?specify_sem.")
+        }
+    }
     ## --> TODO Use sapply instead of loop!
 
     # create matrices with default constraints
@@ -360,9 +372,9 @@ grep_ind <- function(x){
             as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
         }
     }, warning = function(war) {
-        ## --> TODO clearer error message
         stop("Wrong input for specifying exogenous or endogonous latent
              variables (xi or etas). See ?specify_sem.")
+             # this might never be evaluated, error catched earlier
     })
 }
 
@@ -435,37 +447,46 @@ test_omega <- function(Omega){
 # relation_lat; matrices define relationships for latent variables except
 # for interaction effects
 rel_lat <- function(x, num.eta, num.xi){
-    
+
+    error.msg <- "Latent variables misspecified. Must be of the form
+                    'xi1>eta1' or 'eta1>eta2'. See ?specify_sem for details."
+
     x.s       <- unlist(strsplit(x, ";"))
     which.xi  <- which(grepl("xi", x.s))
     which.eta <- which(!grepl("xi", x.s))
-    
+
     G <- matrix(0, nrow=num.eta, ncol=num.xi)
     for (i in which.xi){
         xi.s <- unlist(strsplit(x.s[i], ">"))
-            if (length(xi.s) < 2){
-                stop("Latent variables misspecified. Must be of the form
-                'xi1>eta1'. See ?specify_sem for details.")
-            }
+        if (length(xi.s) < 2) stop(error.msg)
+
         xis  <- unlist(strsplit(xi.s[1], ","))
         etas <- unlist(strsplit(xi.s[2], ","))
-        ind.xi <- as.numeric(gsub("^.*xi([0-9]).*$", "\\1", xis))
-        ind.eta <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", etas))
-        G[ind.eta, ind.xi] <- NA
+        tryCatch({
+            ind.xi <- as.numeric(gsub("^.*xi([0-9]+).*$", "\\1", xis))
+            ind.eta <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", etas))
+            G[ind.eta, ind.xi] <- NA
+        }, error = function(e) stop(error.msg)
+        , warning = function(w) stop(error.msg)
+        )
     }
     
     B <- diag(1, num.eta)
     for (i in which.eta){
         eta.s <- unlist(strsplit(x.s[i], ">"))
-            if (length(eta.s) < 2){
-                stop("Latent variables misspecified. Must be of the form
-                'xi1>eta1'. See ?specify_sem for details.")
-            }
-        eta.rows <- unlist(strsplit(eta.s[1], ","))
-        eta.cols <- unlist(strsplit(eta.s[2], ","))
-        ind.rows <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.rows))
-        ind.cols <- as.numeric(gsub("^.*eta([0-9]).*$", "\\1", eta.cols))
-        B[ind.rows, ind.cols] <- NA
+        if (length(eta.s) < 2) stop(error.msg)
+
+        eta.cols <- unlist(strsplit(eta.s[1], ","))
+        eta.rows <- unlist(strsplit(eta.s[2], ","))
+        tryCatch({
+            ind.rows <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", eta.rows))
+            ind.cols <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", eta.cols))
+            if (any(sapply(ind.rows, function(x) {is.element(x, ind.cols)})))
+                stop(error.msg)
+            B[ind.rows, ind.cols] <- NA
+        }, error = function(e) stop(error.msg)
+        , warning = function(w) stop(error.msg)
+        )
     }
     out <- list(Gamma=G, Beta=B)
     out
