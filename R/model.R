@@ -1,13 +1,12 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Nov/03/2014, KN
+# last mod Nov/14/2014, NU
 
 #--------------- main functions ---------------
 
-# Function to define model specification for different SEMs with nonlinear
-# effects; possible objects classes are 'lms', 'stemm', 'nsemm'; exported
-# function
+# Define model specification for different SEMs with nonlinear effects;
+# possible objects classes are 'lms', 'stemm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                           interaction="all", interc_obs=FALSE,
                           interc_lat=FALSE, relation_lat="default"){
@@ -157,7 +156,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                                   Omega=Omega)
         }
     }
-    names(matrices) <- paste0("group",1:num.groups)
+    names(matrices) <- paste0("group",seq_len(num.groups))
 
     # group weights w
     w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
@@ -178,45 +177,17 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
 
     ## --> TODO set parameters that do not vary between groups
 
-    # bounds for parameters
-    upper <- rep(Inf, count_free_parameters(model))
-    lower <- rep(-Inf, count_free_parameters(model))
-    # variances to (0, Inf)
-    ## --> FIXME this works only for diagonal covariance matrices
-    if (model.class == "lms") {
-        lower[grep("Theta.[de]", model$info$par.names)] <- 0
-        lower[grep("Psi", model$info$par.names)] <- 0
-        ## --> TODO What about A? Does that have to be positiv as well??? Since Phi
-        # should be...
-        ## --> TODO What about if Theta.d and Theta.e are not diagonal matrices?
-        ## --> TODO What about Psi, when eta > 1?
-    } else if (model.class == "stemm") {
-        start.index <- 0
-        for (g in seq_len(model$info$num.groups)) {
-            if (g == 1) {
-                indices <- c(grep("Theta", model$info$par.names[[g]]),
-                             grep("Psi", model$info$par.names[[g]]),
-                             grep("Phi", model$info$par.names[[g]]))
-            } else {
-                start.index <- start.index + length(model$info$par.names[[g-1]])
-                new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
-                                               grep("Psi", model$info$par.names[[g]]),
-                                               grep("Phi", model$info$par.names[[g]]))
-                indices <- c(indices, new.indices)
-            }
-        }
-        lower[indices] <- 0
-    }
-    ## --> TODO case for nsemm
-    model$info$bounds = list(upper=upper, lower=lower)
-
     class(model) <- model.class
+    
+    # bounds for parameters
+    model$info$bounds <- bounds(model)
+
     model
 }
 
-# Function to create model matrices from a dataframe with columns label
-# (for parameter labels) and group 1 to group n; only needed when user
-# wants to have full control over constraints, etc.; exported function
+# Create model matrices from a dataframe with columns label (for parameter
+# labels) and group 1 to group n; only needed when user wants to have full
+# control over constraints, etc.; exported function
 create_sem <- function(dat){
 
     stopifnot(is.data.frame(dat))
@@ -335,8 +306,8 @@ create_sem <- function(dat){
     model
 }
 
-# Function to count free parameters of a model created with specify_sem
-# (i.e. NAs in the model are counted); exported function
+# Count free parameters of a model created with specify_sem (i.e. NAs in
+# the model are counted); exported function
 count_free_parameters <- function(model) {
     res <- 0
     for (g in seq_len(model$info$num.groups))
@@ -344,9 +315,8 @@ count_free_parameters <- function(model) {
     res
     }
 
-# Function to fill a model created with specify_sem with parameters given
-# as a vector; mostly needed to simulate data from a prespecified model;
-# NOT exported
+# Fill a model created with specify_sem with parameters given as a vector;
+# mostly needed to simulate data from a prespecified model; NOT exported
 fill_model <- function(model, parameters) {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm"
@@ -391,8 +361,8 @@ fill_model <- function(model, parameters) {
 
 # all NOT exported
 
-# Function to grep indices for Lambda matrices from input that defines
-# which indicators are asociated with which latent variable
+# Grep indices for Lambda matrices from input that defines which indicators
+# are asociated with which latent variable
 grep_ind <- function(x){
     tryCatch({
         if (length(unlist(strsplit(x, "-"))) > 1){
@@ -408,8 +378,8 @@ grep_ind <- function(x){
     })
 }
 
-# Function that returns matrix which specifies which latent variables
-# interact with each other
+# Returns matrix which specifies which latent variables interact with each
+# other
 calc_interaction_matrix <- function(x){
     tryCatch({
         rows <- as.numeric(gsub("^.*xi([0-9]+):xi[0-9]+$", "\\1", x))
@@ -423,8 +393,8 @@ calc_interaction_matrix <- function(x){
     })
 }
 
-# Function that ensures that interaction effects are in the correct order
-# when passed to Omega
+# Ensures that interaction effects are in the correct order when passed to
+# Omega
 sort_interaction_effects <- function(rows, cols){
     
     for (i in seq_along(rows)){
@@ -438,9 +408,8 @@ sort_interaction_effects <- function(rows, cols){
     cbind(rows, cols)
 }
 
-# Function that tests if input for Omega is in the correct format; Omega
-# needs to be in row echelon form; returns nothing if Omega has the correct
-# form
+# Tests if input for Omega is in the correct format; Omega needs to be in
+# row echelon form; returns nothing if Omega has the correct form
 test_omega <- function(Omega){
     
     if (any(is.na(Omega))){
@@ -474,9 +443,9 @@ test_omega <- function(Omega){
     }
 }
 
-# Function that creates Beta and Gamma matrices according to the input
-# obtained by relation_lat; matrices define relationships for latent
-# variables except for interaction effects
+# Creates Beta and Gamma matrices according to the input obtained by
+# relation_lat; matrices define relationships for latent variables except
+# for interaction effects
 rel_lat <- function(x, num.eta, num.xi){
 
     error.msg <- "Latent variables misspecified. Must be of the form
@@ -523,8 +492,8 @@ rel_lat <- function(x, num.eta, num.xi){
     out
 }
 
-# Function to define model class of a given specification; possible output:
-# 'lms', 'stemm', 'nsemm'
+# Defines model class of a given specification; possible output: 'lms',
+# 'stemm', 'nsemm'
 get_model_class <- function(num.groups, interaction) {
     if (num.groups == 1) {
             if (interaction == "") {
@@ -543,8 +512,7 @@ get_model_class <- function(num.groups, interaction) {
     model.class
 }
 
-# Function to obtain parameter names from a given model; used in
-# specify_sem
+# Obtains parameter names from a given model; used in specify_sem
 get_parnames <- function(model) {
     ## --> TODO if this function is not needed in fill_matrices, move into
     # specify_sem
@@ -557,7 +525,7 @@ get_parnames <- function(model) {
     par.names
 }
 
-# Function to fill upper.tri of a (filled) matrix which should be symmetric
+# Fills upper.tri of a (filled) matrix which should be symmetric
 fill_symmetric <- function(mat) {
     for (i in seq_len(nrow(mat))) {
                 for (j in i:ncol(mat)) {
@@ -565,5 +533,61 @@ fill_symmetric <- function(mat) {
                 }
             }
     mat
+}
+
+# Vector for diagonal indices
+diag_ind <- function(num) diag(matrix(seq_len(num^2), num))
+
+# Set bounds for parameters: variances > 0
+bounds <- function(model) {
+
+    # variances to (0, Inf)
+    if (class(model) == "lms") {
+
+        lower <- rep(-Inf, count_free_parameters(model))
+        upper <- rep(Inf, count_free_parameters(model))
+
+        if (model$info$num.x > 1){
+            t.d <- paste0("Theta.d", diag_ind(model$info$num.x))
+        } else t.d <- "Theta.d"
+        if (model$info$num.y > 1){
+            t.e <- paste0("Theta.e", diag_ind(model$info$num.y))
+        } else t.e <- "Theta.e"
+        if (model$info$num.eta > 1){
+            psi <- paste0("Psi", diag_ind(model$info$num.eta))
+        } else psi <- "Psi"
+        lower[model$info$par.names %in% c(t.d, t.e, psi)] <- 0
+        out <- list(upper=upper, lower=lower)
+    } else if (class(model) == "stemm" || class(model) == "nsemm") {
+
+        lower <- rep(-Inf, length(model$info$par.names$group1))
+        upper <- rep(-Inf, length(model$info$par.names$group1))
+
+        lower.group <- list()
+        upper.group <- list()
+
+        for (g in seq_len(model$info$num.groups)) {
+            if (model$info$num.x > 1){
+                t.d <- paste0("Theta.d", diag_ind(model$info$num.x))
+            } else t.d <- "Theta.d"
+            if (model$info$num.y > 1){
+                t.e <- paste0("Theta.e", diag_ind(model$info$num.y))
+            } else t.e <- "Theta.e"
+            if (model$info$num.eta > 1){
+                psi <- paste0("Psi", diag_ind(model$info$num.eta))
+            } else psi <- "Psi"
+            if (model$info$num.xi > 1){
+                phi <- paste0("Phi", diag_ind(model$info$num.eta))
+            } else phi <- "Phi"
+
+            lower[model$info$par.names[[g]] %in% c(t.d, t.e, psi, phi)] <- 0
+            lower.group[[g]] <- lower
+            upper.group[[g]] <- upper
+        }
+        names(lower.group) <- paste0("group",seq_len(model$info$num.groups))
+        names(upper.group) <- paste0("group",seq_len(model$info$num.groups))
+        out <- list(upper=upper.group, lower=lower.group)
+    }
+    out
 }
 
