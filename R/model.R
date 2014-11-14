@@ -577,7 +577,7 @@ bounds <- function(model) {
     } else if (class(model) == "stemm" || class(model) == "nsemm") {
 
         lower <- rep(-Inf, length(model$info$par.names$group1))
-        upper <- rep(-Inf, length(model$info$par.names$group1))
+        upper <- rep(Inf, length(model$info$par.names$group1))
 
         lower.group <- list()
         upper.group <- list()
