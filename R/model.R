@@ -507,12 +507,13 @@ rel_lat <- function(x, num.eta, num.xi){
         eta.s <- unlist(strsplit(x.s[i], ">"))
         if (length(eta.s) < 2) stop(error.msg)
 
-        eta.rows <- unlist(strsplit(eta.s[1], ","))
-        eta.cols <- unlist(strsplit(eta.s[2], ","))
+        eta.cols <- unlist(strsplit(eta.s[1], ","))
+        eta.rows <- unlist(strsplit(eta.s[2], ","))
         tryCatch({
             ind.rows <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", eta.rows))
             ind.cols <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", eta.cols))
-            if (any(match(ind.rows, ind.cols))) stop(error.msg)
+            if (any(sapply(ind.rows, function(x) {is.element(x, ind.cols)})))
+                stop(error.msg)
             B[ind.rows, ind.cols] <- NA
         }, error = function(e) stop(error.msg)
         , warning = function(w) stop(error.msg)

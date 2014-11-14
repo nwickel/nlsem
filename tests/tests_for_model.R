@@ -114,6 +114,14 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # interaction (e.g. 'xi1:xi2'). For other models please use lavaan or the
 # like
 
+# not all interactions with xi defined
+lms_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
+                         xi="x1-x2,x3-x4,x5-x6,x7-x8", eta="y1-y2,y3-y4,y5-y6",
+                         num.groups=1, interaction="xi1:xi2,xi1:xi1",
+                         interc_obs=FALSE, interc_lat=FALSE)
+# --> TODO should not throw an error (Interactions are not well-defined.
+# Please change order of xi's. See ?specify_sem for details.)
+
 # more interaction terms than xi's
 # --------------------------------
 lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
@@ -202,6 +210,22 @@ count_free_parameters(nsemm_model)
 parameters <- 1:count_free_parameters(nsemm_model)
 rm(parameters, nsemm_model)
 # --> OK
+
+# nsemm with relation_lat
+# =======================
+nsemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                         xi="x1-x3,x4-x6", eta="y1-y3", num.groups=3,
+                         interaction="xi1:xi2", interc_obs=FALSE,
+                         interc_lat=FALSE, relation_lat="xi1>xi2")
+# --> OK error
+
+nsemm_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
+                         xi="x1-x2,x3-x4,x5-x6,x7-x8", eta="y1-y2,y3-y4,y5-y6",
+                         num.groups=3, interaction="", interc_obs=FALSE,
+                         interc_lat=FALSE,
+                         relation_lat="xi1>eta1;xi2>eta2;xi3,xi4>eta3;eta1,eta3>eta2")
+# --> OK
+
 
 
 # General specification

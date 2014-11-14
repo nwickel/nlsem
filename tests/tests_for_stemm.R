@@ -104,7 +104,7 @@ res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
 })
 
 # Estimating the model above
-# on HPC:
+# on HPC (head node):
 #    user  system elapsed 
 # 441.125   0.426 438.858 
 # on macserver
