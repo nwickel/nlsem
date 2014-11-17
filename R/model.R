@@ -45,7 +45,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                  ?specify_sem")
         }
     }
-    ## --> TODO Use sapply instead of loop!
 
     eta.s <- unlist(strsplit(eta, ","))
     if (length(eta.s) != num.eta) {
@@ -60,23 +59,19 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
                  ?specify_sem.")
         }
     }
-    ## --> TODO Use sapply instead of loop!
 
     # create matrices with default constraints
     # Lambda.x
-    ## --> TODO catch misspecification
     Lambda.x <- matrix(0, nrow=num.x, ncol=num.xi)
     for (i in seq_len(num.xi)){
         Lambda.x[xi.ind[[i]], i] <- c(1, rep(NA, length(xi.ind[[i]])-1))
     }
     # Lambda.y
-    ## --> TODO catch misspecification
     Lambda.y <- matrix(0, nrow=num.y, ncol=num.eta)
     for (i in seq_len(num.eta)){
         Lambda.y[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
     }
     # Gamma and Beta
-    ## --> TODO specification for stemm
     if (relation_lat == "default"){
         Gamma <- matrix(nrow=num.eta, ncol=num.xi)
         Beta <- diag(1, nrow=num.eta)
@@ -120,7 +115,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         alpha <- matrix(0, nrow=num.eta, ncol=1)
     }
     # tau
-    ## --> TODO specify default constraints
     tau <- matrix(0, nrow=num.xi, ncol=1)
     # Omega
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
@@ -527,8 +521,7 @@ get_model_class <- function(num.groups, interaction) {
 
 # Obtains parameter names from a given model; used in specify_sem
 get_parnames <- function(model) {
-    ## --> TODO if this function is not needed in fill_matrices, move into
-    # specify_sem
+
     par.names <- list()
     for (g in seq_len(model$info$num.groups)) {
         lst <- unlist(lapply(model$matrices[[g]], is.na))
