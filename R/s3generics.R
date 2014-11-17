@@ -26,12 +26,24 @@ simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     num.groups <- mod.filled$info$num.groups
     w <- mod.filled$info$w
 
+    # simulate n data points from each mixture distribution
     dat.sim <- lapply(1:num.groups, function(g) {
-                      rmvnorm(round(n*w[g]),
+                      rmvnorm(n,
                               mean=mu_stemm(model=mod.filled, g),
                               sigma=sigma_stemm(model=mod.filled, g))
                               })
-    Reduce(rbind, dat.sim)
+
+    # see simulate_lms for explanation
+    border <- cumsum(w)
+    prob <- runif(n)
+
+    dat <- NULL
+    for (i in seq_len(n)){
+        ind <- sum(prob[i] > border) + 1
+        dat <- rbind(dat, dat.sim[[ind]][i,])
+    }
+
+    dat
 }
 
 simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
@@ -47,20 +59,30 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
 
     mod.filled <- fill_model(object, parameters)
 
-    # calculate n for mixture components
-    n.mix <- ceiling(w*n)
-
-    # simulate data (compare Equation 15 in Klein & Moosbrugger, 2000)
-    dat.sim <- sapply(1:length(w), function(i){
-                           rmvnorm(n.mix[i], 
+    # simulate n data points from each mixture distribution
+    dat.sim <- lapply(seq_along(w), function(i){
+                           rmvnorm(n, 
                            mean=mu_lms(model=mod.filled, z=V[i,]),
                            sigma=sigma_lms(model=mod.filled, z=V[i,]))
                            })
 
-    dat <- Reduce(rbind, dat.sim)[sample(n),]         # ceiling "inflates" number of observations 
-    # TODO This seems random --> better solution?
+    # decide which data points from each mixture should be included in
+    # simulated data set: weights give intervall borders between 0 and 1;
+    # we draw random numbers from a uniform distribution and check in what
+    # intervall they lie: the ith element from that distribution will be
+    # taken and put into the data frame
+    border <- cumsum(w)
+    prob <- runif(n)
+
+    dat <- NULL
+    for (i in seq_len(n)){
+        ind <- sum(prob[i] > border) + 1
+        dat <- rbind(dat, dat.sim[[ind]][i,])
+    }
+
     dat
 }
+
 
 summary.emEst <- function(object, ...) {
 
