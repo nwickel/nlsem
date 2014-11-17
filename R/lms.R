@@ -82,8 +82,11 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 
     P <- P / rowSums(P)   # divide each rho_j*phi(x_i, y_i) by whole density (row)
 
-    stopifnot(all.equal(rowSums(P), rep(1, nrow(P))))
-    # TODO Should get a meaningful error message
+    #stopifnot(all.equal(rowSums(P), rep(1, nrow(P))))
+    if (!all.equal(rowSums(P), rep(1, nrow(P))))
+        stop("Posterior probabilities of expectation step do not sum to 1.
+        Check if expectation step is doing what it is supposed to do. At
+        least change starting parameters for EM algorithm.")
 
     P
 }
@@ -147,11 +150,7 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
         }
     }
 
-    # TODO Try out constrOptim and compare results...
-    # ??? How to use boundaries in constrOptim?
-
-
-    # TODO Maybe add analytical solution for Hessian matrix?
+    ## --> TOTHINK Maybe add analytical solution for Hessian matrix?
 
     est
 }

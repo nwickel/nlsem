@@ -165,8 +165,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
                                                num.groups=num.groups,
-                                               par.names=list(), w=w,
-                                               bounds=list()))
+                                               par.names=list(), w=w))
 
     # add parameter names to model
     if (model.class == "lms") {
@@ -179,7 +178,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
 
     class(model) <- model.class
     
-    # bounds for parameters
+    # bounds for parameters (variances > 0)
     model$info$bounds <- bounds(model)
 
     model
@@ -282,13 +281,8 @@ create_sem <- function(dat){
     names(par.names) <- paste0("group", 1:num.groups)
     w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
 
-    bounds <- list(upper=rep(Inf, length(which(is.na(unlist(dat[,-1]))))),
-                   lower=rep(-Inf, length(which(is.na(unlist(dat[,-1]))))))
-    ## --> TODO Variances are not restricted, yet!
-
     info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
-                 num.groups=num.groups, par.names=par.names, w=w,
-                 bounds=bounds)
+                 num.groups=num.groups, par.names=par.names, w=w)
 
     model <- list(matrices=matrices, info=info)
 
@@ -303,6 +297,9 @@ create_sem <- function(dat){
         class(model) <- "nsemm"
     }
         
+    # bounds for parameters (variances > 0)
+    model$info$bounds <- bounds(model)
+
     model
 }
 
