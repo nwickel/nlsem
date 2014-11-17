@@ -513,10 +513,7 @@ rel_lat <- function(x, num.eta, num.xi){
 get_model_class <- function(num.groups, interaction) {
     if (num.groups == 1) {
             if (interaction == "") {
-                ## --> TODO should still work for stemm
-                stop("Model needs either more than one latent group or at least one
-                     latent interaction (e.g. 'xi1:xi2'). For other models please
-                     use lavaan or the like.")
+                model.class <- "stemm"
             } else {
                 model.class <- "lms"
             }
