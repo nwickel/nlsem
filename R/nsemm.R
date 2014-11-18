@@ -47,7 +47,7 @@ estep_nsemm <- function(model, parameters, data, ...) {
 }
 
 
-mstep_lms <- function(model, parameters, P, data, optimizer, ...) {
+mstep_nsemm <- function(model, parameters, P, data, optimizer, ...) {
     est <- mstep_stemm(model=model, parameters=parameters, P=P,
                                 data=data, optimizer=optimizer, ...)
 
