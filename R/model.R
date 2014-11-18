@@ -280,16 +280,22 @@ create_sem <- function(dat){
 
     model <- list(matrices=matrices, info=info)
 
-    if (num.groups == 1) {
-        model <- list(matrices=matrices, info=info)
-        class(model) <- "lms"
-    } else if (all(is.na(Omega.matrix))) {
-        model <- list(matrices=matrices, info=info)
-        class(model) <- "stemm"
-    } else {
-        model <- list(matrices=matrices, info=info)
-        class(model) <- "nsemm"
-    }
+    if (all(is.na(Omega.matrix))) {
+        interaction <- ""
+    } else interaction <- "not_empty"
+
+    class(model) <- get_model_class(num.groups, interaction)
+
+    # if (num.groups == 1) {
+    #     model <- list(matrices=matrices, info=info)
+    #     class(model) <- "lms"
+    # } else if (all(is.na(Omega.matrix))) {
+    #     model <- list(matrices=matrices, info=info)
+    #     class(model) <- "stemm"
+    # } else {
+    #     model <- list(matrices=matrices, info=info)
+    #     class(model) <- "nsemm"
+    # }
         
     # bounds for parameters (variances > 0)
     model$info$bounds <- bounds(model)
