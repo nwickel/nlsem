@@ -1,11 +1,14 @@
 # em.R
 #
-# last mod: Nov/17/2014, KN
+# last mod: Nov/18/2014, KN
 
 # Performs EM-algorithm for different models of class 'lms', 'stemm', and
 # soon 'nsemm'
 em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                 max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
+
+    stopifnot(class(model) == "lms" || class(model) == "stemm" ||
+              class(model) == "nsemm")
 
     if (!count_free_parameters(model) == length(start)){
         stop("Number of starting parameters is not equal to number of free
@@ -39,20 +42,32 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         cat("-----------------------------------\n")
 
 
-        if (class(model) == "lms") {
-            final <- mstep_lms(model=model, P=P, dat=data, parameters=par.new,
-                               Hessian=TRUE, m=m, optimizer=optimizer, ...)
-            names(final$par) <- model$info$par.names
-        } else if (class(model) == "stemm") {
-            final <- mstep_stemm(model=model, parameters=par.old, P=P, data=data,
-                                 Hessian=TRUE, optimizer=optimizer, ...)
-            par.names <- NULL
-            for (g in seq_len(model$info$num.groups)) {
-                par.names <- c(par.names, paste0("group", g, ".",
-                                                 model$info$par.names[[g]]))
+        switch(class(model),
+           "lms" = {
+                final <- mstep_lms(model=model, P=P, dat=data,
+                                   parameters=par.new, Hessian=TRUE, m=m,
+                                   optimizer=optimizer, ...)
+                names(final$par) <- model$info$par.names
+            },
+            "stemm" = {
+                final <- mstep_stemm(model=model, parameters=par.old, P=P,
+                                     data=data, Hessian=TRUE,
+                                     optimizer=optimizer, ...)
+                par.names <- NULL
+                for (g in seq_len(model$info$num.groups)) {
+                # --> TOTHINK is this what we want as output?
+                    par.names <- c(par.names,
+                                   paste0("group", g, ".", model$info$par.names[[g]]))
+                }
+                names(final$par) <- par.names
+            },
+            "nsemm" = {
+                final <- mstep_nsemm(model=model, parameters=par.old, P=P,
+                                     data=data, Hessian=TRUE,
+                                     optimizer=optimizer, ...)
+                # TODO add names of final$par
             }
-            names(final$par) <- par.names
-        }
+        )
 
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
@@ -90,35 +105,46 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         par.old <- par.new
 
         # E-step
-        if (class(model) == "lms") {
-            P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
-        } else if (class(model) == "stemm") {
-            P <- estep_stemm(model=model, parameters=par.old, data=data)
-            w.g <- colSums(P) / nrow(data)
-            model$info$w <- w.g
-            ## --> TOTHINK this changes w from "matrix" to "numeric". Problematic?
-            if (logger == TRUE) {
-                cat("Group weights: ", round(w.g, digits=4), "\n")
+        switch(class(model),
+           "lms" = {
+                P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
+            },
+           "stemm" = {
+                P <- estep_stemm(model=model, parameters=par.old, data=data)
+                model$info$w <- colSums(P) / nrow(data)
+                ## --> TOTHINK this changes w from "matrix" to "numeric".
+                ## Problematic?
+                if (logger == TRUE) {
+                    cat("Group weights: ", round(model$info$w, digits=4), "\n")
+                }
+            },
+            "nsemm" = {
+                res <- estep_nsemm(model=model, parameters=par.old, data=data, ...)
+                P            <- res$P
+                model$info$w <- res$w.g
+                par.old      <- res$par.old
             }
-        } else {
-            stop("E-step not implemented for other classes than lms or stemm")
-        }
+        )
   
         if(logger == TRUE){
             cat("Doing maximization-step \n")
         }
         
         # M-step
-        if (class(model) == "lms") {
-            m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old,
+        switch(class(model),
+            "lms" = {
+                m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old,
                                 m=m, optimizer=optimizer, ...)
-        } else if (class(model) == "stemm") {
-            m.step <- mstep_stemm(model=model, parameters=par.old, P=P,
+            },
+            "stemm" = {
+                m.step <- mstep_stemm(model=model, parameters=par.old, P=P,
                                   data=data, optimizer=optimizer, ...)
-        } else {
-            stop("M-step not implemented for other classes than lms or stemm")
-        }
-
+            },
+            "nsemm" = {
+                m.step <- mstep_nsemm(model=model, parameters=par.old, P=P,
+                                  data=data, optimizer=optimizer, ...)
+            }
+        )
 
         if(logger == TRUE) {
             cat("Results of maximization \n")
