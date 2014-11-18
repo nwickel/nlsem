@@ -3,7 +3,7 @@
 # created: Nov/14/2014, KN
 # last mod: Nov/18/2014, KN
 
-estep_nsemm <- function(model, parameters, data, ...) {
+estep_nsemm <- function(model, parameters, data, logger, ...) {
     num.groups <- model$info$num.groups
     # TODO more args needed here?
 
@@ -29,7 +29,7 @@ estep_nsemm <- function(model, parameters, data, ...) {
         par.old <- par.old[(length(lms.model$info$par.names) + 1):length(par.old)]
 
         # em for lms
-        est <- em(model=lms.model, data=data, start=group.parameters, ...)
+        est <- em(model=lms.model, data=data, start=group.parameters, logger=logger, ...)
 
         # get new values for Phi
         par.new[grep("Phi", par.new)] <- coef(est)[grep("Phi", names(coef(est)))]

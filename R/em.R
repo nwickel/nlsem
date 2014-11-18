@@ -23,7 +23,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     }
 
     cat("-----------------------------------\n")
-    cat("Starting EM-algorithm for ", class(model), "\n")
+    cat("Starting EM-algorithm for", class(model), "\n")
     cat(paste("Threshold: ", threshold, "\n"))
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
@@ -119,7 +119,8 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
                 }
             },
             "nsemm" = {
-                res <- estep_nsemm(model=model, parameters=par.old, data=data, ...)
+                res <- estep_nsemm(model=model, parameters=par.old, data=data,
+                                   logger=logger, ...)
                 P            <- res$P
                 model$info$w <- res$w.g
                 par.old      <- res$par.old
