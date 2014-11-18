@@ -21,9 +21,10 @@ parameters <- c(0.5158426, 0.2671909, 1.1394707, 0.9567445, 1.4950897,
                 1.4726688, 0.4516402, 1.0838227, 0.2123353, 0.5227697,
                 0.7848908, 1.1258676, 0.6165608, 0.4482860, 1.3358925,
                 1.4823573, 1.3351624, 0.1592073, 0.2160227, 0.7526599)
-# parameters <- runif(count_free_parameters(model), 0.1, 1.5)
+set.seed(126347)
+parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 
-data <- simulate(model, parameters)
+data <- simulate(model, parameters=parameters)
 # P <- estep_stemm(model, parameters, data)
 
 system.time({

@@ -1,6 +1,6 @@
 # em.R
 #
-# last mod: Nov/11/2014, NU
+# last mod: Nov/17/2014, KN
 
 # Performs EM-algorithm for different models of class 'lms', 'stemm', and
 # soon 'nsemm'
@@ -12,7 +12,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
         parameters in model.")
     }
 
-    if (class(model) == "lms"){
+    if (class(model) == "lms" || class(model) == "nsemm"){
         n.na <- length(which(is.na(model$matrices$group1$Omega)))
         if (any(start[-c(1:(length(start) - 3))] == 0)){
             stop("Starting parameters for Omega should not be 0.")
