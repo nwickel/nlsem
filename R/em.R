@@ -96,7 +96,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
             P <- estep_stemm(model=model, parameters=par.old, data=data)
             w.g <- colSums(P) / nrow(data)
             model$info$w <- w.g
-            # TODO this changes w from "matrix" to "numeric". Problematic?
+            ## --> TOTHINK this changes w from "matrix" to "numeric". Problematic?
             if (logger == TRUE) {
                 cat("Group weights: ", round(w.g, digits=4), "\n")
             }

@@ -34,7 +34,6 @@ sigma_stemm <- function(model, group) {
     s12 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
     s21 <- t(s12)
     #s21 <- matrices$Lambda.x %*% t(matrices$Phi) %*% t(matrices$Gamma) %*% t(Ly.Binv)
-    # TODO check if these formulae are correct!!!
     s22 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 

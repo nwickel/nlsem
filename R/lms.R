@@ -72,12 +72,10 @@ estep_lms <- function(model, parameters, dat, m, ...) {
     stopifnot(sum(w) - 1 < 1e-5)
 
     P <- NULL
-    for(node.num in 1:m) {
-        v.par <- V[node.num, ]
-        rho   <- w[node.num]
-        p.ij  <- rho * dmvnorm(dat, mean=mu_lms(model=mod.filled, z=v.par), 
-                               sigma=sigma_lms(model=mod.filled, z=v.par))
-        P     <- cbind(P, p.ij)
+    for(i in seq_along(w)) {
+        p.ij <- w[i] * dmvnorm(dat, mean=mu_lms(model=mod.filled, z=V[i,]), 
+                               sigma=sigma_lms(model=mod.filled, z=V[i,]))
+        P    <- cbind(P, p.ij, deparse.level=0)
     }
 
     P <- P / rowSums(P)   # divide each rho_j*phi(x_i, y_i) by whole density (row)
