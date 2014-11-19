@@ -158,7 +158,7 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 # ===========
 stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.groups=3,
-                         interaction="xi1:xi2",
+                         interaction="",
                          interc_obs=FALSE, interc_lat=FALSE)
 # --> OK
 

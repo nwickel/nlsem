@@ -21,8 +21,8 @@ parameters <- c(0.5158426, 0.2671909, 1.1394707, 0.9567445, 1.4950897,
                 1.4726688, 0.4516402, 1.0838227, 0.2123353, 0.5227697,
                 0.7848908, 1.1258676, 0.6165608, 0.4482860, 1.3358925,
                 1.4823573, 1.3351624, 0.1592073, 0.2160227, 0.7526599)
-set.seed(126347)
-parameters <- runif(count_free_parameters(model), 0.1, 1.5)
+# set.seed(126347)
+# parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 
 data <- simulate(model, parameters=parameters)
 # P <- estep_stemm(model, parameters, data)
@@ -66,33 +66,7 @@ parameters <- c(
 # add noise
 # parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 
-# constrain lower bounds for variances to 0
-lower <- rep(-Inf, count_free_parameters(model))
-    start.index <- 0
-    for (g in seq_len(model$info$num.groups)) {
-        if (g == 1) {
-            indices <- c(grep("Theta", model$info$par.names[[g]]),
-                         grep("Psi", model$info$par.names[[g]]),
-                         grep("Phi", model$info$par.names[[g]]))
-        } else {
-            start.index <- start.index + length(model$info$par.names[[g-1]])
-            new.indices <- start.index + c(grep("Theta", model$info$par.names[[g]]),
-                                           grep("Psi", model$info$par.names[[g]]),
-                                           grep("Phi", model$info$par.names[[g]]))
-            indices <- c(indices, new.indices)
-        }
-    }
-    lower[indices] <- 0
-model$info$bounds$lower <- lower
-# constrain upper bounds for variances to 1
-upper <- rep(Inf, count_free_parameters(model))
-# upper[indices] <- 1
-# this leads to: Error in solve.default(matrices$Beta) : system is
-# computationally singular: reciprocal condition number = 0
-model$info$bounds$upper <- upper
-
-# model.filled <- fill_model(model, parameters)
-# data <- simulate(model.filled)
+# data <- simulate(model, parameters=parameters)
 data <- as.matrix(read.table("stemm_data", header=TRUE))
 P <- estep_stemm(model, parameters, data)
 LL <- loglikelihood_stemm(parameters, model, data, P)
