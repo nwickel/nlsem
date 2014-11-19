@@ -343,7 +343,9 @@ fill_model <- function(model, parameters) {
         }
         # make 'symmetric' matrices symmetric
         matrices.g$Psi <- fill_symmetric(matrices.g$Psi)
-        if (class(model) == "stemm") matrices.g$Phi <- fill_symmetric(matrices.g$Phi)
+        if (class(model) == "stemm" || class(model) == "nsemm") {
+            matrices.g$Phi <- fill_symmetric(matrices.g$Phi)
+        }
         matrices[[g]] <- matrices.g
     }
     out <- list(matrices=matrices, info=model$info)
