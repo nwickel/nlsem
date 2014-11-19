@@ -4,7 +4,8 @@
 # last mod: Nov/11/2014, KN
 
 # Calculate mu of multivariate normal distribution for joint vector of
-# indicators (y, x). (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997)
+# indicators (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997).
+# The order is (x, y) as opposed to the paper.
 mu_stemm <- function(model, group) {
     stopifnot(class(model) == "stemmFilled")
 
@@ -15,13 +16,14 @@ mu_stemm <- function(model, group) {
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% solve(matrices$Beta) %*%
             (matrices$alpha + matrices$Gamma %*% matrices$tau)
     mu.x <- matrices$nu.x + matrices$Lambda.x %*% matrices$tau
-    mu <- rbind(mu.y, mu.x) # vertical vector
+    mu <- rbind(mu.x, mu.y) # vertical vector
 
     mu
 }
 
 # Calculate sigma of multivariate normal distribution for joint vector of
 # indicators (y, x). (See equation 5 in Jedidi, Jagpal & DeSarbo, 1997)
+# The order is (x, y) as opposed to the paper.
 sigma_stemm <- function(model, group) {
     stopifnot(class(model) == "stemmFilled")
 
@@ -29,12 +31,12 @@ sigma_stemm <- function(model, group) {
     # Lambda.y * B^-1
     Ly.Binv <- matrices$Lambda.y %*% solve(matrices$Beta)
 
-    s11 <- Ly.Binv %*% (matrices$Gamma %*% matrices$Phi %*% t(matrices$Gamma) +
+    s22 <- Ly.Binv %*% (matrices$Gamma %*% matrices$Phi %*% t(matrices$Gamma) +
                         matrices$Psi) %*% t(Ly.Binv) + matrices$Theta.e
     s12 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
     s21 <- t(s12)
     #s21 <- matrices$Lambda.x %*% t(matrices$Phi) %*% t(matrices$Gamma) %*% t(Ly.Binv)
-    s22 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
+    s11 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 
     if (!isSymmetric(sigma)) stop("Sigma has to be symmetric")
