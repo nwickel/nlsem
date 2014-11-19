@@ -11,8 +11,6 @@ mu_stemm <- function(model, group) {
 
     matrices <- model$matrices[[group]]
 
-    # TODO case for no y's (as in Davids code). Necessary here?
-    # TODO catch error if B is not nonsingular
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% solve(matrices$Beta) %*%
             (matrices$alpha + matrices$Gamma %*% matrices$tau)
     mu.x <- matrices$nu.x + matrices$Lambda.x %*% matrices$tau
@@ -36,6 +34,7 @@ sigma_stemm <- function(model, group) {
                         matrices$Psi) %*% t(Ly.Binv) + matrices$Theta.e
 
     if (!isSymmetric(s22)) stop("S22 has to be symmetric")
+    # --> TODO remove this error
     s21 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
     s12 <- t(s21)
     s11 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
@@ -43,6 +42,7 @@ sigma_stemm <- function(model, group) {
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 
     if (!isSymmetric(sigma)) stop("Sigma has to be symmetric")
+    tryCatch(solve(sigma), error = function(e) stop("Sigma is not nonsingular."))
 
     sigma
 }
