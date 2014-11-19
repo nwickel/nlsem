@@ -468,7 +468,7 @@ rel_lat <- function(x, num.eta, num.xi){
     which.xi  <- which(grepl("xi", x.s))
     which.eta <- which(!grepl("xi", x.s))
 
-    G <- matrix(0, nrow=num.eta, ncol=num.xi)
+    G <- matrix(NA, nrow=num.eta, ncol=num.xi)
     for (i in which.xi){
         xi.s <- unlist(strsplit(x.s[i], ">"))
         if (length(xi.s) < 2) stop(error.msg)
@@ -478,7 +478,7 @@ rel_lat <- function(x, num.eta, num.xi){
         tryCatch({
             ind.xi <- as.numeric(gsub("^.*xi([0-9]+).*$", "\\1", xis))
             ind.eta <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", etas))
-            G[ind.eta, ind.xi] <- NA
+            G[-ind.eta, -ind.xi] <- 0
         }, error = function(e) stop(error.msg)
         , warning = function(w) stop(error.msg)
         )
