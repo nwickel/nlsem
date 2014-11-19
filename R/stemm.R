@@ -93,16 +93,17 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
 
     if (optimizer == "nlminb") {
         est <- nlminb(start=parameters, objective=loglikelihood_stemm, data=data,
-                      model=model, P=P, upper=model$info$bounds$upper,
-                      lower=model$info$bounds$lower, ...)
+                      model=model, P=P,
+                      upper=unlist(model$info$bounds$upper),
+                      lower=unlist(model$info$bounds$lower), ...)
         if (Hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_stemm,
                                         model=model, data=data, P=P)$Hessian
         }
     } else {
         est <- optim(par=parameters, fn=loglikelihood_stemm, model=model,
-                     data=data, P=P, upper=model$info$bounds$upper,
-                     lower=model$info$bounds$lower, method="L-BFGS-B", ...)
+                     data=data, P=P, upper=unlist(model$info$bounds$upper),
+                     lower=unlist(model$info$bounds$lower), method="L-BFGS-B", ...)
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
         if (Hessian == TRUE) {
