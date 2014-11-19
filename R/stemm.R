@@ -33,10 +33,12 @@ sigma_stemm <- function(model, group) {
 
     s22 <- Ly.Binv %*% (matrices$Gamma %*% matrices$Phi %*% t(matrices$Gamma) +
                         matrices$Psi) %*% t(Ly.Binv) + matrices$Theta.e
+
+    if (!isSymmetric(s22)) stop("S22 has to be symmetric")
     s12 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
     s21 <- t(s12)
-    #s21 <- matrices$Lambda.x %*% t(matrices$Phi) %*% t(matrices$Gamma) %*% t(Ly.Binv)
     s11 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
+    if (!isSymmetric(s11)) stop("S11 has to be symmetric")
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 
     if (!isSymmetric(sigma)) stop("Sigma has to be symmetric")
