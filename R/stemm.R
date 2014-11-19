@@ -23,7 +23,8 @@ mu_stemm <- function(model, group) {
 
 # Calculate sigma of multivariate normal distribution for joint vector of
 # indicators (y, x). (See equation 5 in Jedidi, Jagpal & DeSarbo, 1997)
-# The order is (x, y) as opposed to the paper.
+# The order is (x, y), as opposed to the paper. Therefore the rows and cols in
+# sigma are switched.
 sigma_stemm <- function(model, group) {
     stopifnot(class(model) == "stemmFilled")
 
@@ -35,8 +36,8 @@ sigma_stemm <- function(model, group) {
                         matrices$Psi) %*% t(Ly.Binv) + matrices$Theta.e
 
     if (!isSymmetric(s22)) stop("S22 has to be symmetric")
-    s12 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
-    s21 <- t(s12)
+    s21 <- Ly.Binv %*% matrices$Gamma %*% matrices$Phi %*% t(matrices$Lambda.x)
+    s12 <- t(s21)
     s11 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     if (!isSymmetric(s11)) stop("S11 has to be symmetric")
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
