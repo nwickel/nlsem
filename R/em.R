@@ -4,7 +4,7 @@
 
 # Performs EM-algorithm for different models of class 'lms', 'stemm', and
 # soon 'nsemm'
-em <- function(model, data, start, logger=FALSE, threshold=1e-05,
+em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                 max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm" ||
@@ -13,6 +13,10 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-05,
     if (!count_free_parameters(model) == length(start)){
         stop("Number of starting parameters is not equal to number of free
         parameters in model.")
+    }
+
+    if (ncol(data) != (model$info$num.x + model$info$num.y)) {
+        stop("Number of columns in data does not match number of x's and y's")
     }
 
     if (class(model) == "lms" || class(model) == "nsemm"){

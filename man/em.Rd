@@ -8,7 +8,7 @@ mixture structural equation models}
     mixture approaches (LMS, STEMM, NSEMM).
 }
 \usage{
-    em(model, data, start, logger=FALSE, threshold=1e-05, max.iter=40,
+    em(model, data, start, logger=FALSE, threshold=1e-03, max.iter=40,
        m=16, optimizer=c("nlminb", "optim"), ...)
 }
 \arguments{
