@@ -67,9 +67,11 @@ parameters <- c(
 # parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 
 # data <- simulate(model, parameters=parameters)
-data <- as.matrix(read.table("stemm_data", header=TRUE))
-# P <- estep_stemm(model, parameters, data)
-# LL <- loglikelihood_stemm(parameters, model, data, P)
+data <- as.matrix(read.table("data/stemm_data", header=TRUE))
+data <- data[,c(5:8,1:4)]   # for comparison with emsem
+P <- estep_stemm(model, parameters, data)
+LL <- loglikelihood_stemm(parameters, model, data, P)
+# LL = 1837.446
 
 system.time({
 res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")

@@ -6,10 +6,8 @@
 # Calculate mu of multivariate normal distribution for joint vector of
 # indicators (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997).
 # The order is (x, y) as opposed to the paper.
-mu_stemm <- function(model, group) {
-    stopifnot(class(model) == "stemmFilled" || class(model) == "nsemmFilled")
-
-    matrices <- model$matrices[[group]]
+mu_stemm <- function(matrices) {
+    # stopifnot(class(model) == "stemmFilled" || class(model) == "nsemmFilled")
 
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% solve(matrices$Beta) %*%
             (matrices$alpha + matrices$Gamma %*% matrices$tau)
@@ -23,10 +21,9 @@ mu_stemm <- function(model, group) {
 # indicators (y, x). (See equation 5 in Jedidi, Jagpal & DeSarbo, 1997)
 # The order is (x, y), as opposed to the paper. Therefore the rows and cols in
 # sigma are switched.
-sigma_stemm <- function(model, group) {
-    stopifnot(class(model) == "stemmFilled" || class(model) == "nsemmFilled")
+sigma_stemm <- function(matrices) {
+    # stopifnot(class(model) == "stemmFilled" || class(model) == "nsemmFilled")
 
-    matrices <- model$matrices[[group]]
     # Lambda.y * B^-1
     Ly.Binv <- matrices$Lambda.y %*% solve(matrices$Beta)
 
@@ -54,8 +51,8 @@ estep_stemm <- function(model, parameters, data) {
         # group weight
         w.g <- model$info$w[g]
 
-        p.ij <- w.g * dmvnorm(data, mean=mu_stemm(model.filled, g),
-                              sigma=sigma_stemm(model.filled, g))
+        p.ij <- w.g * dmvnorm(data, mean=mu_stemm(model.filled$matrices[[g]]),
+                              sigma=sigma_stemm(model.filled$matrices[[g]]))
         P <- cbind(P, p.ij, deparse.level=0)
     }
     P <- P / rowSums(P)
@@ -72,19 +69,14 @@ loglikelihood_stemm <- function(parameters, model, data, P) {
     for (g in seq_len(model$info$num.groups)) {
         w.g <- model$info$w[g]
         N.g <- sum(P[,g])
-        mu.g <- mu_stemm(model.filled, g)
-        sigma.g <- sigma_stemm(model.filled, g)
+        mu.g <- mu_stemm(model.filled$matrices[[g]])
+        sigma.g <- sigma_stemm(model.filled$matrices[[g]])
         T.g <- 1/N.g * Reduce('+', lapply(1:N, function(i)(
                                            P[i,g] * (data[i,]-mu.g) %*% 
                                            t(data[i,]-mu.g))))
         res <- res+(1/2 * N.g * (log(det(sigma.g)) + sum(diag(T.g %*%
                                            solve(sigma.g))) - 2*log(w.g)))
     }
-
-
-
-
-
 
     res
 }
