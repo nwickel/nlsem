@@ -69,7 +69,12 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                 final <- mstep_nsemm(model=model, parameters=par.old, P=P,
                                      data=data, Hessian=TRUE,
                                      optimizer=optimizer, ...)
-                # TODO add names of final$par
+                for (g in seq_len(model$info$num.groups)) {
+                    # --> TOTHINK is this what we want as output?
+                    par.names <- c(par.names,
+                                   paste0("group", g, ".", model$info$par.names[[g]]))
+                }
+                names(final$par) <- par.names
             }
         )
 

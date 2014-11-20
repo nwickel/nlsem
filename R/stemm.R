@@ -49,7 +49,6 @@ sigma_stemm <- function(model, group) {
 
 # Expectation step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
 estep_stemm <- function(model, parameters, data) {
-    # TODO do I need the ... here?
 
     model.filled <- fill_model(model=model, parameters=parameters)
 
@@ -72,6 +71,7 @@ loglikelihood_stemm <- function(parameters, model, data, P) {
     model.filled <- fill_model(model, parameters)
     N <- nrow(data)
     res <- 0
+
     for (g in seq_len(model$info$num.groups)) {
         w.g <- model$info$w[g]
         N.g <- sum(P[,g])
@@ -83,6 +83,12 @@ loglikelihood_stemm <- function(parameters, model, data, P) {
         res <- res+(1/2 * N.g * (log(det(sigma.g)) + sum(diag(T.g %*%
                                            solve(sigma.g))) - 2*log(w.g)))
     }
+
+
+
+
+
+
     res
 }
 
