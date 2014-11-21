@@ -106,6 +106,7 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
                             log=TRUE) * P[,node.num]
         res      <- res + sum(lls)
     }
+    # TODO Get rid of loop
 
     -res
 }
