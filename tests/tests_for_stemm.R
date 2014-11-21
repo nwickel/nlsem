@@ -67,14 +67,15 @@ parameters <- c(
 # parameters <- parameters + rnorm(count_free_parameters(model), 0, 0.3)
 
 # data <- simulate(model, parameters=parameters)
-data <- as.matrix(read.table("data/stemm_data", header=TRUE))
+data <- as.matrix(read.table("~/Documents/Studium/Psychologie/Diplomarbeit/data/stemm_data", header=TRUE))
 data <- data[,c(5:8,1:4)]   # for comparison with emsem
 P <- estep_stemm(model, parameters, data)
-LL <- loglikelihood_stemm(parameters, model, data, P)
-# LL = 1837.446
+
+system.time(est <- mstep_stemm(model, parameters, data, P, Hessian=TRUE))
 
 system.time({
-res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb",
+                 control=list(iter.max=1))
 })
 system.time({
 res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")

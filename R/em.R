@@ -57,13 +57,19 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                 final <- mstep_stemm(model=model, parameters=par.old, P=P,
                                      data=data, Hessian=TRUE,
                                      optimizer=optimizer, ...)
-                par.names <- NULL
-                for (g in seq_len(model$info$num.groups)) {
-                # --> TOTHINK is this what we want as output?
-                    par.names <- c(par.names,
-                                   paste0("group", g, ".", model$info$par.names[[g]]))
+                if (is.numeric(final$par)) {
+                    par.names <- NULL
+                    for (g in seq_len(model$info$num.groups)) {
+                    # --> TOTHINK is this what we want as output?
+                        par.names <- c(par.names,
+                                       paste0("group", g, ".", model$info$par.names[[g]]))
+                    }
+                    names(final$par) <- par.names
+                } else {
+                    for (g in seq_len(model$info$num.groups)) {
+                        names(final$par[[g]]) <- model$info$par.names[[g]]
+                    }
                 }
-                names(final$par) <- par.names
             },
             "nsemm" = {
                 final <- mstep_nsemm(model=model, parameters=par.old, P=P,
@@ -166,7 +172,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
       
         ll.new     <- m.step$objective
         ll.ret     <- c(ll.ret, ll.new)
-        par.new    <- m.step$par
+        par.new    <- unlist(m.step$par)
         num.iter   <- num.iter + 1
   
         if(num.iter == max.iter) break
