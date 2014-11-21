@@ -29,8 +29,8 @@ simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     # simulate n data points from each mixture distribution
     dat.sim <- lapply(1:num.groups, function(g) {
                       rmvnorm(n,
-                              mean=mu_stemm(model=mod.filled, g),
-                              sigma=sigma_stemm(model=mod.filled, g))
+                              mean=mu_stemm(matrices=mod.filled$matrices[[g]]),
+                              sigma=sigma_stemm(matrices=mod.filled$matrices[[g]]))
                               })
 
     # see simulate_lms for explanation
