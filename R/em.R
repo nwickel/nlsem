@@ -175,7 +175,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
         par.new    <- unlist(m.step$par)
         num.iter   <- num.iter + 1
   
-        if(num.iter == max.iter) break
+        if(num.iter == max.iter){
+            warning("Maximum number of iterations was reached. EM algorithm might not have
+            converged.")
+            break
+        }
     }
     cat("-----------------------------------\n")
     cat("EM completed \n")
