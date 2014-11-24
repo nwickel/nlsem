@@ -98,15 +98,14 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
     quad <- quadrature(m, k)
     V <- quad$n
 
-    res <- 0
-    for(node.num in 1:m) {
-        v.par    <- V[node.num,]
-        lls      <- dmvnorm(dat, mean=mu_lms(model=mod.filled, z=v.par),
-                            sigma=sigma_lms(model=mod.filled, z=v.par),
-                            log=TRUE) * P[,node.num]
-        res      <- res + sum(lls)
-    }
-    # TODO Get rid of loop
+    res0 <- sapply(seq_len(m), function(i){
+              lls <- sum(dmvnorm(dat,
+                            mean=mu_lms(model=mod.filled, z=V[i,]),
+                            sigma=sigma_lms(model=mod.filled, z=V[i,]),
+                            log=TRUE) * P[,i])
+              lls
+            })
+    res <- sum(res0)
 
     -res
 }
