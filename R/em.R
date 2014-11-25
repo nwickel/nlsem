@@ -5,7 +5,8 @@
 # Performs EM-algorithm for different models of class 'lms', 'stemm', and
 # soon 'nsemm'
 em <- function(model, data, start, logger=FALSE, threshold=1e-03,
-                max.iter=40, m=16, optimizer=c("nlminb", "optim"), ...) {
+                max.iter=40, m=16, optimizer=c("nlminb", "optim"),
+                Hessian=TRUE, ...) {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm" ||
               class(model) == "nsemm")
@@ -46,14 +47,17 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
     # when function aborts
     on.exit({
         cat("-----------------------------------\n")
-        cat("Computing Hessian \n")
+        if (Hessian == TRUE) {
+            cat("Computing Hessian \n")
+        } else {
+            cat("Computing final model \n")
+        }
         cat("-----------------------------------\n")
-
 
         switch(class(model),
            "lms" = {
                 final <- mstep_lms(model=model, P=P, dat=data,
-                                   parameters=par.new, Hessian=TRUE, m=m,
+                                   parameters=par.new, Hessian=Hessian, m=m,
                                    optimizer=optimizer, ...)
                 names(final$par) <- model$info$par.names
                 # Transform parameters back to Phi
@@ -64,12 +68,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
             },
             "stemm" = {
                 final <- mstep_stemm(model=model, parameters=par.old, P=P,
-                                     data=data, Hessian=TRUE,
+                                     data=data, Hessian=Hessian,
                                      optimizer=optimizer, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
                     for (g in seq_len(model$info$num.groups)) {
-                    # --> TOTHINK is this what we want as output?
                         par.names <- c(par.names,
                                        paste0("group", g, ".", model$info$par.names[[g]]))
                     }
@@ -82,14 +85,21 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
             },
             "nsemm" = {
                 final <- mstep_nsemm(model=model, parameters=par.old, P=P,
-                                     data=data, Hessian=TRUE,
+                                     data=data, Hessian=Hessian,
                                      optimizer=optimizer, ...)
-                for (g in seq_len(model$info$num.groups)) {
-                    # --> TOTHINK is this what we want as output?
-                    par.names <- c(par.names,
-                                   paste0("group", g, ".", model$info$par.names[[g]]))
+                if (is.numeric(final$par)) {
+                    par.names <- NULL
+                    for (g in seq_len(model$info$num.groups)) {
+                        par.names <- c(par.names,
+                                       paste0("group", g, ".", model$info$par.names[[g]]))
+                    }
+                    names(final$par) <- par.names
+                } else {
+                    for (g in seq_len(model$info$num.groups)) {
+                        names(final$par[[g]]) <- model$info$par.names[[g]]
+                    }
                 }
-                names(final$par) <- par.names
+                # -> TODO check if par is not already named!
             }
         )
 
@@ -137,8 +147,6 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
            "stemm" = {
                 P <- estep_stemm(model=model, parameters=par.old, data=data)
                 model$info$w <- colSums(P) / nrow(data)
-                ## --> TOTHINK this changes w from "matrix" to "numeric".
-                ## Problematic?
                 if (logger == TRUE) {
                     cat("Group weights: ", round(model$info$w, digits=4), "\n")
                 }
@@ -149,6 +157,9 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                 P            <- res$P
                 model$info$w <- res$w.g
                 par.old      <- res$par.old
+                if (logger == TRUE) {
+                    cat("Group weights: ", round(model$info$w, digits=4), "\n")
+                }
             }
         )
   
