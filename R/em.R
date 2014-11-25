@@ -1,6 +1,6 @@
 # em.R
 #
-# last mod: Nov/18/2014, KN
+# last mod: Nov/25/2014, NU
 
 # Performs EM-algorithm for different models of class 'lms', 'stemm', and
 # soon 'nsemm'
@@ -36,7 +36,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
     ll.new   <- 1     # loglikelihood of the current iteration
     ll.ret   <- NULL
     num.iter <- 0     # number of iterations
-    par.new  <- start
+    if (class(model) == "stemm" || class(model) == "nsemm") {
+        par.new <- start
+    } else {
+        par.new <- convert_parameters_lms(model, start)
+    }
     par.old  <- 0
     
     # when function aborts
@@ -52,6 +56,11 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                                    parameters=par.new, Hessian=TRUE, m=m,
                                    optimizer=optimizer, ...)
                 names(final$par) <- model$info$par.names
+                # Transform parameters back to Phi
+                A <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
+                A[lower.tri(A, diag=TRUE)] <- final$par[grep("Phi", names(final$par))]
+                Phi <- A %*% t(A)
+                final$par[grep("Phi", names(final$par))] <- Phi[lower.tri(Phi, diag=TRUE)] 
             },
             "stemm" = {
                 final <- mstep_stemm(model=model, parameters=par.old, P=P,
@@ -87,7 +96,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
 
-        out <- list(model.class=class(model), par=final$par,
+        out <- list(model.class=class(model), coefficients=final$par,
                     objective=-final$objective,
                     convergence_final_step=final$convergence,
                     message_final_step=final$message,
@@ -122,6 +131,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
         # E-step
         switch(class(model),
            "lms" = {
+                names(model$matrices$group1)[grep("Phi", names(model$matrices$group1))] <- "A"
                 P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
             },
            "stemm" = {

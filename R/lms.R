@@ -1,7 +1,7 @@
 # lms.R
 #
 # created: Sep/11/2014, NU
-# last mod: Nov/24/2014, NU
+# last mod: Nov/25/2014, NU
 
 #--------------- main functions ---------------
 
@@ -193,4 +193,19 @@ quadrature <- function(m, k) {
     out
 }
 
+# Convert parameters for Phi in LMS model to A 
+convert_parameters_lms <- function(model, parameters) {
 
+    names(parameters) <- model$info$par.names
+    Phi <- matrix(0, ncol=model$info$num.xi, nrow=model$info$num.xi)
+    Phi[lower.tri(Phi, diag=TRUE)] <- parameters[grep("Phi", names(parameters))]
+    Phi <- fill_symmetric(Phi)
+    A <- tryCatch({ t(chol(Phi)) }, 
+                  error=function(e) {
+                    warning("Starting parameters for Phi are not positive definite. Identity matrix was used instead.")
+                    diag(1, model$info$num.xi)}
+    )
+    parameters[grep("Phi", names(parameters))] <- A[lower.tri(A, diag=TRUE)]
+
+    parameters
+}

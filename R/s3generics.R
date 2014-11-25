@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Nov/11/2014, NU
+# last mod Nov/25/2014, NU
 
 #--------------- main functions ---------------
 
@@ -56,6 +56,9 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
     quad <- quadrature(m=m, k=k)
     V <- quad$n
     w <- quad$w
+    
+    parameters <- convert_parameters_lms(object, parameters)
+    names(object$matrices$group1)[grep("Phi", names(object$matrices$group1))] <- "A"
 
     mod.filled <- fill_model(object, parameters)
 
@@ -87,16 +90,7 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
 summary.emEst <- function(object, ...) {
 
     # estimates
-    est <- object$par
-
-    # calculate Phi
-    if (object$model.class == "lms") {
-        A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
-        A[lower.tri(A, diag=TRUE)] <- est[grep("A", names(est))]
-        Phi <- A %*% t(A)
-        est[grep("A", names(est))] <- Phi[lower.tri(Phi, diag=TRUE)] 
-        names(est)[grep("A", names(est))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
-    }
+    est <- object$coefficients
 
     # standard errors
     s.error <- sqrt(diag(solve(object$Hessian)))
@@ -206,21 +200,6 @@ AIC.emEst <- function(object, ..., k=2) {
         rownames(out) <- names(mlist)
     }
     out
-}
-
-coef.emEst <- coefficients.emEst <- function(object, ...) {
-
-    coef <- object$par
-
-    # calculate Phi
-    if (object$model.class == "lms") {
-        A <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
-        A[lower.tri(A, diag=TRUE)] <- coef[grep("A", names(coef))]
-        Phi <- A %*% t(A)
-        coef[grep("A", names(coef))] <- Phi[lower.tri(Phi, diag=TRUE)] 
-        names(coef)[grep("A", names(coef))] <- paste0("Phi", 1:sum(lower.tri(Phi, diag=TRUE)))
-    }
-    coef
 }
 
 plot.emEst <- function(x, y, ...) {

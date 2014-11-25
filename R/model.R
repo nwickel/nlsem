@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Nov/14/2014, NU
+# last mod Nov/25/2014, NU
 
 #--------------- main functions ---------------
 
@@ -74,16 +74,14 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # Gamma and Beta
     if (relation_lat == "default"){
         Gamma <- matrix(nrow=num.eta, ncol=num.xi)
-        Beta <- diag(1, nrow=num.eta)
+        Beta  <- diag(1, nrow=num.eta)
     }
     else {
-        GB <- rel_lat(relation_lat, num.eta=num.eta, num.xi=num.xi)
-        tryCatch({
-        Gamma <- GB[[grep("G", names(GB))]]}, error=function(e){
-        Gamma <- matrix(nrow=num.eta, ncol=num.xi);Gamma})
-        tryCatch({
-        Beta <- GB[[grep("B", names(GB))]]}, error=function(e){
-        Beta <- diag(1, nrow=num.eta);Beta})
+        GB    <- rel_lat(relation_lat, num.eta=num.eta, num.xi=num.xi)
+        Gamma <- tryCatch({ GB[[grep("G", names(GB))]] },
+                            error=function(e) matrix(nrow=num.eta, ncol=num.xi) )
+        Beta  <- tryCatch({ GB[[grep("B", names(GB))]] },
+                            error=function(e) diag(1, nrow=num.eta))
     }
     # Theta.d
     Theta.d <- diag(NA, nrow=num.x)
@@ -97,9 +95,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     Phi <- matrix(NA, nrow=num.xi, num.xi)
     # Phi must be symmetrical, upper.tri = lower.tri -> in fill_model
     Phi[upper.tri(Phi)] <- 0
-    # A
-    A <- matrix(NA, nrow=num.xi, ncol=num.xi)
-    A[upper.tri(A)] <- 0
     # nu's
     if (interc_obs){
         nu.x <- matrix(NA, nrow=num.x, ncol=1)
@@ -134,7 +129,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         if (model.class == "lms") {
             matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Theta.d=Theta.d,
-                                  Theta.e=Theta.e, Psi=Psi, A=A,
+                                  Theta.e=Theta.e, Psi=Psi, Phi=Phi,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                                   Omega=Omega)
         } else if (model.class == "stemm") {
@@ -193,7 +188,6 @@ create_sem <- function(dat){
     Theta.e  <- as.character(dat$label[grep("Theta.e", dat$label)])
     Psi      <- as.character(dat$label[grep("Psi", dat$label)])
     Phi      <- as.character(dat$label[grep("Phi", dat$label)])
-    A        <- as.character(dat$label[grep("A", dat$label)])
     nu.x     <- as.character(dat$label[grep("nu.x", dat$label)])
     nu.y     <- as.character(dat$label[grep("nu.y", dat$label)])
     alpha    <- as.character(dat$label[grep("alpha", dat$label)])
@@ -226,8 +220,6 @@ create_sem <- function(dat){
                                   nrow=num.eta, ncol=num.eta)
         Phi.matrix      <- matrix(dat[dat$label %in% Phi, paste0("group",g)],
                                   nrow=num.xi, ncol=num.xi)
-        A.matrix        <- matrix(dat[dat$label %in% A, paste0("group",g)],
-                                  nrow=num.xi, ncol=num.xi)
         nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("group",g)],
                                   nrow=num.x, ncol=1)
         nu.y.matrix     <- matrix(dat[dat$label %in% nu.y, paste0("group",g)],
@@ -244,7 +236,7 @@ create_sem <- function(dat){
                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                   Theta.d=Theta.d.matrix,
                                   Theta.e=Theta.e.matrix, Psi=Psi.matrix,
-                                  A=A.matrix, nu.x=nu.x.matrix,
+                                  Phi=Phi.matrix, nu.x=nu.x.matrix,
                                   nu.y=nu.y.matrix, alpha=alpha.matrix,
                                   tau=tau.matrix, Omega=Omega.matrix)
         } else if (all(is.na(Omega.matrix))) {
@@ -260,7 +252,7 @@ create_sem <- function(dat){
                                    Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                    Beta=Beta.matrix, Theta.d=Theta.d.matrix,
                                    Theta.e=Theta.e.matrix, Psi=Psi.matrix,
-                                   Phi=Phi.matrix, A=A.matrix, nu.x=nu.x.matrix,
+                                   Phi=Phi.matrix, nu.x=nu.x.matrix,
                                    nu.y=nu.y.matrix, alpha=alpha.matrix,
                                    tau=tau.matrix, Omega=Omega.matrix)
         }
@@ -343,9 +335,10 @@ fill_model <- function(model, parameters) {
         }
         # make 'symmetric' matrices symmetric
         matrices.g$Psi <- fill_symmetric(matrices.g$Psi)
-        if (class(model) == "stemm" || class(model) == "nsemm") {
-            matrices.g$Phi <- fill_symmetric(matrices.g$Phi)
-        }
+        tryCatch({ matrices.g$Phi <- fill_symmetric(matrices.g$Phi) },
+                                       error=function(e) e,
+                                       warning=function(w) w)
+        # catching error if there is no Phi (like in "intern" LMS)
         matrices[[g]] <- matrices.g
     }
     out <- list(matrices=matrices, info=model$info)
