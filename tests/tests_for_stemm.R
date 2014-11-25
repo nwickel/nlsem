@@ -103,12 +103,8 @@ parameters_stemm <- runif(count_free_parameters(model_stemm), 0.1, 1.5)
 data_stemm <- simulate(model_stemm, parameters=parameters_stemm)
 # P <- estep_stemm(model, parameters, data)
 
-system.time({ res_stemm <- em(model_stemm, data_stemm, parameters_stemm, logger=TRUE, optimizer="nlminb") })
 system.time({
-    res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+    res_stemm <- em(model_stemm, data_stemm, parameters_stemm, logger=TRUE,
+                    optimizer="nlminb", control=list(iter.max=1))
 })
-system.time({
-res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
-})
-
 

@@ -72,6 +72,8 @@ loglikelihood_stemm <- function(parameters, matrices, data, p, w) {
             matrices[[i]] <- matrix.i
         }
     }
+    matrices$Psi <- fill_symmetric(matrices$Psi)
+    matrices$Phi <- fill_symmetric(matrices$Phi)
 
     N <- nrow(data)
 

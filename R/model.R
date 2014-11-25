@@ -140,7 +140,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         } else {
             matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
-                                  Theta.e=Theta.e, Psi=Psi, Phi=Phi, A=A,
+                                  Theta.e=Theta.e, Psi=Psi, Phi=Phi,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                                   Omega=Omega)
         }
