@@ -29,12 +29,10 @@ estep_nsemm <- function(model, parameters, data, logger, ...) {
         par.old <- par.old[(length(lms.model$info$par.names) + 1):length(par.old)]
 
         # em for lms
-        est <- em(model=lms.model, data=data, start=group.parameters, logger=logger, ...)
+        est <- em(model=lms.model, data=data, start=group.parameters,
+                  logger=logger, Hessian=FALSE, ...)
 
-        # get new values for Phi
-        par.new[grep("Phi", par.new)] <- coef(est)[grep("Phi", names(coef(est)))]
-
-        par.new <- c(par.new, est$par)
+        par.new <- c(par.new, est$coefficients)
     }
 
     # e-step for stemm
@@ -51,15 +49,6 @@ mstep_nsemm <- function(model, parameters, P, data, optimizer, ...) {
     est <- mstep_stemm(model=model, parameters=parameters, P=P,
                                 data=data, optimizer=optimizer, ...)
 
-    # calculate new values for A from Phi
-    par <- est$par
-    for (g in seq_len(model$info$num.groups)){
-        Phi <- model$matrices[[g]]$Phi
-        Phi[is.na(Phi)] <- par[grep(paste0("group",g,".Phi"), names(par))]
-        Phi <- fill_symmetric(Phi)
-        A <- t(chol(Phi))
-        par[grep(paste0("group",g,".A"), names(par))] <- A[lower.tri(A, diag=TRUE)]
-    }
-    est$par <- par
+    cat("===================================\n")
     est
 }
