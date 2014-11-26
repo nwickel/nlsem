@@ -93,11 +93,24 @@ summary.emEst <- function(object, ...) {
     est <- object$coefficients
 
     # standard errors
-    s.error <- sqrt(diag(solve(object$Hessian)))
-    tvalue <- est / s.error
-    pvalue <- 2 * pnorm(-abs(tvalue))
-    est.table <- cbind(est, s.error, tvalue, pvalue)
-    dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+    if (is.numeric(est)) {
+        s.error <- sqrt(diag(solve(object$Hessian)))
+        tvalue <- est / s.error
+        pvalue <- 2 * pnorm(-abs(tvalue))
+        est.table <- cbind(est, s.error, tvalue, pvalue)
+        dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+    } else {
+        est.table <- Reduce('rbind', lapply(seq_along(est), function(g) {
+                            s.error <- sqrt(diag(solve(object$Hessian[[g]])))
+                            tvalue <- est[[g]] / s.error
+                            pvalue <- 2 * pnorm(-abs(tvalue))
+                            est.table <- cbind(est[[g]], s.error, tvalue, pvalue)
+                            dimnames(est.table)  <- list(paste0("group", g, ".", names(est[[g]])),
+                                                         c("Estimate", "Std. Error",
+                                                           "t value", "Pr(>|z|)"))
+                            est.table
+                           }))
+    }
 
     # loglikelihoods
     iterations   <- length(object$loglikelihoods) 
