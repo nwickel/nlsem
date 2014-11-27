@@ -21,7 +21,7 @@ estep_nsemm <- function(model, parameters, data, logger, ...) {
 
         # em for lms
         est <- em(model=lms.model, data=data, start=group.parameters[[g]],
-                  logger=logger, Hessian=FALSE, ...)
+                  logger=logger, neg.hessian=FALSE, ...)
 
         par.new <- c(par.new, est$coefficients)
     }

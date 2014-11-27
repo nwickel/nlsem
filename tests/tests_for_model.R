@@ -2,6 +2,8 @@
 # Tests for specify_sem
 # =====================
 
+library(nlsem)
+
 # ordinary lms
 # ============
 num.groups <- 1

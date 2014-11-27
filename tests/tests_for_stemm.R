@@ -1,6 +1,8 @@
 # Testing functions for stemm
 # ===========================
 
+library(nlsem)
+
 # create model
 # ------------
 model <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
@@ -71,7 +73,7 @@ data <- as.matrix(read.table("~/Documents/Studium/Psychologie/Diplomarbeit/data/
 data <- data[,c(5:8,1:4)]   # for comparison with emsem
 P <- estep_stemm(model, parameters, data)
 
-system.time(est <- mstep_stemm(model, parameters, data, P, Hessian=TRUE))
+system.time(est <- mstep_stemm(model, parameters, data, P, neg.hessian=TRUE))
 
 system.time({
 res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb",

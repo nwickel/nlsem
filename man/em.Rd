@@ -9,7 +9,7 @@ mixture structural equation models}
 }
 \usage{
     em(model, data, start, logger=FALSE, threshold=1e-03, max.iter=40,
-       m=16, optimizer=c("nlminb", "optim"), ...)
+       m=16, optimizer=c("nlminb", "optim"), neg.hessian=TRUE, ...)
 }
 \arguments{
     \item{model}{a specified structural equation model of class "lms".}
@@ -21,6 +21,8 @@ mixture structural equation models}
     \item{m}{number of nodes for Hermite-Gaussian quadrature.}
     \item{optimizer}{which optimizer should be used in maximization step of
     EM algorithm: \code{\link{nlminb}} or \code{\link{optim}}.}
+    \item{neg.hessian}{should negative Hessian be calculated in last step
+    of iteration.}
     \item{...}{additional arguments. See Details.}
 }
 \value{

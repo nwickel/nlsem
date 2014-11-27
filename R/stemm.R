@@ -114,7 +114,7 @@ loglikelihood_stemm_constraints <- function(parameters, model, data, P) {
 
 
 # Maximization step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
+mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
                         optimizer=c("nlminb", "optim"), constraints=FALSE, ...) {
     # --> TODO add constraints argument to doku, if it stays!
 
@@ -158,7 +158,7 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
         }
         names(res$par) <- paste0("group", seq_len(num.groups))
 
-        if (Hessian == TRUE) {
+        if (neg.hessian == TRUE) {
             for (g in seq_len(num.groups)) {
                 if (optimizer == "nlminb") {
                     res$hessian[[g]] <- fdHess(pars=est[[g]]$par,
@@ -186,7 +186,7 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
                           model=model, P=P,
                           upper=unlist(model$info$bounds$upper),
                           lower=unlist(model$info$bounds$lower), ...)
-            if (Hessian == TRUE){
+            if (neg.hessian == TRUE){
                 est$hessian <- fdHess(pars=est$par,
                                       fun=loglikelihood_stemm_constraints,
                                       model=model, data=data, P=P)$Hessian
@@ -199,7 +199,7 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
                          method="L-BFGS-B", ...)
             # fit est to nlminb output
             names(est) <- gsub("value", "objective", names(est))
-            if (Hessian == TRUE) {
+            if (neg.hessian == TRUE) {
                 est$hessian <- optimHess(est$par,
                                          fn=loglikelihood_stemm_constraints,
                                          model=model, P=P, data=data)

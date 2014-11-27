@@ -6,7 +6,7 @@
 # soon 'nsemm'
 em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                 max.iter=40, m=16, optimizer=c("nlminb", "optim"),
-                Hessian=TRUE, ...) {
+                neg.hessian=TRUE, ...) {
 
     stopifnot(class(model) == "lms" || class(model) == "stemm" ||
               class(model) == "nsemm")
@@ -47,7 +47,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
     # when function aborts
     on.exit({
         cat("-----------------------------------\n")
-        if (Hessian == TRUE) {
+        if (neg.hessian == TRUE) {
             cat("Computing Hessian \n")
         } else {
             cat("Computing final model \n")
@@ -57,7 +57,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
         switch(class(model),
            "lms" = {
                 final <- mstep_lms(model=model, P=P, dat=data,
-                                   parameters=par.new, Hessian=Hessian, m=m,
+                                   parameters=par.new, Hessian=neg.hessian, m=m,
                                    optimizer=optimizer, ...)
                 names(final$par) <- model$info$par.names
                 # Transform parameters back to Phi
@@ -68,7 +68,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
             },
             "stemm" = {
                 final <- mstep_stemm(model=model, parameters=par.old, P=P,
-                                     data=data, Hessian=Hessian,
+                                     data=data, Hessian=neg.hessian,
                                      optimizer=optimizer, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
@@ -85,7 +85,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
             },
             "nsemm" = {
                 final <- mstep_nsemm(model=model, parameters=par.old, P=P,
-                                     data=data, Hessian=Hessian,
+                                     data=data, Hessian=neg.hessian,
                                      optimizer=optimizer, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
@@ -110,7 +110,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
                     objective=-final$objective,
                     convergence_final_step=final$convergence,
                     message_final_step=final$message,
-                    Hessian=final$hessian,
+                    negHessian=final$hessian,
                     loglikelihoods=-ll.ret,
                     info=model$info[1:4])
 
