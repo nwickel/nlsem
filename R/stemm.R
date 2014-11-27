@@ -1,7 +1,9 @@
 # stemm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Nov/11/2014, KN
+# last mod: Nov/27/2014, KN
+
+#--------------- main functions ---------------
 
 # Calculate mu of multivariate normal distribution for joint vector of
 # indicators (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997).
@@ -121,14 +123,7 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
     if (constraints == FALSE) {
     ## maximizing each group seperately
         num.groups <- model$info$num.groups
-
-        # getting parameters for each group
-        pars <- parameters
-        group.pars <- list()
-        for (g in seq_len(num.groups)) {
-            group.pars[[g]] <- pars[1:length(model$info$par.names[[g]])]
-            pars <- pars[(length(model$info$par.names[[g]]) + 1):length(pars)]
-        }
+        group.pars <- get_group_parameters(model, parameters)
 
         est <- lapply(seq_len(num.groups), function(g) {
                     if (optimizer == "nlminb") {
@@ -213,4 +208,21 @@ mstep_stemm <- function(model, parameters, data, P, Hessian=FALSE,
         est
     }
 }
+
+#--------------- helper functions ---------------
+
+# make a list of group specific parameter vectors
+get_group_parameters <- function(model, parameters) {
+    group.pars <- list()
+    for (g in seq_len(model$info$num.groups)) {
+        group.pars[[g]] <- parameters[1:length(model$info$par.names[[g]])]
+        parameters <- parameters[(length(model$info$par.names[[g]]) + 1):length(parameters)]
+    }
+    group.pars
+}
+
+
+
+
+
 
