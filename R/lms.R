@@ -111,11 +111,11 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
 }
 
 # Maximization step of EM-algorithm (see Klein & Moosbrugger, 2000)
-mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
+mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
                       optimizer=c("nlminb", "optim"), ...) {
 
     # # optimizer
-    # if (Hessian == FALSE){
+    # if (new.hessian == FALSE){
     #     est <- nlminb(start=parameters, objective=fun, dat=dat, model=model, P=P, ...)
     #     out <- est
     # } else {
@@ -123,7 +123,7 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
     #     out <- list(par=est$par, objective=est$value,
     #                 convergence=est$convergence, evaluations=est$counts,
     #                 message=est$message, hessian=est$hessian) }
-    ## --> Alternative calculation of Hessian (does not require nlme)
+    ## --> Alternative calculation of Information (does not require nlme)
 
     # optimizer
     optimizer <- match.arg(optimizer)
@@ -132,7 +132,7 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
         est <- nlminb(start=parameters, objective=loglikelihood_lms, dat=dat,
                       model=model, P=P, upper=model$info$bounds$upper,
                       lower=model$info$bounds$lower, ...)
-        if (Hessian == TRUE){
+        if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
                                         model=model, dat=dat, P=P)$Hessian
         }
@@ -142,13 +142,13 @@ mstep_lms <- function(parameters, model, dat, P, m, Hessian=FALSE,
                      lower=model$info$bounds$lower, method="L-BFGS-B", ...)
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
-        if (Hessian == TRUE){
+        if (neg.hessian == TRUE){
             est$hessian <- optimHess(est$par, fn=loglikelihood_lms, model=model,
                                      P=P, dat=dat)
         }
     }
 
-    ## --> TOTHINK Maybe add analytical solution for Hessian matrix?
+    ## --> TOTHINK Maybe add analytical solution for neg. Hessian matrix?
 
     est
 }

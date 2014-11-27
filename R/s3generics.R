@@ -94,14 +94,14 @@ summary.emEst <- function(object, ...) {
 
     # standard errors
     if (is.numeric(est)) {
-        s.error <- sqrt(diag(solve(object$Hessian)))
+        s.error <- sqrt(diag(solve(object$negHessian)))
         tvalue <- est / s.error
         pvalue <- 2 * pnorm(-abs(tvalue))
         est.table <- cbind(est, s.error, tvalue, pvalue)
         dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
     } else {
         est.table <- Reduce('rbind', lapply(seq_along(est), function(g) {
-                            s.error <- sqrt(diag(solve(object$Hessian[[g]])))
+                            s.error <- sqrt(diag(solve(object$negHessian[[g]])))
                             tvalue <- est[[g]] / s.error
                             pvalue <- 2 * pnorm(-abs(tvalue))
                             est.table <- cbind(est[[g]], s.error, tvalue, pvalue)
