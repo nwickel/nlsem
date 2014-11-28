@@ -13,6 +13,7 @@ export(
 
 S3method(simulate, lms)
 S3method(simulate, stemm)
+S3method(simulate, nsemm)
 S3method(summary, emEst)
 S3method(print, summary.emEst)
 S3method(logLik, emEst)

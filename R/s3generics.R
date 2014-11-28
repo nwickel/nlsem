@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Nov/25/2014, NU
+# last mod Nov/28/2014, KN
 
 #--------------- main functions ---------------
 
@@ -16,9 +16,39 @@ as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(x, .
     data
 }
 
+simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
+
+    set.seed(seed)
+
+    mod.filled <- fill_model(object, parameters)
+
+    num.groups <- mod.filled$info$num.groups
+    w <- mod.filled$info$w
+
+    # simulate n data points for each mixture as lms
+    dat.sim <- lapply(seq_len(num.groups), function(g) {
+                      simulate(lms_ify(object, g),
+                               nsim=nsim, seed=seed, n=n,
+                               parameters=get_group_parameters(object, parameters)[[g]],
+                               ...)
+
+    })
+
+    # see simulate_lms for explanation
+    border <- cumsum(w)
+    prob <- runif(n)
+
+    dat <- NULL
+    for (i in seq_len(n)) {
+        ind <- sum(prob[i] > border) + 1
+        dat <- rbind(dat, dat.sim[[ind]][i,])
+    }
+
+    dat
+}
+
 simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
-    # set seed
     set.seed(seed)
 
     mod.filled <- fill_model(object, parameters)
