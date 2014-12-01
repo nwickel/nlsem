@@ -7,8 +7,8 @@
 }
 \usage{
 specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
-            interaction="all", interc_obs=FALSE,
-            interc_lat=FALSE, relation_lat="default")
+            interaction="all", interc.obs=FALSE,
+            interc.lat=FALSE, relation.lat="default")
 }
 \arguments{
     \item{num.x}{number of observed variables for xi.}
@@ -24,11 +24,11 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     Default is 'all' which means that all interactions between exogenous
     variables including quadratic terms are included. See Details for how
     to enter interaction terms.}
-    \item{interc_obs}{logical. If intercepts for measurement model should be
+    \item{interc.obs}{logical. If intercepts for measurement model should be
     estimated (mu's). Default is \code{FALSE} (intercepts are fixed at 0).}
-    \item{interc_lat}{logical. If intercepts for latent variable model should be
+    \item{interc.lat}{logical. If intercepts for latent variable model should be
     estimated (alpha's). Default is \code{FALSE} (intercepts are fixed at 0).}
-    \item{relation_lat}{define relations between latent variables.
+    \item{relation.lat}{define relations between latent variables.
     Influences Beta and Gamma matrices. For 'defaults' and how to define
     see Details.}
 }
