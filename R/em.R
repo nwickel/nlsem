@@ -57,7 +57,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
         switch(class(model),
            "lms" = {
                 final <- mstep_lms(model=model, P=P, dat=data,
-                                   parameters=par.new, Hessian=neg.hessian, m=m,
+                                   parameters=par.new, neg.hessian=neg.hessian, m=m,
                                    optimizer=optimizer, ...)
                 names(final$par) <- model$info$par.names
                 # Transform parameters back to Phi
@@ -68,7 +68,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
             },
             "stemm" = {
                 final <- mstep_stemm(model=model, parameters=par.old, P=P,
-                                     data=data, Hessian=neg.hessian,
+                                     data=data, neg.hessian=neg.hessian,
                                      optimizer=optimizer, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
@@ -85,7 +85,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-03,
             },
             "nsemm" = {
                 final <- mstep_nsemm(model=model, parameters=par.old, P=P,
-                                     data=data, Hessian=neg.hessian,
+                                     data=data, neg.hessian=neg.hessian,
                                      optimizer=optimizer, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
