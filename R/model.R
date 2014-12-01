@@ -8,8 +8,8 @@
 # Define model specification for different SEMs with nonlinear effects;
 # possible objects classes are 'lms', 'stemm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
-                          interaction="all", interc_obs=FALSE,
-                          interc_lat=FALSE, relation_lat="default"){
+                          interaction="all", interc.obs=FALSE,
+                          interc.lat=FALSE, relation.lat="default"){
 
     # check arguments
     if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
@@ -72,12 +72,12 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         Lambda.y[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]])-1))
     }
     # Gamma and Beta
-    if (relation_lat == "default"){
+    if (relation.lat == "default"){
         Gamma <- matrix(nrow=num.eta, ncol=num.xi)
         Beta  <- diag(1, nrow=num.eta)
     }
     else {
-        GB    <- rel_lat(relation_lat, num.eta=num.eta, num.xi=num.xi)
+        GB    <- rel_lat(relation.lat, num.eta=num.eta, num.xi=num.xi)
         Gamma <- tryCatch({ GB[[grep("G", names(GB))]] },
                             error=function(e) matrix(nrow=num.eta, ncol=num.xi) )
         Beta  <- tryCatch({ GB[[grep("B", names(GB))]] },
@@ -96,7 +96,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # Phi must be symmetrical, upper.tri = lower.tri -> in fill_model
     Phi[upper.tri(Phi)] <- 0
     # nu's
-    if (interc_obs){
+    if (interc.obs){
         nu.x <- matrix(NA, nrow=num.x, ncol=1)
         nu.y <- matrix(NA, nrow=num.y, ncol=1)
     } else {
@@ -104,7 +104,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
         nu.y <- matrix(0, nrow=num.y, ncol=1)
     }
     # alpha
-    if (interc_lat){
+    if (interc.lat){
         alpha <- matrix(NA, nrow=num.eta, ncol=1)
     } else {
         alpha <- matrix(0, nrow=num.eta, ncol=1)
@@ -452,7 +452,7 @@ test_omega <- function(Omega){
 }
 
 # Creates Beta and Gamma matrices according to the input obtained by
-# relation_lat; matrices define relationships for latent variables except
+# relation.lat; matrices define relationships for latent variables except
 # for interaction effects
 rel_lat <- function(x, num.eta, num.xi){
 
