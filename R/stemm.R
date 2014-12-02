@@ -37,7 +37,9 @@ sigma_stemm <- function(matrices) {
     s11 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 
-    if (!isSymmetric(sigma)) stop("Sigma has to be symmetric")
+    # TODO check is this warning is really necessary
+    if (!isSymmetric(sigma)) warning("Sigma was not symmetric. This is probably due to
+                                     numerical calculation")
     tryCatch(solve(sigma), error = function(e) stop("Sigma is not nonsingular."))
 
     sigma
