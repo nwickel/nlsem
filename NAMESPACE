@@ -8,7 +8,8 @@ export(
     specify_sem, 
     count_free_parameters,
     create_sem,
-    em
+    fill_model,
+    em,
     )
 
 S3method(simulate, lms)
