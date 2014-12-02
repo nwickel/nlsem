@@ -9,7 +9,7 @@ export(
     count_free_parameters,
     create_sem,
     fill_model,
-    em,
+    em
     )
 
 S3method(simulate, lms)
