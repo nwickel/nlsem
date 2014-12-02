@@ -9,7 +9,7 @@
 # indicators (see Equations 16 and 18, 19 in Klein & Moosbrugger, 2000)
 mu_lms <- function(model, z) {
     
-    stopifnot(class(model) == "lmsFilled")
+    check_filled(model)
 
     matrices <- model$matrices$group1
     k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
@@ -30,7 +30,7 @@ mu_lms <- function(model, z) {
 # indicators (see Equations 17 and 20-22 in Klein & Moosbrugger, 2000)
 sigma_lms <- function(model, z) {
 
-    stopifnot(class(model) == "lmsFilled")
+    check_filled(model)
 
     matrices <- model$matrices$group1
     k     <- get_k(matrices$Omega)    # number of nonzero rows in Omega

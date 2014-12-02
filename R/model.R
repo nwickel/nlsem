@@ -342,16 +342,18 @@ fill_model <- function(model, parameters) {
         matrices[[g]] <- matrices.g
     }
     out <- list(matrices=matrices, info=model$info)
-    switch(class(model),
-                 "lms" = {class(out) <- "lmsFilled"},
-                 "stemm" = {class(out) <- "stemmFilled"},
-                 "nsemm" = {class(out) <- "nsemmFilled"})
+    class(out) <- class(model)
     out
 }
 
 #--------------- helper functions ---------------
 
 # all NOT exported
+
+# Check if model or matrices are filled
+check_filled <- function(x) {
+    if (anyNA(unlist(x))) stop("model is not filled")
+}
 
 # Grep indices for Lambda matrices from input that defines which indicators
 # are asociated with which latent variable

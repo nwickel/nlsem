@@ -9,7 +9,8 @@
 # indicators (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997).
 # The order is (x, y) as opposed to the paper.
 mu_stemm <- function(matrices) {
-    # stopifnot(class(model) == "stemmFilled" || class(model) == "nsemmFilled")
+
+    check_filled(matrices)
 
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% solve(matrices$Beta) %*%
             (matrices$alpha + matrices$Gamma %*% matrices$tau)
@@ -24,7 +25,8 @@ mu_stemm <- function(matrices) {
 # The order is (x, y), as opposed to the paper. Therefore the rows and cols in
 # sigma are switched.
 sigma_stemm <- function(matrices) {
-    # stopifnot(class(model) == "stemmFilled" || class(model) == "nsemmFilled")
+
+    check_filled(matrices)
 
     # Lambda.y * B^-1
     Ly.Binv <- matrices$Lambda.y %*% solve(matrices$Beta)
