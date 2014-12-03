@@ -1,7 +1,7 @@
 # stemm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Nov/27/2014, KN
+# last mod: Dec/03/2014, NU
 
 #--------------- main functions ---------------
 
@@ -119,7 +119,8 @@ loglikelihood_stemm_constraints <- function(parameters, model, data, P) {
 
 # Maximization step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
 mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
-                        optimizer=c("nlminb", "optim"), constraints=FALSE, ...) {
+                        optimizer=c("nlminb", "optim"), constraints=FALSE,
+                        max.mstep, control=list(), ...) {
     # --> TODO add constraints argument to doku, if it stays!
 
     optimizer <- match.arg(optimizer)
@@ -131,20 +132,33 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
 
         est <- lapply(seq_len(num.groups), function(g) {
                     if (optimizer == "nlminb") {
+                            if (is.null(control$iter.max)) {
+                                control$iter.max <- max.mstep
+                            } else {
+                                warning("iter.max is set for nlminb. max.mstep will be ignored.")
+                            }
+
                         res <- nlminb(start=group.pars[[g]],
                                       objective=loglikelihood_stemm,
                                       data=data, matrices=model$matrices[[g]],
                                       p=P[,g], w=model$info$w[[g]],
                                       upper=model$info$bounds$upper[[g]],
-                                      lower=model$info$bounds$lower[[g]], ...)
+                                      lower=model$info$bounds$lower[[g]],
+                                      control=control, ...)
                     } else {
+                            if (is.null(control$maxit)){
+                                control$maxit <- max.mstep
+                            } else {
+                                warning("maxit is set for optim. max.mstep will be ignored.")
+                            }
+
                         res <- optim(par=group.pars[[g]],
                                        fn=loglikelihood_stemm, data=data,
                                        matrices=model$matrices[[g]],
                                        p=P[,g], w=model$info$w[[g]],
                                        upper=model$info$bounds$upper[[g]],
                                        lower=model$info$bounds$lower[[g]],
-                                       method="L-BFGS-B", ...)
+                                       method="L-BFGS-B", control=control, ...)
                     }
         })
         if (optimizer == "optim") {
