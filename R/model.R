@@ -115,6 +115,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
     if (interaction == "all"){
         Omega[upper.tri(Omega)] <- NA
+        # --> TODO add the following so "all" does what description says
+        # diag(Omega) <- NA
     } else if (interaction != "") {
         interaction.s <- unlist(strsplit(interaction, ","))
         ind <- calc_interaction_matrix(interaction.s)
@@ -278,17 +280,6 @@ create_sem <- function(dat){
 
     class(model) <- get_model_class(num.groups, interaction)
 
-    # if (num.groups == 1) {
-    #     model <- list(matrices=matrices, info=info)
-    #     class(model) <- "lms"
-    # } else if (all(is.na(Omega.matrix))) {
-    #     model <- list(matrices=matrices, info=info)
-    #     class(model) <- "stemm"
-    # } else {
-    #     model <- list(matrices=matrices, info=info)
-    #     class(model) <- "nsemm"
-    # }
-        
     # bounds for parameters (variances > 0)
     model$info$bounds <- bounds(model)
 
