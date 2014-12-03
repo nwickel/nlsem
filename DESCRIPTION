@@ -4,7 +4,9 @@ Date: 2014-11-17
 Title: What the package does (short line)
 Authors@R: c(person("David", "Hoppe", role = c("aut", "cre")), person("Nora",
             "Umbach", role = c("aut", "cre"), email = "nora.umbach@web.de"),
-            person("Katharina", "Naumann", role = "aut")) 
+            person("Katharina", "Naumann", role = "aut"))
+Author: David Hoppe, Nora Umbach, Katharina Naumann
+Maintainer: Nora Umbach <nora.umbach@web.de>
 Depends: R (>= 3.1.0), gaussquad, mvtnorm, nlme
 Description: Estimaion of structural equation models with nonlinear effects
     and underlying distributions.
