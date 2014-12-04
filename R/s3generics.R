@@ -122,16 +122,28 @@ summary.emEst <- function(object, ...) {
     # estimates
     est <- object$coefficients
 
+    warn.msg <- "Standard errors could not be computed, because negative
+    hessian was either not available or singular"
+
     # standard errors
     if (is.numeric(est)) {
-        s.error <- sqrt(diag(solve(object$negHessian)))
+        s.error <- tryCatch({sqrt(diag(solve(object$negHessian)))},
+            error=function(e) {
+                warning(warn.msg)
+                NA
+            })
         tvalue <- est / s.error
         pvalue <- 2 * pnorm(-abs(tvalue))
         est.table <- cbind(est, s.error, tvalue, pvalue)
         dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
     } else {
         est.table <- Reduce('rbind', lapply(seq_along(est), function(g) {
-                            s.error <- sqrt(diag(solve(object$negHessian[[g]])))
+                            s.error <- tryCatch({
+                                sqrt(diag(solve(object$negHessian[[g]])))
+                            }, error=function(e) {
+                                warning(warn.msg)
+                                NA
+                            })
                             tvalue <- est[[g]] / s.error
                             pvalue <- 2 * pnorm(-abs(tvalue))
                             est.table <- cbind(est[[g]], s.error, tvalue, pvalue)
