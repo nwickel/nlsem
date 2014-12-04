@@ -112,7 +112,8 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
 
 # Maximization step of EM-algorithm (see Klein & Moosbrugger, 2000)
 mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
-                      optimizer=c("nlminb", "optim"), ...) {
+                      optimizer=c("nlminb", "optim"), max.mstep,
+                      control=list(), ...) {
 
     # # optimizer
     # if (new.hessian == FALSE){
@@ -129,22 +130,38 @@ mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
     optimizer <- match.arg(optimizer)
 
     if (optimizer == "nlminb") {
+
+        if (is.null(control$iter.max)) {
+            control$iter.max <- max.mstep
+        } else warning("iter.max is set for nlminb. max.mstep will be ignored.")
+
         est <- nlminb(start=parameters, objective=loglikelihood_lms, dat=dat,
                       model=model, P=P, upper=model$info$bounds$upper,
-                      lower=model$info$bounds$lower, ...)
+                      lower=model$info$bounds$lower,
+                      control=control, ...)
         if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
                                         model=model, dat=dat, P=P)$Hessian
         }
     } else {
+
+        if (is.null(control$maxit)){
+            control$maxit <- max.mstep
+        } else warning("maxit is set for optim. max.mstep will be ignored.")
+
         est <- optim(par=parameters, fn=loglikelihood_lms, model=model, dat=dat,
                      P=P, upper=model$info$bounds$upper,
-                     lower=model$info$bounds$lower, method="L-BFGS-B", ...)
+                     lower=model$info$bounds$lower, method="L-BFGS-B",
+                     control=control, ...)
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
         if (neg.hessian == TRUE){
-            est$hessian <- optimHess(est$par, fn=loglikelihood_lms, model=model,
-                                     P=P, dat=dat)
+            #est$hessian <- optimHess(est$par, fn=loglikelihood_lms, model=model,
+            #                         P=P, dat=dat)
+            ## --> gives too often a singular neg. Hessian
+            est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
+                                        model=model, dat=dat, P=P)$Hessian
+  
         }
     }
 

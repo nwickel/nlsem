@@ -8,9 +8,9 @@ mixture structural equation models}
     mixture approaches (LMS, STEMM, NSEMM).
 }
 \usage{
-    em(model, data, start, logger=FALSE, threshold=1e-03, max.iter=40,
-       m=16, optimizer=c("nlminb", "optim"), neg.hessian=TRUE, ...)
-}
+    em(model, data, start, logger=FALSE, threshold=1e-02, max.iter=100,
+       m=16, optimizer=c("nlminb", "optim"), max.mstep=1, 
+       neg.hessian=TRUE, ...) }
 \arguments{
     \item{model}{a specified structural equation model of class "lms".}
     \item{data}{the data the model should be fitted to.}
@@ -21,6 +21,8 @@ mixture structural equation models}
     \item{m}{number of nodes for Hermite-Gaussian quadrature.}
     \item{optimizer}{which optimizer should be used in maximization step of
     EM algorithm: \code{\link{nlminb}} or \code{\link{optim}}.}
+    \item{max.mstep}{maximum iteration steps the optimizer should use in
+    its mstep during one EM iteration.}
     \item{neg.hessian}{should negative Hessian be calculated in last step
     of iteration.}
     \item{...}{additional arguments. See Details.}
@@ -50,9 +52,8 @@ mixture structural equation models}
     optimizers: \code{\link{optim}} or \code{\link{nlminb}}. Default is
     \code{\link{nlminb}}.
 
-    Additional arguments can be passed to \dots for these optimizers, like
-    iterations etc. See documentation for \code{\link{optim}} and
-    \code{\link{nlminb}}.
+    Additional arguments can be passed to \dots for these optimizers. See
+    documentation for \code{\link{optim}} and \code{\link{nlminb}}.
 }
 \references{
     Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
