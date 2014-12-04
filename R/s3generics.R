@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Nov/28/2014, KN
+# last mod Dec/04/2014, KN
 
 #--------------- main functions ---------------
 
@@ -211,7 +211,7 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
         stop('not all objects are of class "emEst"')
     nt <- length(mlist)
 
-    dflist <- sapply(mlist, function(x) length(x$par))
+    dflist <- sapply(mlist, function(x) length(x$coef))
 
     s <- order(dflist, decreasing=TRUE)
     mlist <- mlist[s]
@@ -238,16 +238,16 @@ AIC.emEst <- function(object, ..., k=2) {
 
     dots <- list(...)
     if (length(dots) == 0){
-        out <- as.numeric(-2*logLik(object) + k*length(object$par))
+        out <- as.numeric(-2*logLik(object) + k*length(object$coef))
     } else {
         mlist <- list(object, ...)
         names(mlist) <- c(deparse(substitute(object)),
                           as.character(substitute(...[]))[2:length(mlist)])
         nt <- length(mlist)
 
-        dflist <- sapply(mlist, function(x) length(x$par))
+        dflist <- sapply(mlist, function(x) length(x$coef))
 
-        aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(x$par))
+        aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(x$coef))
         s <- order(aic, decreasing=TRUE)
         aic <- aic[s]
         dflist <- dflist[s]
