@@ -59,6 +59,9 @@ estep_stemm <- function(model, parameters, data) {
 
         p.ij <- w.g * dmvnorm(data, mean=mu_stemm(model.filled$matrices[[g]]),
                               sigma=sigma_stemm(model.filled$matrices[[g]]))
+        if (sum(p.ij) == 0) stop("Posterior probability could not be calculated
+                                 properly. Choose different starting
+                                 parameters.")
         P <- cbind(P, p.ij, deparse.level=0)
     }
     P <- P / rowSums(P)
@@ -82,7 +85,6 @@ loglikelihood_stemm <- function(parameters, matrices, data, p, w) {
     matrices$Phi <- fill_symmetric(matrices$Phi)
 
     N <- nrow(data)
-
     N.g <- sum(p)
     mu <- mu_stemm(matrices)
     sigma <- sigma_stemm(matrices)
