@@ -11,7 +11,7 @@ mu_lms <- function(model, z) {
     
     check_filled(model)
 
-    matrices <- model$matrices$group1
+    matrices <- model$matrices$class1
     k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
     n    <- nrow(matrices$A)          # number of zero rows in Omega
     if (k < n){
@@ -32,7 +32,7 @@ sigma_lms <- function(model, z) {
 
     check_filled(model)
 
-    matrices <- model$matrices$group1
+    matrices <- model$matrices$class1
     k     <- get_k(matrices$Omega)    # number of nonzero rows in Omega
     n     <- nrow(matrices$A)         # number of zero rows in Omega
     if (k < n){
@@ -63,7 +63,7 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 
     mod.filled <- fill_model(model=model, parameters=parameters)
 
-    k <- get_k(mod.filled$matrices$group1$Omega)
+    k <- get_k(mod.filled$matrices$class1$Omega)
     quad <- quadrature(m, k)
 
     V <- quad$n       # matrix of node vectors m x k
@@ -94,7 +94,7 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
     
     mod.filled <- fill_model(model=model, parameters=parameters)
 
-    k <- get_k(mod.filled$matrices$group1$Omega)
+    k <- get_k(mod.filled$matrices$class1$Omega)
     quad <- quadrature(m, k)
     V <- quad$n
 

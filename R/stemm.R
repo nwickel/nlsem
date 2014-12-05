@@ -53,12 +53,12 @@ estep_stemm <- function(model, parameters, data) {
     model.filled <- fill_model(model=model, parameters=parameters)
 
     P <- NULL
-    for (g in seq_len(model$info$num.groups)) {
-        # group weight
-        w.g <- model$info$w[g]
+    for (c in seq_len(model$info$num.classes)) {
+        # class weight
+        w.c <- model$info$w[c]
 
-        p.ij <- w.g * dmvnorm(data, mean=mu_stemm(model.filled$matrices[[g]]),
-                              sigma=sigma_stemm(model.filled$matrices[[g]]))
+        p.ij <- w.c * dmvnorm(data, mean=mu_stemm(model.filled$matrices[[c]]),
+                              sigma=sigma_stemm(model.filled$matrices[[c]]))
         if (sum(p.ij) == 0) stop("Posterior probability could not be calculated
                                  properly. Choose different starting
                                  parameters.")
@@ -85,34 +85,34 @@ loglikelihood_stemm <- function(parameters, matrices, data, p, w) {
     matrices$Phi <- fill_symmetric(matrices$Phi)
 
     N <- nrow(data)
-    N.g <- sum(p)
+    N.c <- sum(p)
     mu <- mu_stemm(matrices)
     sigma <- sigma_stemm(matrices)
-    T.g <- 1/N.g * Reduce('+', lapply(1:N, function(i)(
+    T.c <- 1/N.c * Reduce('+', lapply(1:N, function(i)(
                                        p[i] * (data[i,]-mu) %*% 
                                        t(data[i,]-mu))))
-    res <- 1/2 * N.g * (log(det(sigma)) + sum(diag(T.g %*% solve(sigma))) -
+    res <- 1/2 * N.c * (log(det(sigma)) + sum(diag(T.c %*% solve(sigma))) -
                         2*log(w))
 
     res
 }
 
-# negative log likelihood function for maximization of all groups at once
+# negative log likelihood function for maximization of all classes at once
 loglikelihood_stemm_constraints <- function(parameters, model, data, P) {
     model.filled <- fill_model(model, parameters)
     N <- nrow(data)
     res <- 0
 
-    for (g in seq_len(model$info$num.groups)) {
-        w.g <- model$info$w[g]
-        N.g <- sum(P[,g])
-        mu.g <- mu_stemm(model.filled$matrices[[g]])
-        sigma.g <- sigma_stemm(model.filled$matrices[[g]])
-        T.g <- 1/N.g * Reduce('+', lapply(1:N, function(i)(
-                                           P[i,g] * (data[i,]-mu.g) %*% 
-                                           t(data[i,]-mu.g))))
-        res <- res+(1/2 * N.g * (log(det(sigma.g)) + sum(diag(T.g %*%
-                                           solve(sigma.g))) - 2*log(w.g)))
+    for (c in seq_len(model$info$num.classes)) {
+        w.c <- model$info$w[c]
+        N.c <- sum(P[,c])
+        mu.c <- mu_stemm(model.filled$matrices[[c]])
+        sigma.c <- sigma_stemm(model.filled$matrices[[c]])
+        T.c <- 1/N.c * Reduce('+', lapply(1:N, function(i)(
+                                           P[i,c] * (data[i,]-mu.c) %*% 
+                                           t(data[i,]-mu.c))))
+        res <- res+(1/2 * N.c * (log(det(sigma.c)) + sum(diag(T.c %*%
+                                           solve(sigma.c))) - 2*log(w.c)))
     }
 
     res
@@ -128,11 +128,11 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
     optimizer <- match.arg(optimizer)
 
     if (constraints == FALSE) {
-    ## maximizing each group seperately
-        num.groups <- model$info$num.groups
-        group.pars <- get_group_parameters(model, parameters)
+    ## maximizing each class seperately
+        num.classes <- model$info$num.classes
+        class.pars <- get_class_parameters(model, parameters)
 
-        est <- lapply(seq_len(num.groups), function(g) {
+        est <- lapply(seq_len(num.classes), function(c) {
                     if (optimizer == "nlminb") {
                             if (is.null(control$iter.max)) {
                                 control$iter.max <- max.mstep
@@ -140,12 +140,12 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
                                 warning("iter.max is set for nlminb. max.mstep will be ignored.")
                             }
 
-                        res <- nlminb(start=group.pars[[g]],
+                        res <- nlminb(start=class.pars[[c]],
                                       objective=loglikelihood_stemm,
-                                      data=data, matrices=model$matrices[[g]],
-                                      p=P[,g], w=model$info$w[[g]],
-                                      upper=model$info$bounds$upper[[g]],
-                                      lower=model$info$bounds$lower[[g]],
+                                      data=data, matrices=model$matrices[[c]],
+                                      p=P[,c], w=model$info$w[[c]],
+                                      upper=model$info$bounds$upper[[c]],
+                                      lower=model$info$bounds$lower[[c]],
                                       control=control, ...)
                     } else {
                             if (is.null(control$maxit)){
@@ -154,52 +154,52 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
                                 warning("maxit is set for optim. max.mstep will be ignored.")
                             }
 
-                        res <- optim(par=group.pars[[g]],
+                        res <- optim(par=class.pars[[c]],
                                        fn=loglikelihood_stemm, data=data,
-                                       matrices=model$matrices[[g]],
-                                       p=P[,g], w=model$info$w[[g]],
-                                       upper=model$info$bounds$upper[[g]],
-                                       lower=model$info$bounds$lower[[g]],
+                                       matrices=model$matrices[[c]],
+                                       p=P[,c], w=model$info$w[[c]],
+                                       upper=model$info$bounds$upper[[c]],
+                                       lower=model$info$bounds$lower[[c]],
                                        method="L-BFGS-B", control=control, ...)
                     }
         })
         if (optimizer == "optim") {
-            for (g in seq_len(num.groups)) {
-                names(est[[g]]) <- gsub("value", "objective", names(est[[g]]))
+            for (c in seq_len(num.classes)) {
+                names(est[[c]]) <- gsub("value", "objective", names(est[[c]]))
             }
         }
         res <- list(objective=0)
-        for (g in seq_len(num.groups)) {
-            res$par[[g]] <- est[[g]]$par
-            res$objective <- res$objective + est[[g]]$objective
-            res$convergence[[g]] <- est[[g]]$convergence
-            res$message[[g]] <- est[[g]]$message
-            res$iterations <- est[[g]]$iterations
+        for (c in seq_len(num.classes)) {
+            res$par[[c]] <- est[[c]]$par
+            res$objective <- res$objective + est[[c]]$objective
+            res$convergence[[c]] <- est[[c]]$convergence
+            res$message[[c]] <- est[[c]]$message
+            res$iterations <- est[[c]]$iterations
         }
-        names(res$par) <- paste0("group", seq_len(num.groups))
+        names(res$par) <- paste0("class", seq_len(num.classes))
 
         if (neg.hessian == TRUE) {
-            for (g in seq_len(num.groups)) {
+            for (c in seq_len(num.classes)) {
                 if (optimizer == "nlminb") {
-                    res$hessian[[g]] <- fdHess(pars=est[[g]]$par,
+                    res$hessian[[c]] <- fdHess(pars=est[[c]]$par,
                                                fun=loglikelihood_stemm,
-                                               matrices=model$matrices[[g]],
-                                               data=data, p=P[,g],
-                                               w=model$info$w[[g]])$Hessian
+                                               matrices=model$matrices[[c]],
+                                               data=data, p=P[,c],
+                                               w=model$info$w[[c]])$Hessian
                 } else {
-                    res$hessian[[g]] <- optimHess(par=est[[g]]$par,
+                    res$hessian[[c]] <- optimHess(par=est[[c]]$par,
                                                 fn=loglikelihood_stemm,
-                                                matrices=model$matrices[[g]],
-                                                data=data, p=P[,g],
-                                                w=model$info$w[g])
+                                                matrices=model$matrices[[c]],
+                                                data=data, p=P[,c],
+                                                w=model$info$w[c])
                 }
             }
-        names(res$hessian) <- paste0("group", seq_len(num.groups))
+        names(res$hessian) <- paste0("class", seq_len(num.classes))
         }
         res
 
     } else {
-    # Maximization of all groups together
+    # Maximization of all classes together
         if (optimizer == "nlminb") {
             est <- nlminb(start=parameters,
                           objective=loglikelihood_stemm_constraints, data=data,
@@ -231,14 +231,14 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
 
 #--------------- helper functions ---------------
 
-# make a list of group specific parameter vectors
-get_group_parameters <- function(model, parameters) {
-    group.pars <- list()
-    for (g in seq_len(model$info$num.groups)) {
-        group.pars[[g]] <- parameters[1:length(model$info$par.names[[g]])]
-        parameters <- parameters[(length(model$info$par.names[[g]]) + 1):length(parameters)]
+# make a list of class specific parameter vectors
+get_class_parameters <- function(model, parameters) {
+    class.pars <- list()
+    for (c in seq_len(model$info$num.classes)) {
+        class.pars[[c]] <- parameters[1:length(model$info$par.names[[c]])]
+        parameters <- parameters[(length(model$info$par.names[[c]]) + 1):length(parameters)]
     }
-    group.pars
+    class.pars
 }
 
 

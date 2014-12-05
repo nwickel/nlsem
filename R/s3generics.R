@@ -7,10 +7,10 @@
 
 as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(x, ...) {
     data <- data.frame(
-        label = names(unlist(x$matrices$group1)))
-    for (g in seq_len(length(x$matrices))) {
-        temp <- data.frame(unlist(x$matrices[[g]], use.names=FALSE))
-        names(temp) <- paste0("group", g)
+        label = names(unlist(x$matrices$class1)))
+    for (c in seq_len(length(x$matrices))) {
+        temp <- data.frame(unlist(x$matrices[[c]], use.names=FALSE))
+        names(temp) <- paste0("class", c)
         data <- cbind(data, temp)
     }
     data
@@ -22,14 +22,14 @@ simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
     mod.filled <- fill_model(object, parameters)
 
-    num.groups <- mod.filled$info$num.groups
+    num.classes <- mod.filled$info$num.classes
     w <- mod.filled$info$w
 
     # simulate n data points for each mixture as lms
-    dat.sim <- lapply(seq_len(num.groups), function(g) {
-                      simulate(lms_ify(object, g),
+    dat.sim <- lapply(seq_len(num.classes), function(c) {
+                      simulate(lms_ify(object, c),
                                nsim=nsim, seed=seed, n=n,
-                               parameters=get_group_parameters(object, parameters)[[g]],
+                               parameters=get_class_parameters(object, parameters)[[c]],
                                ...)
 
     })
@@ -53,14 +53,14 @@ simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
     mod.filled <- fill_model(object, parameters)
 
-    num.groups <- mod.filled$info$num.groups
+    num.classes <- mod.filled$info$num.classes
     w <- mod.filled$info$w
 
     # simulate n data points from each mixture distribution
-    dat.sim <- lapply(1:num.groups, function(g) {
+    dat.sim <- lapply(1:num.classes, function(c) {
                       rmvnorm(n,
-                              mean=mu_stemm(matrices=mod.filled$matrices[[g]]),
-                              sigma=sigma_stemm(matrices=mod.filled$matrices[[g]]))
+                              mean=mu_stemm(matrices=mod.filled$matrices[[c]]),
+                              sigma=sigma_stemm(matrices=mod.filled$matrices[[c]]))
                               })
 
     # see simulate_lms for explanation
@@ -82,13 +82,13 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
     set.seed(seed)
 
     # Gauss-Hermite quadrature
-    k <- get_k(object$matrices$group1$Omega)
+    k <- get_k(object$matrices$class1$Omega)
     quad <- quadrature(m=m, k=k)
     V <- quad$n
     w <- quad$w
     
     parameters <- convert_parameters_lms(object, parameters)
-    names(object$matrices$group1)[grep("Phi", names(object$matrices$group1))] <- "A"
+    names(object$matrices$class1)[grep("Phi", names(object$matrices$class1))] <- "A"
 
     mod.filled <- fill_model(object, parameters)
 
@@ -137,17 +137,17 @@ summary.emEst <- function(object, ...) {
         est.table <- cbind(est, s.error, tvalue, pvalue)
         dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
     } else {
-        est.table <- Reduce('rbind', lapply(seq_along(est), function(g) {
+        est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
                             s.error <- tryCatch({
-                                sqrt(diag(solve(object$negHessian[[g]])))
+                                sqrt(diag(solve(object$negHessian[[c]])))
                             }, error=function(e) {
                                 warning(warn.msg)
                                 NA
                             })
-                            tvalue <- est[[g]] / s.error
+                            tvalue <- est[[c]] / s.error
                             pvalue <- 2 * pnorm(-abs(tvalue))
-                            est.table <- cbind(est[[g]], s.error, tvalue, pvalue)
-                            dimnames(est.table)  <- list(paste0("group", g, ".", names(est[[g]])),
+                            est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
+                            dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
                                                          c("Estimate", "Std. Error",
                                                            "t value", "Pr(>|z|)"))
                             est.table
@@ -167,7 +167,7 @@ summary.emEst <- function(object, ...) {
                 logLikelihoods=logLik.table)
 
     if (object$model.class == "stemm" || object$model.class == "nsemm") {
-        ans$group.weights <- object$info$w
+        ans$class.weights <- object$info$w
     }
 
     class(ans) <- "summary.emEst"

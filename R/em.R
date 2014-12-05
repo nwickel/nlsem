@@ -21,7 +21,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-02,
     }
 
     if (class(model) == "lms" || class(model) == "nsemm"){
-        n.na <- length(which(is.na(model$matrices$group1$Omega)))
+        n.na <- length(which(is.na(model$matrices$class1$Omega)))
         if (any(start[-c(1:(length(start) - 3))] == 0)){
             stop("Starting parameters for Omega should not be 0.")
         }
@@ -74,14 +74,14 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-02,
                                      max.mstep=max.mstep, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
-                    for (g in seq_len(model$info$num.groups)) {
+                    for (c in seq_len(model$info$num.classes)) {
                         par.names <- c(par.names,
-                                       paste0("group", g, ".", model$info$par.names[[g]]))
+                                       paste0("class", c, ".", model$info$par.names[[c]]))
                     }
                     names(final$par) <- par.names
                 } else {
-                    for (g in seq_len(model$info$num.groups)) {
-                        names(final$par[[g]]) <- model$info$par.names[[g]]
+                    for (c in seq_len(model$info$num.classes)) {
+                        names(final$par[[c]]) <- model$info$par.names[[c]]
                     }
                 }
             },
@@ -92,14 +92,14 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-02,
                                      max.mstep=max.mstep, ...)
                 if (is.numeric(final$par)) {
                     par.names <- NULL
-                    for (g in seq_len(model$info$num.groups)) {
+                    for (c in seq_len(model$info$num.classes)) {
                         par.names <- c(par.names,
-                                       paste0("group", g, ".", model$info$par.names[[g]]))
+                                       paste0("class", c, ".", model$info$par.names[[c]]))
                     }
                     names(final$par) <- par.names
                 } else {
-                    for (g in seq_len(model$info$num.groups)) {
-                        names(final$par[[g]]) <- model$info$par.names[[g]]
+                    for (c in seq_len(model$info$num.classes)) {
+                        names(final$par[[c]]) <- model$info$par.names[[c]]
                     }
                 }
                 # -> TODO check if par is not already named!
@@ -144,24 +144,24 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-02,
         # E-step
         switch(class(model),
            "lms" = {
-                names(model$matrices$group1)[grep("Phi", names(model$matrices$group1))] <- "A"
+                names(model$matrices$class1)[grep("Phi", names(model$matrices$class1))] <- "A"
                 P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
             },
            "stemm" = {
                 P <- estep_stemm(model=model, parameters=par.old, data=data)
                 model$info$w <- colSums(P) / nrow(data)
                 if (logger == TRUE) {
-                    cat("Group weights: ", round(model$info$w, digits=4), "\n")
+                    cat("Class weights: ", round(model$info$w, digits=4), "\n")
                 }
             },
             "nsemm" = {
                 res <- estep_nsemm(model=model, parameters=par.old, data=data,
                                    logger=logger, ...)
                 P            <- res$P
-                model$info$w <- res$w.g
+                model$info$w <- res$w.c
                 par.old      <- res$par.old
                 if (logger == TRUE) {
-                    cat("Group weights: ", round(model$info$w, digits=4), "\n")
+                    cat("Class weights: ", round(model$info$w, digits=4), "\n")
                 }
             }
         )

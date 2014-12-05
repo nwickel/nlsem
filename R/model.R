@@ -7,18 +7,18 @@
 
 # Define model specification for different SEMs with nonlinear effects;
 # possible objects classes are 'lms', 'stemm', 'nsemm'; exported function
-specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
+specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
                           interaction="all", interc.obs=FALSE,
                           interc.lat=FALSE, relation.lat="default"){
 
     # check arguments
     if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
-       || !is.numeric(num.eta) || !is.numeric(num.groups)) {
-        stop("Number of variables or groups must be numeric.")
+       || !is.numeric(num.eta) || !is.numeric(num.classes)) {
+        stop("Number of variables or classes must be numeric.")
     } else if (num.x < num.xi || num.y < num.eta) {
         stop("The model contains not enough observed variables.")
     }
-    stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0, num.groups > 0)
+    stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0, num.classes > 0)
 
     # check if only defined xi's are in the interaction
     if (interaction != "all" && interaction != "") {
@@ -29,7 +29,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     }
 
     # class of model
-    model.class <- get_model_class(num.groups, interaction)
+    model.class <- get_model_class(num.classes, interaction)
 
     # check latent variables and get indices for Lambda.x and Lambda.y
     xi.s <- unlist(strsplit(xi, ","))
@@ -125,47 +125,47 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     # check if Omega has row echelon form
     test_omega(Omega)
 
-    # make a list of the matrices for each group
+    # make a list of the matrices for each class
     matrices <- list()
-    for (g in seq_len(num.groups)) {
+    for (c in seq_len(num.classes)) {
         if (model.class == "lms") {
-            matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
+            matrices[[c]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                                   Omega=Omega)
         } else if (model.class == "stemm") {
-            matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
+            matrices[[c]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau)
         } else {
-            matrices[[g]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
+            matrices[[c]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                                   Omega=Omega)
         }
     }
-    names(matrices) <- paste0("group",seq_len(num.groups))
+    names(matrices) <- paste0("class",seq_len(num.classes))
 
-    # group weights w
-    w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
+    # class weights w
+    w <- matrix(1/num.classes, nrow=num.classes, ncol=1)
 
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
-                                               num.groups=num.groups,
+                                               num.classes=num.classes,
                                                par.names=list(), w=w))
 
     # add parameter names to model
     if (model.class == "lms") {
-        model$info$par.names <- get_parnames(model)$group1
+        model$info$par.names <- get_parnames(model)$class1
     } else {
         model$info$par.names <- get_parnames(model)
     }
 
-    ## --> TODO set parameters that do not vary between groups
+    ## --> TODO set parameters that do not vary between classes
 
     class(model) <- model.class
     
@@ -176,7 +176,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
 }
 
 # Create model matrices from a dataframe with columns label (for parameter
-# labels) and group 1 to group n; only needed when user wants to have full
+# labels) and class 1 to class n; only needed when user wants to have full
 # control over constraints, etc.; exported function
 create_sem <- function(dat){
 
@@ -196,45 +196,45 @@ create_sem <- function(dat){
     tau      <- as.character(dat$label[grep("tau", dat$label)])
     Omega    <- as.character(dat$label[grep("Omega", dat$label)])
 
-    # number of latent and indicator variables and groups
+    # number of latent and indicator variables and classes
     num.x      <- length(nu.x)
     num.y      <- length(nu.y)
     num.xi     <- length(tau)
     num.eta    <- length(alpha)
-    num.groups <- ncol(dat) - 1
+    num.classes <- ncol(dat) - 1
 
     # create matrices
     matrices <- list()
-    for (g in seq_len(num.groups)) {
-        Lambda.x.matrix <- matrix(dat[dat$label %in% Lambda.x, paste0("group",g)],
+    for (c in seq_len(num.classes)) {
+        Lambda.x.matrix <- matrix(dat[dat$label %in% Lambda.x, paste0("class",c)],
                                   nrow=num.x, ncol=num.xi)
-        Lambda.y.matrix <- matrix(dat[dat$label %in% Lambda.y, paste0("group",g)],
+        Lambda.y.matrix <- matrix(dat[dat$label %in% Lambda.y, paste0("class",c)],
                                   nrow=num.y, ncol=num.eta)
-        Gamma.matrix    <- matrix(dat[dat$label %in% Gamma, paste0("group",g)],
+        Gamma.matrix    <- matrix(dat[dat$label %in% Gamma, paste0("class",c)],
                                   nrow=num.eta, ncol=num.xi)
-        Beta.matrix     <- matrix(dat[dat$label %in% Beta, paste0("group",g)],
+        Beta.matrix     <- matrix(dat[dat$label %in% Beta, paste0("class",c)],
                                   nrow=num.eta, ncol=num.eta)
-        Theta.d.matrix  <- matrix(dat[dat$label %in% Theta.d, paste0("group",g)],
+        Theta.d.matrix  <- matrix(dat[dat$label %in% Theta.d, paste0("class",c)],
                                   nrow=num.x, ncol=num.x)
-        Theta.e.matrix  <- matrix(dat[dat$label %in% Theta.e, paste0("group",g)],
+        Theta.e.matrix  <- matrix(dat[dat$label %in% Theta.e, paste0("class",c)],
                                   nrow=num.y, ncol=num.y)
-        Psi.matrix      <- matrix(dat[dat$label %in% Psi, paste0("group",g)],
+        Psi.matrix      <- matrix(dat[dat$label %in% Psi, paste0("class",c)],
                                   nrow=num.eta, ncol=num.eta)
-        Phi.matrix      <- matrix(dat[dat$label %in% Phi, paste0("group",g)],
+        Phi.matrix      <- matrix(dat[dat$label %in% Phi, paste0("class",c)],
                                   nrow=num.xi, ncol=num.xi)
-        nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("group",g)],
+        nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("croup",c)],
                                   nrow=num.x, ncol=1)
-        nu.y.matrix     <- matrix(dat[dat$label %in% nu.y, paste0("group",g)],
+        nu.y.matrix     <- matrix(dat[dat$label %in% nu.y, paste0("class",c)],
                                   nrow=num.y, ncol=1)
-        alpha.matrix    <- matrix(dat[dat$label %in% alpha, paste0("group",g)],
+        alpha.matrix    <- matrix(dat[dat$label %in% alpha, paste0("class",c)],
                                   nrow=num.eta, ncol=1)
-        tau.matrix      <- matrix(dat[dat$label %in% tau, paste0("group",g)],
+        tau.matrix      <- matrix(dat[dat$label %in% tau, paste0("class",c)],
                                   nrow=num.xi, ncol=1)
-        Omega.matrix    <- matrix(dat[dat$label %in% Omega, paste0("group",g)],
+        Omega.matrix    <- matrix(dat[dat$label %in% Omega, paste0("class",c)],
                                   nrow=num.xi, ncol=num.xi)
 
-        if (num.groups == 1) {
-            matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+        if (num.classes == 1) {
+            matrices[[c]] <- list(Lambda.x=Lambda.x.matrix,
                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                   Theta.d=Theta.d.matrix,
                                   Theta.e=Theta.e.matrix, Psi=Psi.matrix,
@@ -242,7 +242,7 @@ create_sem <- function(dat){
                                   nu.y=nu.y.matrix, alpha=alpha.matrix,
                                   tau=tau.matrix, Omega=Omega.matrix)
         } else if (all(is.na(Omega.matrix))) {
-            matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+            matrices[[c]] <- list(Lambda.x=Lambda.x.matrix,
                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                   Beta=Beta.matrix, Theta.d=Theta.d.matrix,
                                   Theta.e=Theta.e.matrix, Psi=Psi.matrix,
@@ -250,7 +250,7 @@ create_sem <- function(dat){
                                   nu.y=nu.y.matrix, alpha=alpha.matrix,
                                   tau=tau.matrix)
         } else {
-             matrices[[g]] <- list(Lambda.x=Lambda.x.matrix,
+             matrices[[c]] <- list(Lambda.x=Lambda.x.matrix,
                                    Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                    Beta=Beta.matrix, Theta.d=Theta.d.matrix,
                                    Theta.e=Theta.e.matrix, Psi=Psi.matrix,
@@ -259,18 +259,18 @@ create_sem <- function(dat){
                                    tau=tau.matrix, Omega=Omega.matrix)
         }
     }
-    names(matrices) <- paste0("group", 1:num.groups)
+    names(matrices) <- paste0("class", 1:num.classes)
 
     par.names <- list()
-    for (g in seq_len(num.groups)) {
-        group <- paste0("group",g)
-        par.names[[g]] <- as.character(dat$label[is.na(dat[,group])])
+    for (c in seq_len(num.classes)) {
+        class <- paste0("class",c)
+        par.names[[c]] <- as.character(dat$label[is.na(dat[,class])])
     }
-    names(par.names) <- paste0("group", 1:num.groups)
-    w <- matrix(1/num.groups, nrow=num.groups, ncol=1)
+    names(par.names) <- paste0("class", 1:num.classes)
+    w <- matrix(1/num.classes, nrow=num.classes, ncol=1)
 
     info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
-                 num.groups=num.groups, par.names=par.names, w=w)
+                 num.classes=num.classes, par.names=par.names, w=w)
 
     model <- list(matrices=matrices, info=info)
 
@@ -278,7 +278,7 @@ create_sem <- function(dat){
         interaction <- ""
     } else interaction <- "not_empty"
 
-    class(model) <- get_model_class(num.groups, interaction)
+    class(model) <- get_model_class(num.classes, interaction)
 
     # bounds for parameters (variances > 0)
     model$info$bounds <- bounds(model)
@@ -290,8 +290,8 @@ create_sem <- function(dat){
 # the model are counted); exported function
 count_free_parameters <- function(model) {
     res <- 0
-    for (g in seq_len(model$info$num.groups))
-        res <- res + sum(unlist(lapply(model$matrices[[g]], is.na)))
+    for (c in seq_len(model$info$num.classes))
+        res <- res + sum(unlist(lapply(model$matrices[[c]], is.na)))
     res
     }
 
@@ -306,31 +306,31 @@ fill_model <- function(model, parameters) {
 
     matrices <- model$matrices
 
-    for (g in seq_len(model$info$num.groups)) {
+    for (c in seq_len(model$info$num.classes)) {
         if (class(model) == "lms") {
             par.names <- model$info$par.names
         } else {
-            par.names <- model$info$par.names[[g]]
+            par.names <- model$info$par.names[[c]]
         }
-        matrices.g <- matrices[[g]] # to avoid multiple [[]]
+        matrices.c <- matrices[[c]] # to avoid multiple [[]]
 
-        for (j in seq_along(matrices.g)) {
-            matrix.j <- matrices.g[[j]]
+        for (j in seq_along(matrices.c)) {
+            matrix.j <- matrices.c[[j]]
             # number of NA's in matrix
             num.na <- length(matrix.j[is.na(matrix.j)])
             if (num.na > 0) {
                 matrix.j[is.na(matrix.j)] <- parameters[1:num.na]
                 parameters <- parameters[-(1:num.na)]
-                matrices.g[[j]] <- matrix.j
+                matrices.c[[j]] <- matrix.j
             }
         }
         # make 'symmetric' matrices symmetric
-        matrices.g$Psi <- fill_symmetric(matrices.g$Psi)
-        tryCatch({ matrices.g$Phi <- fill_symmetric(matrices.g$Phi) },
+        matrices.c$Psi <- fill_symmetric(matrices.c$Psi)
+        tryCatch({ matrices.c$Phi <- fill_symmetric(matrices.c$Phi) },
                                        error=function(e) e,
                                        warning=function(w) w)
         # catching error if there is no Phi (like in "intern" LMS)
-        matrices[[g]] <- matrices.g
+        matrices[[c]] <- matrices.c
     }
     out <- list(matrices=matrices, info=model$info)
     class(out) <- class(model)
@@ -495,9 +495,9 @@ rel_lat <- function(x, num.eta, num.xi){
 
 # Defines model class of a given specification; possible output: 'lms',
 # 'stemm', 'nsemm'
-get_model_class <- function(num.groups, interaction) {
+get_model_class <- function(num.classes, interaction) {
     if (interaction != "") {
-        if (num.groups == 1) model.class <- "lms"
+        if (num.classes == 1) model.class <- "lms"
         else model.class <- "nsemm"
     } else model.class <- "stemm"
 }
@@ -506,11 +506,11 @@ get_model_class <- function(num.groups, interaction) {
 get_parnames <- function(model) {
 
     par.names <- list()
-    for (g in seq_len(model$info$num.groups)) {
-        lst <- unlist(lapply(model$matrices[[g]], is.na))
-        par.names[[g]] <- names(lst[lst])
+    for (c in seq_len(model$info$num.classes)) {
+        lst <- unlist(lapply(model$matrices[[c]], is.na))
+        par.names[[c]] <- names(lst[lst])
     }
-    names(par.names) <- paste0("group", 1:model$info$num.groups)
+    names(par.names) <- paste0("class", 1:model$info$num.classes)
     par.names
 }
 
@@ -549,13 +549,13 @@ bounds <- function(model) {
         out <- list(upper=upper, lower=lower)
     } else if (class(model) == "stemm" || class(model) == "nsemm") {
 
-        lower <- rep(-Inf, length(model$info$par.names$group1))
-        upper <- rep(Inf, length(model$info$par.names$group1))
+        lower <- rep(-Inf, length(model$info$par.names$class1))
+        upper <- rep(Inf, length(model$info$par.names$class1))
 
-        lower.group <- list()
-        upper.group <- list()
+        lower.class <- list()
+        upper.class <- list()
 
-        for (g in seq_len(model$info$num.groups)) {
+        for (c in seq_len(model$info$num.classes)) {
             if (model$info$num.x > 1){
                 t.d <- paste0("Theta.d", diag_ind(model$info$num.x))
             } else t.d <- "Theta.d"
@@ -569,13 +569,13 @@ bounds <- function(model) {
                 phi <- paste0("Phi", diag_ind(model$info$num.eta))
             } else phi <- "Phi"
 
-            lower[model$info$par.names[[g]] %in% c(t.d, t.e, psi, phi)] <- 0
-            lower.group[[g]] <- lower
-            upper.group[[g]] <- upper
+            lower[model$info$par.names[[c]] %in% c(t.d, t.e, psi, phi)] <- 0
+            lower.class[[c]] <- lower
+            upper.class[[c]] <- upper
         }
-        names(lower.group) <- paste0("group",seq_len(model$info$num.groups))
-        names(upper.group) <- paste0("group",seq_len(model$info$num.groups))
-        out <- list(upper=upper.group, lower=lower.group)
+        names(lower.class) <- paste0("class",seq_len(model$info$num.classes))
+        names(upper.class) <- paste0("class",seq_len(model$info$num.classes))
+        out <- list(upper=upper.class, lower=lower.class)
     }
     out
 }
