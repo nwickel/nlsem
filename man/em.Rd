@@ -8,7 +8,7 @@ mixture structural equation models}
     mixture approaches (LMS, STEMM, NSEMM).
 }
 \usage{
-    em(model, data, start, logger=FALSE, threshold=1e-02, max.iter=100,
+    em(model, data, start, logger=FALSE, convergence=1e-02, max.iter=100,
        m=16, optimizer=c("nlminb", "optim"), max.mstep=1, 
        neg.hessian=TRUE, ...) }
 \arguments{
@@ -16,7 +16,7 @@ mixture structural equation models}
     \item{data}{the data the model should be fitted to.}
     \item{start}{starting values for parameters.}
     \item{logger}{if output of EM algorithm should be shown during fitting.}
-    \item{threshold}{convergence threshold.}
+    \item{convergence}{convergence threshold.}
     \item{max.iter}{maximum number of Iterations before EM algorithm stops.}
     \item{m}{number of nodes for Hermite-Gaussian quadrature.}
     \item{optimizer}{which optimizer should be used in maximization step of

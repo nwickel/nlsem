@@ -450,9 +450,9 @@ test_omega <- function(Omega){
 rel_lat <- function(x, num.eta, num.xi){
 
     error.msg <- "Latent variables misspecified. Must be of the form
-                    'xi1>eta1' or 'eta1>eta2'. See ?specify_sem for details."
+                    'eta1~xi1' or 'eta2~eta1'. See ?specify_sem for details."
 
-    x.s       <- unlist(strsplit(x, ";"))
+    x.s       <- unlist(strsplit(x, ","))
     which.xi  <- which(grepl("xi", x.s))
     which.eta <- which(!grepl("xi", x.s))
 
@@ -462,11 +462,11 @@ rel_lat <- function(x, num.eta, num.xi){
         G <- matrix(0, nrow=num.eta, ncol=num.xi)
     
         for (i in which.xi){
-            xi.s <- unlist(strsplit(x.s[i], ">"))
+            xi.s <- unlist(strsplit(x.s[i], "~"))
             if (length(xi.s) < 2) stop(error.msg)
 
-            xis  <- unlist(strsplit(xi.s[1], ","))
-            etas <- unlist(strsplit(xi.s[2], ","))
+            etas <- unlist(strsplit(xi.s[1], "[+]"))
+            xis  <- unlist(strsplit(xi.s[2], "[+]"))
             tryCatch({
                 ind.xi <- as.numeric(gsub("^.*xi([0-9]+).*$", "\\1", xis))
                 ind.eta <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", etas))
@@ -479,11 +479,11 @@ rel_lat <- function(x, num.eta, num.xi){
     
     B <- diag(1, num.eta)
     for (i in which.eta){
-        eta.s <- unlist(strsplit(x.s[i], ">"))
+        eta.s <- unlist(strsplit(x.s[i], "~"))
         if (length(eta.s) < 2) stop(error.msg)
 
-        eta.cols <- unlist(strsplit(eta.s[1], ","))
-        eta.rows <- unlist(strsplit(eta.s[2], ","))
+        eta.rows <- unlist(strsplit(eta.s[1], "[+]"))
+        eta.cols <- unlist(strsplit(eta.s[2], "[+]"))
         tryCatch({
             ind.rows <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", eta.rows))
             ind.cols <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", eta.cols))
