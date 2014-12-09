@@ -26,9 +26,9 @@ estep_nsemm <- function(model, parameters, data, logger, ...) {
         par.new <- c(par.new, est$coefficients)
     }
 
-    # e-step for stemm
+    # e-step for semm
     # Note that Omega and A are not estimated
-    P <- estep_stemm(model=model, parameters=par.new, data=data)
+    P <- estep_semm(model=model, parameters=par.new, data=data)
     w.c <- colSums(P) / nrow(data)
 
     res <- list(P=P, w.c=w.c, par.old=par.new)
@@ -39,7 +39,7 @@ estep_nsemm <- function(model, parameters, data, logger, ...) {
 mstep_nsemm <- function(model, parameters, P, data, optimizer, max.mstep,
                         control=list(), ...) {
 
-    est <- mstep_stemm(model=model, parameters=parameters, P=P,
+    est <- mstep_semm(model=model, parameters=parameters, P=P,
                                 data=data, optimizer=optimizer,
                                 max.mstep=max.mstep, control=control, ...)
 

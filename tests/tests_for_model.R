@@ -36,9 +36,9 @@ lms_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
                          num.classes=1, interaction="xi1:xi2,xi1:xi1",
                          interc.obs=FALSE, interc.lat=FALSE)
 
-# stemm model
+# semm model
 # ===========
-stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+semm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.classes=3,
                          interaction="",
                          interc.obs=FALSE, interc.lat=FALSE)
@@ -58,16 +58,16 @@ count_free_parameters(lms_model)
 parameters <- 1:count_free_parameters(lms_model)
 rm(parameters, lms_model)
 
-# stemm
+# semm
 # -----
-stemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+semm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                          xi="x1-x3,x4-x6", eta="y1-y3", num.classes=3,
                          interaction="",
                          interc.obs=FALSE, interc.lat=FALSE)
-class(stemm_model)
-count_free_parameters(stemm_model)
-parameters <- 1:count_free_parameters(stemm_model)
-rm(parameters, stemm_model)
+class(semm_model)
+count_free_parameters(semm_model)
+parameters <- 1:count_free_parameters(semm_model)
+rm(parameters, semm_model)
 
 # nsemm
 # -----

@@ -1,4 +1,4 @@
-# Testing functions for stemm
+# Testing functions for semm
 # ===========================
 
 library(nlsem)
@@ -61,12 +61,12 @@ system.time({
 
 # small model
 # ------------
-model_stemm <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
+model_semm <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
                      xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
                      interaction="", interc.obs=FALSE, interc.lat=FALSE,
                      relation.lat="xi1,xi2>eta1")
 
-pars.orig_stemm <- c(
+pars.orig_semm <- c(
                      # class 1
                      1.5, 1,        # Lambda.x
                      0.7,           # Lambda.y
@@ -85,13 +85,13 @@ pars.orig_stemm <- c(
                      rep(0.8, 3)    # Phi
 )
 
-data_stemm <- simulate(model_stemm, parameters=pars.orig_stemm)
+data_semm <- simulate(model_semm, parameters=pars.orig_semm)
 
 set.seed(3)
-parameters_stemm <- runif(count_free_parameters(model_stemm), 0.1, 1.5)
+parameters_semm <- runif(count_free_parameters(model_semm), 0.1, 1.5)
 
 
 system.time({
-    res_stemm <- em(model_stemm, data_stemm, parameters_stemm, logger=TRUE)
+    res_semm <- em(model_semm, data_semm, parameters_semm, logger=TRUE)
 })
 

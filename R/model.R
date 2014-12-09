@@ -6,7 +6,7 @@
 #--------------- main functions ---------------
 
 # Define model specification for different SEMs with nonlinear effects;
-# possible objects classes are 'lms', 'stemm', 'nsemm'; exported function
+# possible objects classes are 'lms', 'semm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
                           interaction="all", interc.obs=FALSE,
                           interc.lat=FALSE, relation.lat="default"){
@@ -132,7 +132,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
                                   nu.x=nu.x, nu.y=nu.y, alpha=alpha, tau=tau,
                                   Omega=Omega)
-        } else if (model.class == "stemm") {
+        } else if (model.class == "semm") {
             matrices[[c]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Beta=Beta, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
@@ -297,7 +297,7 @@ count_free_parameters <- function(model) {
 # mostly needed to simulate data from a prespecified model; NOT exported
 fill_model <- function(model, parameters) {
 
-    stopifnot(class(model) == "lms" || class(model) == "stemm"
+    stopifnot(class(model) == "lms" || class(model) == "semm"
               || class(model) == "nsemm")
 
     stopifnot(count_free_parameters(model) == length(parameters))
@@ -497,12 +497,12 @@ rel_lat <- function(x, num.eta, num.xi){
 }
 
 # Defines model class of a given specification; possible output: 'lms',
-# 'stemm', 'nsemm'
+# 'semm', 'nsemm'
 get_model_class <- function(num.classes, interaction) {
     if (interaction != "") {
         if (num.classes == 1) model.class <- "lms"
         else model.class <- "nsemm"
-    } else model.class <- "stemm"
+    } else model.class <- "semm"
 }
 
 # Obtains parameter names from a given model; used in specify_sem
@@ -550,7 +550,7 @@ bounds <- function(model) {
         } else psi <- "Psi"
         lower[model$info$par.names %in% c(t.d, t.e, psi)] <- 0
         out <- list(upper=upper, lower=lower)
-    } else if (class(model) == "stemm" || class(model) == "nsemm") {
+    } else if (class(model) == "semm" || class(model) == "nsemm") {
 
         lower <- rep(-Inf, length(model$info$par.names$class1))
         upper <- rep(Inf, length(model$info$par.names$class1))

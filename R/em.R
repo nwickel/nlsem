@@ -2,13 +2,13 @@
 #
 # last mod: Nov/25/2014, NU
 
-# Performs EM-algorithm for different models of class 'lms', 'stemm', and
+# Performs EM-algorithm for different models of class 'lms', 'semm', and
 # soon 'nsemm'
 em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                 max.iter=100, m=16, optimizer=c("nlminb", "optim"),
                 max.mstep=1, neg.hessian=TRUE, ...) {
 
-    stopifnot(class(model) == "lms" || class(model) == "stemm" ||
+    stopifnot(class(model) == "lms" || class(model) == "semm" ||
               class(model) == "nsemm")
 
     if (!count_free_parameters(model) == length(start)){
@@ -37,7 +37,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
     ll.new   <- 1     # loglikelihood of the current iteration
     ll.ret   <- NULL
     num.iter <- 0     # number of iterations
-    if (class(model) == "stemm" || class(model) == "nsemm") {
+    if (class(model) == "semm" || class(model) == "nsemm") {
         par.new <- start
     } else {
         par.new <- convert_parameters_lms(model, start)
@@ -67,8 +67,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                 Phi <- A %*% t(A)
                 final$par[grep("Phi", names(final$par))] <- Phi[lower.tri(Phi, diag=TRUE)] 
             },
-            "stemm" = {
-                final <- mstep_stemm(model=model, parameters=par.old, P=P,
+            "semm" = {
+                final <- mstep_semm(model=model, parameters=par.old, P=P,
                                      data=data, neg.hessian=neg.hessian,
                                      optimizer=optimizer,
                                      max.mstep=max.mstep, ...)
@@ -117,8 +117,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                     loglikelihoods=-ll.ret,
                     info=model$info[1:4])
 
-        # attach w for stemm and nsemm
-        if (class(model) == "stemm" || class(model) == "nsemm") {
+        # attach w for semm and nsemm
+        if (class(model) == "semm" || class(model) == "nsemm") {
             out$info <- model$info[c(1:4,7)]
         }
 
@@ -147,8 +147,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                 names(model$matrices$class1)[grep("Phi", names(model$matrices$class1))] <- "A"
                 P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
             },
-           "stemm" = {
-                P <- estep_stemm(model=model, parameters=par.old, data=data)
+           "semm" = {
+                P <- estep_semm(model=model, parameters=par.old, data=data)
                 model$info$w <- colSums(P) / nrow(data)
                 if (logger == TRUE) {
                     cat("Class weights: ", round(model$info$w, digits=4), "\n")
@@ -177,8 +177,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                                 m=m, optimizer=optimizer,
                                 max.mstep=max.mstep, ...)
             },
-            "stemm" = {
-                m.step <- mstep_stemm(model=model, parameters=par.old, P=P,
+            "semm" = {
+                m.step <- mstep_semm(model=model, parameters=par.old, P=P,
                                   data=data, optimizer=optimizer,
                                   max.mstep=max.mstep, ...) },
             "nsemm" = {
