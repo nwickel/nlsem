@@ -115,8 +115,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
     if (interaction == "all"){
         Omega[upper.tri(Omega)] <- NA
-        # --> TODO add the following so "all" does what description says
-        # diag(Omega) <- NA
     } else if (interaction != "") {
         interaction.s <- unlist(strsplit(interaction, ","))
         ind <- calc_interaction_matrix(interaction.s)
@@ -414,11 +412,11 @@ test_omega <- function(Omega){
                     stop(msg)
         }
 
-        if (nrow(ind) == 1){
-            if (!is.na(interactions[1, dim]))
-                stop(msg)
-
-        } else {
+        #if (nrow(ind) == 1){
+        #    if (!is.na(interactions[1, dim]))
+        #        stop(msg)
+        # 
+        #} else {
             if (max(ind[,1]) > 1){
                 for (i in 2:max(ind[,1])){
                     if (min(which(is.na(interactions[i-1,]))) >=
@@ -427,7 +425,7 @@ test_omega <- function(Omega){
                     }
                 }
             }
-        }
+        #}
 
         # test if quadratic effects are defined for xi's that are not
         # involved in interactions

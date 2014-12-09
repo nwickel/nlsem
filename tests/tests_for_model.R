@@ -31,12 +31,10 @@ lms_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
 
 # not all interactions with xi defined
 # ------------------------------------
-# lms_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
-#                          xi="x1-x2,x3-x4,x5-x6,x7-x8", eta="y1-y2,y3-y4,y5-y6",
-#                          num.classes=1, interaction="xi1:xi2,xi1:xi1",
-#                          interc.obs=FALSE, interc.lat=FALSE)
-# --> TODO should not throw an error (Interactions are not well-defined.
-# Please change order of xi's. See ?specify_sem for details.)
+lms_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
+                         xi="x1-x2,x3-x4,x5-x6,x7-x8", eta="y1-y2,y3-y4,y5-y6",
+                         num.classes=1, interaction="xi1:xi2,xi1:xi1",
+                         interc.obs=FALSE, interc.lat=FALSE)
 
 # stemm model
 # ===========
