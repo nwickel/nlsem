@@ -69,13 +69,14 @@ mixture structural equation models}
     predictor variables. \emph{Structural Equation Modeling, 21}, 468-481.
 }
 \examples{
+## LMS
+## ===
 # specify model
-model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+model1 <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                        xi="x1-x3,x4-x6", eta="y1-y3",
                        interaction="xi1:xi2")
-
 # simulate data
-pars.orig <- c(0.6, 0.7, 0.8, 0.7,                                   # Lx
+pars.orig1 <- c(0.6, 0.7, 0.8, 0.7,                                   # Lx
               0.5, 0.3,                                              # Ly
               0.2, 0.4,                                              # G
               0.51, 0.64, 0.36, 0.25, 0.67, 0.23,                    # Td
@@ -84,18 +85,65 @@ pars.orig <- c(0.6, 0.7, 0.8, 0.7,                                   # Lx
               0.49, 0.64, 0.54,                                      # A
               0.7                                                    # Omega
               )
-
-dat <- simulate(model, parameters=pars.orig)
-
+set.seed(3)
+dat1 <- simulate(model1, parameters=pars.orig1)
 # fit model
-pars.start <- runif(22, 0.4, 0.6)
-
+pars.start1 <- runif(count_free_parameters(model1), 0.4, 0.6)
 \dontrun{
 system.time({
-    res <- em(model, dat, pars.start, logger=TRUE)
+    res1 <- em(model1, dat1, pars.start1, logger=TRUE)
 })
-summary(res)
+summary(res1)
 }
+
+## STEMM
+## =====
+# specify model
+model2 <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
+                     xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
+                     interaction="", interc.obs=FALSE, interc.lat=FALSE,
+                     relation.lat="xi1,xi2>eta1")
+# simulate data
+pars.orig2 <- c(
+                # class 1
+                1.5, 1,        # Lambda.x
+                0.7,           # Lambda.y
+                0.2, 0.3,      # Gamma
+                rep(0.5, 4),   # Theta.d
+                0.5, 0.5,      # Theta.e
+                0.5,           # Psi
+                rep(0.8, 3),   # Phi
+                # class 2
+                1, 1.2,        # Lambda.x
+                1.4,           # Lambda.y
+                0.8, 0.9,      # Gamma
+                rep(0.5, 4),   # Theta.d
+                0.5, 0.5,      # Theta.e
+                0.5,           # Psi
+                rep(0.8, 3)    # Phi
+)
+dat2 <- simulate(model2, parameters=pars.orig2)
+# fit model
+set.seed(3469)
+pars.start2 <- runif(count_free_parameters(model2), 0.1, 1.5)
+\dontrun{
+system.time({
+    res2 <- em(model_stemm, data_stemm, parameters_stemm, logger=TRUE)
+})
+summary(res2)
 }
+
+## NSEMM
+## =====
+# specify model
+model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
+                     xi="x1-x3,x4-x6", eta="y1-y3",
+                     num.groups=3, interaction="xi1:xi2",
+                     interc.obs=FALSE, interc.lat=FALSE,
+                     relation.lat="xi1,xi2>eta1")
+
+
+}
+
 
 
