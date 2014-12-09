@@ -4,7 +4,7 @@
 
 # Performs EM-algorithm for different models of class 'lms', 'stemm', and
 # soon 'nsemm'
-em <- function(model, data, start, logger=FALSE, threshold=1e-02,
+em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                 max.iter=100, m=16, optimizer=c("nlminb", "optim"),
                 max.mstep=1, neg.hessian=TRUE, ...) {
 
@@ -29,7 +29,7 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-02,
 
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm for", class(model), "\n")
-    cat(paste("Threshold: ", threshold, "\n"))
+    cat(paste("Convergence: ", convergence, "\n"))
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
     
@@ -126,8 +126,8 @@ em <- function(model, data, start, logger=FALSE, threshold=1e-02,
         return(out)
     })
 
-    while(abs(ll.old - ll.new) > threshold) { # as long as no convergence reached
-    #while(sum((par.old - par.new)^2) > threshold) { # as long as no convergence reached
+    while(abs(ll.old - ll.new) > convergence) { # as long as no convergence reached
+    #while(sum((par.old - par.new)^2) > convergence) { # as long as no convergence reached
         if(ll.new - ll.old > 0.001 && num.iter > 3) {
             warning("Likelihood should be decreasing")
         }
