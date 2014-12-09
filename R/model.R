@@ -456,20 +456,25 @@ rel_lat <- function(x, num.eta, num.xi){
     which.xi  <- which(grepl("xi", x.s))
     which.eta <- which(!grepl("xi", x.s))
 
-    G <- matrix(NA, nrow=num.eta, ncol=num.xi)
-    for (i in which.xi){
-        xi.s <- unlist(strsplit(x.s[i], ">"))
-        if (length(xi.s) < 2) stop(error.msg)
+    if (length(which.xi) == 0){
+        G <- matrix(NA, nrow=num.eta, ncol=num.xi)
+    } else {
+        G <- matrix(0, nrow=num.eta, ncol=num.xi)
+    
+        for (i in which.xi){
+            xi.s <- unlist(strsplit(x.s[i], ">"))
+            if (length(xi.s) < 2) stop(error.msg)
 
-        xis  <- unlist(strsplit(xi.s[1], ","))
-        etas <- unlist(strsplit(xi.s[2], ","))
-        tryCatch({
-            ind.xi <- as.numeric(gsub("^.*xi([0-9]+).*$", "\\1", xis))
-            ind.eta <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", etas))
-            G[-ind.eta, -ind.xi] <- 0
-        }, error = function(e) stop(error.msg)
-        , warning = function(w) stop(error.msg)
-        )
+            xis  <- unlist(strsplit(xi.s[1], ","))
+            etas <- unlist(strsplit(xi.s[2], ","))
+            tryCatch({
+                ind.xi <- as.numeric(gsub("^.*xi([0-9]+).*$", "\\1", xis))
+                ind.eta <- as.numeric(gsub("^.*eta([0-9]+).*$", "\\1", etas))
+                G[ind.eta, ind.xi] <- NA
+            }, error = function(e) stop(error.msg)
+            , warning = function(w) stop(error.msg)
+            )
+        }
     }
     
     B <- diag(1, num.eta)
