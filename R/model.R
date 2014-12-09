@@ -222,7 +222,7 @@ create_sem <- function(dat){
                                   nrow=num.eta, ncol=num.eta)
         Phi.matrix      <- matrix(dat[dat$label %in% Phi, paste0("class",c)],
                                   nrow=num.xi, ncol=num.xi)
-        nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("croup",c)],
+        nu.x.matrix     <- matrix(dat[dat$label %in% nu.x, paste0("class",c)],
                                   nrow=num.x, ncol=1)
         nu.y.matrix     <- matrix(dat[dat$label %in% nu.y, paste0("class",c)],
                                   nrow=num.y, ncol=1)
