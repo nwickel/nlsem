@@ -5,7 +5,7 @@
 
 #--------------- main functions ---------------
 
-as.data.frame.lms <- as.data.frame.stemm <- as.data.frame.nsemm <- function(x, ...) {
+as.data.frame.lms <- as.data.frame.semm <- as.data.frame.nsemm <- function(x, ...) {
     data <- data.frame(
         label = names(unlist(x$matrices$class1)))
     for (c in seq_len(length(x$matrices))) {
@@ -47,7 +47,7 @@ simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     dat
 }
 
-simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
+simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
     set.seed(seed)
 
@@ -59,8 +59,8 @@ simulate.stemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     # simulate n data points from each mixture distribution
     dat.sim <- lapply(1:num.classes, function(c) {
                       rmvnorm(n,
-                              mean=mu_stemm(matrices=mod.filled$matrices[[c]]),
-                              sigma=sigma_stemm(matrices=mod.filled$matrices[[c]]))
+                              mean=mu_semm(matrices=mod.filled$matrices[[c]]),
+                              sigma=sigma_semm(matrices=mod.filled$matrices[[c]]))
                               })
 
     # see simulate_lms for explanation
@@ -166,7 +166,7 @@ summary.emEst <- function(object, ...) {
                 finallogLik=object$objective,
                 logLikelihoods=logLik.table)
 
-    if (object$model.class == "stemm" || object$model.class == "nsemm") {
+    if (object$model.class == "semm" || object$model.class == "nsemm") {
         ans$class.weights <- object$info$w
     }
 

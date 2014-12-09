@@ -1,4 +1,4 @@
-# stemm.R
+# semm.R
 #
 # created: Okt/20/2014, KN
 # last mod: Dec/03/2014, NU
@@ -8,7 +8,7 @@
 # Calculate mu of multivariate normal distribution for joint vector of
 # indicators (See equation 4 in Jedidi, Jagpal & DeSarbo, 1997).
 # The order is (x, y) as opposed to the paper.
-mu_stemm <- function(matrices) {
+mu_semm <- function(matrices) {
 
     check_filled(matrices)
 
@@ -24,7 +24,7 @@ mu_stemm <- function(matrices) {
 # indicators (y, x). (See equation 5 in Jedidi, Jagpal & DeSarbo, 1997)
 # The order is (x, y), as opposed to the paper. Therefore the rows and cols in
 # sigma are switched.
-sigma_stemm <- function(matrices) {
+sigma_semm <- function(matrices) {
 
     check_filled(matrices)
 
@@ -39,16 +39,16 @@ sigma_stemm <- function(matrices) {
     s11 <- matrices$Lambda.x %*% matrices$Phi %*% t(matrices$Lambda.x) + matrices$Theta.d
     sigma <- rbind(cbind(s11,s12), cbind(s21, s22))
 
-    # TODO check is this warning is really necessary
-    if (!isSymmetric(sigma)) warning("Sigma was not symmetric. This is probably due to
-                                     numerical calculation")
+    # TODO check if this warning is really necessary
+    if (!isSymmetric(sigma)) warning("Sigma is not symmetric. This is probably due to
+                                     numerical calculation.")
     tryCatch(solve(sigma), error = function(e) stop("Sigma is not nonsingular."))
 
     sigma
 }
 
 # Expectation step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-estep_stemm <- function(model, parameters, data) {
+estep_semm <- function(model, parameters, data) {
 
     model.filled <- fill_model(model=model, parameters=parameters)
 
@@ -57,8 +57,8 @@ estep_stemm <- function(model, parameters, data) {
         # class weight
         w.c <- model$info$w[c]
 
-        p.ij <- w.c * dmvnorm(data, mean=mu_stemm(model.filled$matrices[[c]]),
-                              sigma=sigma_stemm(model.filled$matrices[[c]]))
+        p.ij <- w.c * dmvnorm(data, mean=mu_semm(model.filled$matrices[[c]]),
+                              sigma=sigma_semm(model.filled$matrices[[c]]))
         if (sum(p.ij) == 0) stop("Posterior probability could not be calculated
                                  properly. Choose different starting
                                  parameters.")
@@ -69,7 +69,7 @@ estep_stemm <- function(model, parameters, data) {
 }
 
 # negative log likelihood function which will be optimized in M-step (see below)
-loglikelihood_stemm <- function(parameters, matrices, data, p, w) {
+loglikelihood_semm <- function(parameters, matrices, data, p, w) {
     # fill matrices
     for (i in seq_along(matrices)) {
         matrix.i <- matrices[[i]]
@@ -86,8 +86,8 @@ loglikelihood_stemm <- function(parameters, matrices, data, p, w) {
 
     N <- nrow(data)
     N.c <- sum(p)
-    mu <- mu_stemm(matrices)
-    sigma <- sigma_stemm(matrices)
+    mu <- mu_semm(matrices)
+    sigma <- sigma_semm(matrices)
     T.c <- 1/N.c * Reduce('+', lapply(1:N, function(i)(
                                        p[i] * (data[i,]-mu) %*% 
                                        t(data[i,]-mu))))
@@ -98,7 +98,7 @@ loglikelihood_stemm <- function(parameters, matrices, data, p, w) {
 }
 
 # negative log likelihood function for maximization of all classes at once
-loglikelihood_stemm_constraints <- function(parameters, model, data, P) {
+loglikelihood_semm_constraints <- function(parameters, model, data, P) {
     model.filled <- fill_model(model, parameters)
     N <- nrow(data)
     res <- 0
@@ -106,8 +106,8 @@ loglikelihood_stemm_constraints <- function(parameters, model, data, P) {
     for (c in seq_len(model$info$num.classes)) {
         w.c <- model$info$w[c]
         N.c <- sum(P[,c])
-        mu.c <- mu_stemm(model.filled$matrices[[c]])
-        sigma.c <- sigma_stemm(model.filled$matrices[[c]])
+        mu.c <- mu_semm(model.filled$matrices[[c]])
+        sigma.c <- sigma_semm(model.filled$matrices[[c]])
         T.c <- 1/N.c * Reduce('+', lapply(1:N, function(i)(
                                            P[i,c] * (data[i,]-mu.c) %*% 
                                            t(data[i,]-mu.c))))
@@ -120,7 +120,7 @@ loglikelihood_stemm_constraints <- function(parameters, model, data, P) {
 
 
 # Maximization step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
+mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
                         optimizer=c("nlminb", "optim"), constraints=FALSE,
                         max.mstep, control=list(), ...) {
     # --> TODO add constraints argument to doku, if it stays!
@@ -141,7 +141,7 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
                             }
 
                         res <- nlminb(start=class.pars[[c]],
-                                      objective=loglikelihood_stemm,
+                                      objective=loglikelihood_semm,
                                       data=data, matrices=model$matrices[[c]],
                                       p=P[,c], w=model$info$w[[c]],
                                       upper=model$info$bounds$upper[[c]],
@@ -155,7 +155,7 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
                             }
 
                         res <- optim(par=class.pars[[c]],
-                                       fn=loglikelihood_stemm, data=data,
+                                       fn=loglikelihood_semm, data=data,
                                        matrices=model$matrices[[c]],
                                        p=P[,c], w=model$info$w[[c]],
                                        upper=model$info$bounds$upper[[c]],
@@ -182,13 +182,13 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
             for (c in seq_len(num.classes)) {
                 if (optimizer == "nlminb") {
                     res$hessian[[c]] <- fdHess(pars=est[[c]]$par,
-                                               fun=loglikelihood_stemm,
+                                               fun=loglikelihood_semm,
                                                matrices=model$matrices[[c]],
                                                data=data, p=P[,c],
                                                w=model$info$w[[c]])$Hessian
                 } else {
                     res$hessian[[c]] <- optimHess(par=est[[c]]$par,
-                                                fn=loglikelihood_stemm,
+                                                fn=loglikelihood_semm,
                                                 matrices=model$matrices[[c]],
                                                 data=data, p=P[,c],
                                                 w=model$info$w[c])
@@ -202,17 +202,17 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
     # Maximization of all classes together
         if (optimizer == "nlminb") {
             est <- nlminb(start=parameters,
-                          objective=loglikelihood_stemm_constraints, data=data,
+                          objective=loglikelihood_semm_constraints, data=data,
                           model=model, P=P,
                           upper=unlist(model$info$bounds$upper),
                           lower=unlist(model$info$bounds$lower), ...)
             if (neg.hessian == TRUE){
                 est$hessian <- fdHess(pars=est$par,
-                                      fun=loglikelihood_stemm_constraints,
+                                      fun=loglikelihood_semm_constraints,
                                       model=model, data=data, P=P)$Hessian
             }
         } else {
-            est <- optim(par=parameters, fn=loglikelihood_stemm_constraints,
+            est <- optim(par=parameters, fn=loglikelihood_semm_constraints,
                          model=model, data=data, P=P,
                          upper=unlist(model$info$bounds$upper),
                          lower=unlist(model$info$bounds$lower),
@@ -221,7 +221,7 @@ mstep_stemm <- function(model, parameters, data, P, neg.hessian=FALSE,
             names(est) <- gsub("value", "objective", names(est))
             if (neg.hessian == TRUE) {
                 est$hessian <- optimHess(est$par,
-                                         fn=loglikelihood_stemm_constraints,
+                                         fn=loglikelihood_semm_constraints,
                                          model=model, P=P, data=data)
             }
         }

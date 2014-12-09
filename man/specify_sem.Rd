@@ -22,8 +22,8 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     variable. See Details.}
     \item{interaction}{define which interaction terms should be included.
     Default is 'all' which means that all interactions between exogenous
-    variables including quadratic terms are included. See Details for how
-    to enter interaction terms.}
+    variables are included. See Details for how to enter interaction
+    terms.}
     \item{interc.obs}{logical. If intercepts for measurement model should be
     estimated (mu's). Default is \code{FALSE} (intercepts are fixed at 0).}
     \item{interc.lat}{logical. If intercepts for latent variable model should be
