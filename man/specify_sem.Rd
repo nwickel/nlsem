@@ -76,7 +76,8 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
 }
 \examples{
 # with default constraints
-model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6", eta="y1-y3")
+model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6",
+eta="y1-y3")
 
 # create data frame
 specs <- as.data.frame(model)
@@ -85,6 +86,8 @@ constr <- c(1, NA, NA, 0, 0, 0, 0, 0, 0, 1, NA, NA, 1, NA, NA, NA, NA, NA,
     0, 0, 0, 0, 0, 0, NA, 0, 0, 0, 0, 0, 0, NA, 0, 0, 0, 0, 0, 0, NA, 0, 0, 0,
     0, 0, 0, NA, 0, 0, 0, 0, 0, 0, NA, NA, 0, 0, 0, NA, 0, 0, 0, NA, NA, NA,
     NA, 0, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0, 0, 0, 0, NA, 0)
-specs$group1 <- constr
+specs$class2 <- constr
+# create model from data frame
+model.custom <- create_sem(specs)
 }
 
