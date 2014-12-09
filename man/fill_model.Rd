@@ -15,7 +15,7 @@
     \code{model}. See \link{count_free_parameters}.}
 }
 \value{
-    Gives back an object of class 'lms', 'stemm', or 'nsemm'.
+    Gives back an object of class 'lms', 'semm', or 'nsemm'.
 }
 \seealso{\code{\link{specify_sem}}, \code{\link{create_sem}},
             \code{\link{count_free_parameters}}}

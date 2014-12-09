@@ -1,17 +1,17 @@
 % File src/library/base/man/simulate.lms.Rd
 \name{simulate.lms}
 \alias{simulate.lms}
-\alias{simulate.stemm}
+\alias{simulate.semm}
 \title{Simulate data from a structural equation model}
 \description{
     Simulate data from a structural equation mixture model.
 }
 \usage{
 \method{simulate}{lms}(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...)
-\method{simulate}{stemm}(object, nsim=1, seed=NULL, n=400, parameters, ...)
+\method{simulate}{semm}(object, nsim=1, seed=NULL, n=400, parameters, ...)
 }
 \arguments{
-    \item{object}{structural equation model of class 'lms' or 'stemm'.}
+    \item{object}{structural equation model of class 'lms' or 'semm'.}
     \item{parameters}{'true' parameters which should be used to simulate
     data.}
     \item{nsim}{number of response vectors to simulate.  Defaults to '1'.}

@@ -1,7 +1,7 @@
 % File src/library/base/man/as.data.frame.lms.Rd
 \name{as.data.frame.lms}
 \alias{as.data.frame.lms}
-\alias{as.data.frame.stemm}
+\alias{as.data.frame.semm}
 \title{Coerce to a Data Frame}
 \description{
      Functions to check if an object is a data frame, or coerce it if
@@ -9,10 +9,10 @@
 }
 \usage{
 \method{as.data.frame}{lms}(x, ...)
-\method{as.data.frame}{stemm}(x, ...)
+\method{as.data.frame}{semm}(x, ...)
 }
 \arguments{
-    \item{x}{structural equation model of class 'lms' or 'stemm'.}
+    \item{x}{structural equation model of class 'lms' or 'semm'.}
     \item{...}{additional arguments.}
 }
 \examples{

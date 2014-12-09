@@ -30,7 +30,7 @@ mixture structural equation models}
 \value{
     An object of class 'emEst' that consists of the following components:
     \item{model.class}{What class model has that was fitted, can be 'lms',
-    'stemm', or 'nsemm'.}
+    'semm', or 'nsemm'.}
     \item{par}{estimated parameters.}
     \item{objective}{final loglikelihood obtained with EM algorithm.}
     \item{convergence_final_step}{convergence message of final step of
@@ -128,7 +128,7 @@ set.seed(3469)
 pars.start2 <- runif(count_free_parameters(model2), 0.1, 1.5)
 \dontrun{
 system.time({
-    res2 <- em(model_stemm, data_stemm, parameters_stemm, logger=TRUE)
+    res2 <- em(model_semm, data_semm, parameters_semm, logger=TRUE)
 })
 summary(res2)
 }

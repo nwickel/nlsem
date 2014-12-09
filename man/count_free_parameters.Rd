@@ -4,7 +4,7 @@
 \title{Count free parameters of structural equation model}
 \description{
     Counts free parameters of a structural equation model of class 'lms',
-    'stemm', or 'nsemm'.
+    'semm', or 'nsemm'.
 }
 \usage{
     count_free_parameters(model)

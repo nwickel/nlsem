@@ -54,7 +54,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     \code{eta}'s) and Beta is an identity matrix.
 }
 \value{
-    An object of class 'lms', 'stemm', or 'nsemm' which can be used to
+    An object of class 'lms', 'semm', or 'nsemm' which can be used to
     estimate parameters using \code{\link{em}} that consists of the
     following components:
     \item{matrices}{list of matrices specifying the structural equation

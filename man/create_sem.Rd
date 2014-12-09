@@ -21,7 +21,7 @@
     \code{as.data.frame}. See examples below.
 }
 \value{
-    Gives back an object of class 'lms', 'stemm', or 'nsemm' which can be
+    Gives back an object of class 'lms', 'semm', or 'nsemm' which can be
     used to estimate parameters using \code{\link{em}}.
 }
 \seealso{\code{\link{specify_sem}}}
