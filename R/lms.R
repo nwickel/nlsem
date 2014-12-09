@@ -51,7 +51,7 @@ sigma_lms <- function(model, z) {
     sigma <- rbind(cbind(s11,s12), cbind(s21,s22))
     
     # check if sigma is symmetric
-    if(!isSymmetric(sigma)) stop("Sigma has to be symmetric")
+    if(!isSymmetric(sigma)) stop("Sigma has to be symmetric.")
 
     sigma
 }
@@ -82,9 +82,7 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 
     #stopifnot(all.equal(rowSums(P), rep(1, nrow(P))))
     if (!all.equal(rowSums(P), rep(1, nrow(P))))
-        stop("Posterior probabilities of expectation step do not sum to 1.
-        Check if expectation step is doing what it is supposed to do. At
-        least change starting parameters for EM algorithm.")
+        stop("Posterior probabilities of expectation step do not sum to 1. Check if expectation step is doing what it is supposed to do. At least change starting parameters for EM algorithm.")
 
     P
 }
@@ -114,17 +112,6 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
 mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
                       optimizer=c("nlminb", "optim"), max.mstep,
                       control=list(), ...) {
-
-    # # optimizer
-    # if (new.hessian == FALSE){
-    #     est <- nlminb(start=parameters, objective=fun, dat=dat, model=model, P=P, ...)
-    #     out <- est
-    # } else {
-    #     est <- optim(par=parameters, fn=fun, dat=dat, model=model, P=P, hessian=TRUE, method="L-BFGS-B", ...)
-    #     out <- list(par=est$par, objective=est$value,
-    #                 convergence=est$convergence, evaluations=est$counts,
-    #                 message=est$message, hessian=est$hessian) }
-    ## --> Alternative calculation of Information (does not require nlme)
 
     # optimizer
     optimizer <- match.arg(optimizer)
@@ -164,8 +151,6 @@ mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
   
         }
     }
-
-    ## --> TOTHINK Maybe add analytical solution for neg. Hessian matrix?
 
     est
 }
@@ -214,7 +199,7 @@ quadrature <- function(m, k) {
 convert_parameters_lms <- function(model, parameters) {
 
     names(parameters) <- model$info$par.names
-    Phi <- matrix(0, ncol=model$info$num.xi, nrow=model$info$num.xi)
+    Phi <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
     Phi[lower.tri(Phi, diag=TRUE)] <- parameters[grep("Phi", names(parameters))]
     Phi <- fill_symmetric(Phi)
     A <- tryCatch({ t(chol(Phi)) }, 

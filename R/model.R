@@ -34,29 +34,25 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     # check latent variables and get indices for Lambda.x and Lambda.y
     xi.s <- unlist(strsplit(xi, ","))
     if (length(xi.s) != num.xi) {
-        stop("Number of xi's and assignation of x's to xi's does not match.
-             See ?specify_sem.")
+        stop("Number of xi's and assignation of x's to xi's does not match. See ?specify_sem.")
     }
     xi.ind <- list()
     for (i in seq_len(num.xi)) {
         xi.ind[[i]] <- grep_ind(xi.s[i])
         if (max(xi.ind[[i]]) > num.x) {
-            stop("Number of x's assinged to xi exceeds x's specified. See
-                 ?specify_sem")
+            stop("Number of x's assinged to xi exceeds x's specified. See ?specify_sem")
         }
     }
 
     eta.s <- unlist(strsplit(eta, ","))
     if (length(eta.s) != num.eta) {
-        stop("Number of eta's and assignation of y's to eta's does not match.
-             See ?specify_sem.")
+        stop("Number of eta's and assignation of y's to eta's does not match. See ?specify_sem.")
     }
     eta.ind <- list()
     for (i in seq_len(num.eta)) {
         eta.ind[[i]] <- grep_ind(eta.s[i])
         if (max(eta.ind[[i]]) > num.y) {
-            stop("Number of y's assinged to eta exceeds y's specified. See
-                 ?specify_sem.")
+            stop("Number of y's assinged to eta exceeds y's specified. See ?specify_sem.")
         }
     }
 
@@ -327,7 +323,7 @@ fill_model <- function(model, parameters) {
         tryCatch({ matrices.c$Phi <- fill_symmetric(matrices.c$Phi) },
                                        error=function(e) e,
                                        warning=function(w) w)
-        # catching error if there is no Phi (like in "intern" LMS)
+        # catching error if there is no Phi (like in "internal" LMS)
         matrices[[c]] <- matrices.c
     }
     out <- list(matrices=matrices, info=model$info)
@@ -341,7 +337,7 @@ fill_model <- function(model, parameters) {
 
 # Check if model or matrices are filled
 check_filled <- function(x) {
-    if (anyNA(unlist(x))) stop("model is not filled")
+    if (anyNA(unlist(x))) stop("Model is not filled.")
 }
 
 # Grep indices for Lambda matrices from input that defines which indicators
@@ -355,8 +351,7 @@ grep_ind <- function(x){
             as.numeric(gsub("^.([0-9]+).*$", "\\1", x))
         }
     }, warning = function(war) {
-        stop("Wrong input for specifying exogenous or endogonous latent
-             variables (xi or etas). See ?specify_sem.")
+        stop("Wrong input for specifying exogenous or endogonous latent variables (xi or etas). See ?specify_sem.")
              # this might never be evaluated, error catched earlier
     })
 }
@@ -401,8 +396,7 @@ test_omega <- function(Omega){
         diag(interactions) <- 0
         ind <- which(is.na(interactions), arr.ind=TRUE)
         dim <- nrow(interactions)
-        msg <- "Interactions are not well-defined. Please change order of xi's.
-        See ?specify_sem for details."
+        msg <- "Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details."
 
         # test if any rows are 0 in between interaction effects
         na.r <- rowSums(interactions)
@@ -433,8 +427,7 @@ test_omega <- function(Omega){
         na.c <- colSums(interactions)
         for (i in 2:dim){
             if (!is.na(na.c[i]) & is.na(diag.o[i]))
-                stop("Quadratic effects defined for xi's which are not
-                involved in any interactions.")
+                stop("Quadratic effects defined for xi's which are not involved in any interactions.")
             }
         invisible(NULL)
     } else {
@@ -447,8 +440,7 @@ test_omega <- function(Omega){
 # for interaction effects
 rel_lat <- function(x, num.eta, num.xi){
 
-    error.msg <- "Latent variables misspecified. Must be of the form
-                    'eta1~xi1' or 'eta2~eta1'. See ?specify_sem for details."
+    error.msg <- "Latent variables misspecified. Must be of the form 'eta1~xi1' or 'eta2~eta1'. See ?specify_sem for details."
 
     x.s       <- unlist(strsplit(x, ","))
     which.xi  <- which(grepl("xi", x.s))

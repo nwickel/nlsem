@@ -6,7 +6,7 @@
     Specify a structural equation model with constraints.
 }
 \usage{
-specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
+specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
             interaction="all", interc.obs=FALSE,
             interc.lat=FALSE, relation.lat="default")
 }
@@ -15,7 +15,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.groups=1,
     \item{num.y}{number of observed variables for eta}
     \item{num.xi}{number of latent exogenous variabeles.}
     \item{num.eta}{number of latent endognous variables.}
-    \item{num.groups}{number of latent groups}
+    \item{num.classes}{number of latent classes}
     \item{xi}{which observed variables are indicators for which exogenous
     variable. See Details}
     \item{eta}{which observed variables are indicators for which endogenous

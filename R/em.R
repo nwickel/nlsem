@@ -12,12 +12,11 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
               class(model) == "nsemm")
 
     if (!count_free_parameters(model) == length(start)){
-        stop("Number of starting parameters is not equal to number of free
-        parameters in model.")
+        stop("Number of starting parameters is not equal to number of free parameters in model.")
     }
 
     if (ncol(data) != (model$info$num.x + model$info$num.y)) {
-        stop("Number of columns in data does not match number of x's and y's")
+        stop("Number of columns in data does not match number of x's and y's.")
     }
 
     if (class(model) == "lms" || class(model) == "nsemm"){
@@ -129,7 +128,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
     while(abs(ll.old - ll.new) > convergence) { # as long as no convergence reached
     #while(sum((par.old - par.new)^2) > convergence) { # as long as no convergence reached
         if(ll.new - ll.old > 0.001 && num.iter > 3) {
-            warning("Likelihood should be decreasing")
+            warning("Likelihood should be decreasing.")
         }
 
         if(logger == TRUE) {
@@ -145,6 +144,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         switch(class(model),
            "lms" = {
                 names(model$matrices$class1)[grep("Phi", names(model$matrices$class1))] <- "A"
+                # rename Phi to A, since LMS algorithm estimates A
                 P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
             },
            "semm" = {
@@ -201,8 +201,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         num.iter <- num.iter + 1
   
         if(num.iter == max.iter){
-            warning("Maximum number of iterations was reached. EM algorithm might not have
-            converged.")
+            warning("Maximum number of iterations was reached. EM algorithm might not have converged.")
             break
         }
     }

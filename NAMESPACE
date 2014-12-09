@@ -13,7 +13,7 @@ export(
     )
 
 S3method(simulate, lms)
-S3method(simulate, stemm)
+S3method(simulate, semm)
 S3method(simulate, nsemm)
 S3method(summary, emEst)
 S3method(print, summary.emEst)
@@ -22,6 +22,6 @@ S3method(anova, emEst)
 S3method(AIC, emEst)
 S3method(plot, emEst)
 S3method(as.data.frame, lms)
-S3method(as.data.frame, stemm)
+S3method(as.data.frame, semm)
 S3method(as.data.frame, nsemm)
 
