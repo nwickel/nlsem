@@ -198,6 +198,9 @@ logLik.emEst <- function(object, ...){
 }
 
 anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
+    # Adapted from anova.polr by Brian Ripley and anova.eba by Florian
+    # Wickelmaier
+
 
     test <- match.arg(test)
     dots <- list(...)
@@ -211,7 +214,7 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
         stop('not all objects are of class "emEst"')
     nt <- length(mlist)
 
-    dflist <- sapply(mlist, function(x) length(x$coef))
+    dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
 
     s <- order(dflist, decreasing=TRUE)
     mlist <- mlist[s]
@@ -220,7 +223,7 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
     lls <- sapply(mlist, function(x) -2*x$objective)
     tss <- c("", paste(1:(nt - 1), 2:nt, sep = " vs "))
     df <- c(NA, -diff(dflist))
-    x2 <- c(NA, -diff(lls))
+    x2 <- c(NA, diff(lls))
     pr <- c(NA, 1 - pchisq(x2[-1], df[-1]))
     out <- data.frame(Model=names(mlist), Resid.df=dflist, Deviance=lls,
                       Test=tss, Df=df, LRtest=x2, Prob=pr)
@@ -229,8 +232,7 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
     rownames(out) <- 1:nt
     if (test == "none") out <- out[, 1:6]
     class(out) <- c("Anova", "data.frame")
-    attr(out, "heading") <- "Analysis of deviance table for SEMs\n"
-    # FIXME Header does not show
+    attr(out, "heading") <- "Analysis of deviance table for (nonlinear) SEM\n"
     out
 }
 
