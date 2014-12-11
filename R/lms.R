@@ -96,7 +96,7 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
     quad <- quadrature(m, k)
     V <- quad$n
 
-    res0 <- sapply(seq_len(m), function(i){
+    res0 <- sapply(seq_len(nrow(V)), function(i){
               lls <- sum(dmvnorm(dat,
                             mean=mu_lms(model=mod.filled, z=V[i,]),
                             sigma=sigma_lms(model=mod.filled, z=V[i,]),
