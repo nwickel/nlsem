@@ -132,37 +132,35 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
         class.pars <- get_class_parameters(model, parameters)
 
         est <- lapply(seq_len(num.classes), function(c) {
-                    if (optimizer == "nlminb") {
-                            if (is.null(control$iter.max)) {
-                                control$iter.max <- max.mstep
-                            } else {
-                                warning("iter.max is set for nlminb. max.mstep will be ignored.")
-                            }
-
-                        suppressWarnings(
-                            res <- nlminb(start=class.pars[[c]],
-                                          objective=loglikelihood_semm,
-                                          data=data, matrices=model$matrices[[c]],
-                                          p=P[,c], w=model$info$w[[c]],
-                                          upper=model$info$bounds$upper[[c]],
-                                          lower=model$info$bounds$lower[[c]],
-                                          control=control, ...)
-                        )
+                if (optimizer == "nlminb") {
+                    if (is.null(control$iter.max)) {
+                        control$iter.max <- max.mstep
                     } else {
-                            if (is.null(control$maxit)){
-                                control$maxit <- max.mstep
-                            } else {
-                                warning("maxit is set for optim. max.mstep will be ignored.")
-                            }
-
-                        res <- optim(par=class.pars[[c]],
-                                       fn=loglikelihood_semm, data=data,
-                                       matrices=model$matrices[[c]],
-                                       p=P[,c], w=model$info$w[[c]],
-                                       upper=model$info$bounds$upper[[c]],
-                                       lower=model$info$bounds$lower[[c]],
-                                       method="L-BFGS-B", control=control, ...)
+                        warning("iter.max is set for nlminb. max.mstep will be ignored.")
                     }
+                    suppress_NaN_warnings(
+                        res <- nlminb(start=class.pars[[c]],
+                                      objective=loglikelihood_semm,
+                                      data=data, matrices=model$matrices[[c]],
+                                      p=P[,c], w=model$info$w[[c]],
+                                      upper=model$info$bounds$upper[[c]],
+                                      lower=model$info$bounds$lower[[c]],
+                                      control=control, ...)
+                    )
+                } else {
+                    if (is.null(control$maxit)){
+                        control$maxit <- max.mstep
+                    } else {
+                        warning("maxit is set for optim. max.mstep will be ignored.")
+                    }
+                    res <- optim(par=class.pars[[c]],
+                                   fn=loglikelihood_semm, data=data,
+                                   matrices=model$matrices[[c]],
+                                   p=P[,c], w=model$info$w[[c]],
+                                   upper=model$info$bounds$upper[[c]],
+                                   lower=model$info$bounds$lower[[c]],
+                                   method="L-BFGS-B", control=control, ...)
+                }
         })
         if (optimizer == "optim") {
             for (c in seq_len(num.classes)) {
@@ -173,6 +171,7 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
         for (c in seq_len(num.classes)) {
             res$par[[c]] <- est[[c]]$par
             res$objective <- res$objective + est[[c]]$objective
+            res$convergence[[c]] <- est[[c]]$convergence
             res$iterations <- est[[c]]$iterations
         }
         names(res$par) <- paste0("class", seq_len(num.classes))
@@ -200,7 +199,7 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
     } else {
     # Maximization of all classes together
         if (optimizer == "nlminb") {
-            suppressWarnings(
+            suppress_NaN_warnings(
                 est <- nlminb(start=parameters,
                               objective=loglikelihood_semm_constraints, data=data,
                               model=model, P=P,
@@ -242,8 +241,10 @@ get_class_parameters <- function(model, parameters) {
     class.pars
 }
 
-
-
-
-
-
+# suppress all warnings that contain 'NaN'
+suppress_NaN_warnings <- function(expr) {
+    withCallingHandlers(expr, warning=function(w) {
+                        if (grepl("NaN", conditionMessage(w)))
+                            invokeRestart("muffleWarning")
+    })
+}

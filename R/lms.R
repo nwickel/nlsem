@@ -132,10 +132,13 @@ mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
             control$iter.max <- max.mstep
         } else warning("iter.max is set for nlminb. max.mstep will be ignored.")
 
-        est <- nlminb(start=parameters, objective=loglikelihood_lms, dat=dat,
-                      model=model, P=P, upper=model$info$bounds$upper,
-                      lower=model$info$bounds$lower,
-                      control=control, ...)
+        suppress_NaN_warnings(
+            # See semm.R helper function
+            est <- nlminb(start=parameters, objective=loglikelihood_lms, dat=dat,
+                          model=model, P=P, upper=model$info$bounds$upper,
+                          lower=model$info$bounds$lower,
+                          control=control, ...)
+        )
         if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
                                         model=model, dat=dat, P=P)$Hessian
