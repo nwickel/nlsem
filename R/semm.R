@@ -1,7 +1,7 @@
 # semm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Dec/03/2014, NU
+# last mod: Dec/12/2014, KN
 
 #--------------- main functions ---------------
 
@@ -93,7 +93,6 @@ loglikelihood_semm <- function(parameters, matrices, data, p, w) {
                                        t(data[i,]-mu))))
     res <- 1/2 * N.c * (log(det(sigma)) + sum(diag(T.c %*% solve(sigma))) -
                         2*log(w))
-
     res
 }
 
@@ -140,13 +139,15 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
                                 warning("iter.max is set for nlminb. max.mstep will be ignored.")
                             }
 
-                        res <- nlminb(start=class.pars[[c]],
-                                      objective=loglikelihood_semm,
-                                      data=data, matrices=model$matrices[[c]],
-                                      p=P[,c], w=model$info$w[[c]],
-                                      upper=model$info$bounds$upper[[c]],
-                                      lower=model$info$bounds$lower[[c]],
-                                      control=control, ...)
+                        suppressWarnings(
+                            res <- nlminb(start=class.pars[[c]],
+                                          objective=loglikelihood_semm,
+                                          data=data, matrices=model$matrices[[c]],
+                                          p=P[,c], w=model$info$w[[c]],
+                                          upper=model$info$bounds$upper[[c]],
+                                          lower=model$info$bounds$lower[[c]],
+                                          control=control, ...)
+                        )
                     } else {
                             if (is.null(control$maxit)){
                                 control$maxit <- max.mstep
@@ -201,11 +202,13 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
     } else {
     # Maximization of all classes together
         if (optimizer == "nlminb") {
-            est <- nlminb(start=parameters,
-                          objective=loglikelihood_semm_constraints, data=data,
-                          model=model, P=P,
-                          upper=unlist(model$info$bounds$upper),
-                          lower=unlist(model$info$bounds$lower), ...)
+            suppressWarnings(
+                est <- nlminb(start=parameters,
+                              objective=loglikelihood_semm_constraints, data=data,
+                              model=model, P=P,
+                              upper=unlist(model$info$bounds$upper),
+                              lower=unlist(model$info$bounds$lower), ...)
+            )
             if (neg.hessian == TRUE){
                 est$hessian <- fdHess(pars=est$par,
                                       fun=loglikelihood_semm_constraints,
