@@ -83,7 +83,7 @@ pars.orig1 <- c(0.6, 0.7, 0.8, 0.7,                  # Lambda.x
               0.51, 0.64, 0.36, 0.25, 0.67, 0.23,    # Theta.d
               0.31, 0.45, 0.15,                      # Theta.e
               0.2,                                   # Psi
-              0.49, 0.64, 0.54,                      # A
+              0.49, 0.64, 0.54,                      # Phi
               0.7                                    # Omega
               )
 dat1 <- simulate(model1, seed=34, parameters=pars.orig1)
