@@ -31,7 +31,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
     cat(paste("Convergence: ", convergence, "\n"))
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
-    
+
     ll.old   <- 0     # loglikelihood of the last iteration
     ll.new   <- 1     # loglikelihood of the current iteration
     ll.ret   <- NULL
@@ -42,93 +42,6 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         par.new <- convert_parameters_lms(model, start)
     }
     par.old  <- 0
-    
-    # when function aborts
-    on.exit({
-        cat("-----------------------------------\n")
-        if (neg.hessian == TRUE) {
-            cat("Computing Hessian \n")
-        } else {
-            cat("Computing final model \n")
-        }
-        cat("-----------------------------------\n")
-
-        switch(class(model),
-           "lms" = {
-                final <- mstep_lms(model=model, P=P, dat=data,
-                                   parameters=par.new, neg.hessian=neg.hessian, m=m,
-                                   optimizer=optimizer,
-                                   max.mstep=max.mstep, ...)
-                names(final$par) <- model$info$par.names
-                # Transform parameters back to Phi
-                A <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
-                A[lower.tri(A, diag=TRUE)] <- final$par[grep("Phi", names(final$par))]
-                Phi <- A %*% t(A)
-                final$par[grep("Phi", names(final$par))] <- Phi[lower.tri(Phi, diag=TRUE)] 
-            },
-            "semm" = {
-                final <- mstep_semm(model=model, parameters=par.old, P=P,
-                                     data=data, neg.hessian=neg.hessian,
-                                     optimizer=optimizer,
-                                     max.mstep=max.mstep, ...)
-                if (is.numeric(final$par)) {
-                    par.names <- NULL
-                    for (c in seq_len(model$info$num.classes)) {
-                        par.names <- c(par.names,
-                                       paste0("class", c, ".", model$info$par.names[[c]]))
-                    }
-                    names(final$par) <- par.names
-                } else {
-                    for (c in seq_len(model$info$num.classes)) {
-                        names(final$par[[c]]) <- model$info$par.names[[c]]
-                    }
-                }
-            },
-            "nsemm" = {
-                final <- mstep_nsemm(model=model, parameters=par.old, P=P,
-                                     data=data, neg.hessian=neg.hessian,
-                                     optimizer=optimizer,
-                                     max.mstep=max.mstep, ...)
-                if (is.numeric(final$par)) {
-                    par.names <- NULL
-                    for (c in seq_len(model$info$num.classes)) {
-                        par.names <- c(par.names,
-                                       paste0("class", c, ".", model$info$par.names[[c]]))
-                    }
-                    names(final$par) <- par.names
-                } else {
-                    for (c in seq_len(model$info$num.classes)) {
-                        names(final$par[[c]]) <- model$info$par.names[[c]]
-                    }
-                }
-                # -> TODO check if par is not already named!
-            }
-        )
-
-        # in case break happens before first m-step
-        if (is.null(ll.ret)) {ll.ret <- final$objective}
-
-        # convergence of em
-        if (num.iter == max.iter) {
-            em_convergence <- "no"
-        } else {em_convergence <- "yes"}
-
-
-        out <- list(model.class=class(model), coefficients=final$par,
-                    objective=-final$objective,
-                    em_convergence=em_convergence,
-                    negHessian=final$hessian,
-                    loglikelihoods=-ll.ret,
-                    info=model$info[1:4])
-
-        # attach w for semm and nsemm
-        if (class(model) == "semm" || class(model) == "nsemm") {
-            out$info <- model$info[c(1:4,7)]
-        }
-
-        class(out) <- "emEst"
-        return(out)
-    })
 
     while(abs(ll.old - ll.new) > convergence) { # as long as no convergence reached
     #while(sum((par.old - par.new)^2) > convergence) { # as long as no convergence reached
@@ -216,10 +129,85 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
     cat(paste0("Final loglikelihood: ", round(-ll.new, 3),"\n"))
     cat("-----------------------------------\n")
 
-    # When EM is completed, on.exit above is called
-    # TOTHINK should official version have the on.exit functionality? If not,
-    # move code from on.exit to here
+    cat("-----------------------------------\n")
+    if (neg.hessian == TRUE) {
+        cat("Computing Hessian \n")
+    } else {
+        cat("Computing final model \n")
+    }
+    cat("-----------------------------------\n")
 
+    switch(class(model),
+       "lms" = {
+            final <- mstep_lms(model=model, P=P, dat=data,
+                               parameters=par.new, neg.hessian=neg.hessian, m=m,
+                               optimizer=optimizer,
+                               max.mstep=max.mstep, ...)
+            names(final$par) <- model$info$par.names
+            # Transform parameters back to Phi
+            A <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
+            A[lower.tri(A, diag=TRUE)] <- final$par[grep("Phi", names(final$par))]
+            Phi <- A %*% t(A)
+            final$par[grep("Phi", names(final$par))] <- Phi[lower.tri(Phi, diag=TRUE)]
+        },
+        "semm" = {
+            final <- mstep_semm(model=model, parameters=par.old, P=P,
+                                 data=data, neg.hessian=neg.hessian,
+                                 optimizer=optimizer,
+                                 max.mstep=max.mstep, ...)
+            if (is.numeric(final$par)) {
+                par.names <- NULL
+                for (c in seq_len(model$info$num.classes)) {
+                    par.names <- c(par.names,
+                                   paste0("class", c, ".", model$info$par.names[[c]]))
+                }
+                names(final$par) <- par.names
+            } else {
+                for (c in seq_len(model$info$num.classes)) {
+                    names(final$par[[c]]) <- model$info$par.names[[c]]
+                }
+            }
+        },
+        "nsemm" = {
+            final <- mstep_nsemm(model=model, parameters=par.old, P=P,
+                                 data=data, neg.hessian=neg.hessian,
+                                 optimizer=optimizer,
+                                 max.mstep=max.mstep, ...)
+            if (is.numeric(final$par)) {
+                par.names <- NULL
+                for (c in seq_len(model$info$num.classes)) {
+                    par.names <- c(par.names,
+                                   paste0("class", c, ".", model$info$par.names[[c]]))
+                }
+                names(final$par) <- par.names
+            } else {
+                for (c in seq_len(model$info$num.classes)) {
+                    names(final$par[[c]]) <- model$info$par.names[[c]]
+                }
+            }
+            # -> TODO check if par is not already named!
+        }
+    )
+
+    # convergence of em
+    if (num.iter == max.iter) {
+        em_convergence <- "no"
+    } else {em_convergence <- "yes"}
+
+    out <- list(model.class=class(model), coefficients=final$par,
+                objective=-final$objective,
+                em_convergence=em_convergence,
+                negHessian=final$hessian,
+                loglikelihoods=-ll.ret,
+                info=model$info[1:4])
+
+    # attach w for semm and nsemm
+    if (class(model) == "semm" || class(model) == "nsemm") {
+        out$info <- model$info[c(1:4,7)]
+    }
+
+    class(out) <- "emEst"
+    out
 }
 
 
