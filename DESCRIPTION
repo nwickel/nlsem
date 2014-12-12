@@ -7,8 +7,6 @@ Authors@R: c(person("Nora", "Umbach", role = c("aut", "cre"),
   "aut"), person("David", "Hoppe", role = "aut"), person("Holger", "Brandt",
   role = "aut"), person("Augustin", "Kelava", role="ctb"), person("Bernhard",
   "Schmitz", role="ctb"))
-Author: David Hoppe, Nora Umbach, Katharina Naumann
-Maintainer: Nora Umbach <nora.umbach@web.de>
 Depends: R (>= 3.1.0), gaussquad, mvtnorm, nlme
 Description: Estimation of structural equation models with nonlinear effects
     and underlying nonnormal distributions.

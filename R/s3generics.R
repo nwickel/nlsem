@@ -122,8 +122,7 @@ summary.emEst <- function(object, ...) {
     # estimates
     est <- object$coefficients
 
-    warn.msg <- "Standard errors could not be computed, because negative
-    hessian was either not available or singular"
+    warn.msg <- "Standard errors could not be computed, because negative hessian was either not available or singular"
 
     # standard errors
     if (is.numeric(est)) {
@@ -199,13 +198,17 @@ logLik.emEst <- function(object, ...){
 
 anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
     # Adapted from anova.polr by Brian Ripley
-
+    
     test <- match.arg(test)
     dots <- list(...)
     if (length(dots) == 0)
         stop('anova is not implemented for a single "emEst" object')
 
     mlist <- list(object, ...)
+    if (any(!sapply(mlist, function(x) x$model.class == "lms"))) {
+        stop('Likelihood Ratio Test only meaningful for models of class "lms".')
+    }
+
     names(mlist) <- c(deparse(substitute(object)),
                 as.character(substitute(...[]))[2:length(mlist)])
     if (any(!sapply(mlist, inherits, "emEst")))

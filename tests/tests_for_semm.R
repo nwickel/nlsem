@@ -57,9 +57,9 @@ parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 set.seed(7)
 data <- simulate(model, parameters=parameters)
 
-system.time({
-    res <- em(model, data, parameters, logger=TRUE, max.iter=1000)
-})
+# system.time({
+#     res <- em(model, data, parameters, logger=TRUE, max.iter=1000)
+# })
 
 # small model
 # ------------
@@ -92,7 +92,7 @@ data <- simulate(model, parameters=pars.orig)
 set.seed(3)
 parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 
-system.time({
-    res<- em(model, data, parameters, logger=TRUE, max.mstep=10)
-})
+# system.time({
+#     res<- em(model, data, parameters, logger=TRUE, max.mstep=10)
+# })
 
