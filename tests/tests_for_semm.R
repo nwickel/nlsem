@@ -29,7 +29,7 @@ mod <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
                      xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.classes=2,
                      interaction="",
                      interc.obs=TRUE, interc.lat=FALSE,
-                     relation.lat="xi1>eta1;xi2>eta2;eta1>eta2;eta2>eta1")
+                     relation.lat="eta1~xi1;eta2~xi2;eta2~eta2;eta1~eta2")
 
 dat <- as.data.frame(mod)
 
@@ -54,17 +54,16 @@ parameters <- c(
 parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 data <- simulate(model, parameters=parameters)
 
-system.time({
-    res <- em(model, data, parameters, logger=TRUE, optimizer="nlminb",
-                 control=list(iter.max=1))
-})
+# system.time({
+#     res <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
+# })
 
 # small model
 # ------------
 model_semm <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
                      xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
                      interaction="", interc.obs=FALSE, interc.lat=FALSE,
-                     relation.lat="xi1,xi2>eta1")
+                     relation.lat="eta1~xi1+xi2")
 
 pars.orig_semm <- c(
                      # class 1
@@ -91,7 +90,7 @@ set.seed(3)
 parameters_semm <- runif(count_free_parameters(model_semm), 0.1, 1.5)
 
 
-system.time({
-    res_semm <- em(model_semm, data_semm, parameters_semm, logger=TRUE)
-})
+# system.time({
+#     res_semm <- em(model_semm, data_semm, parameters_semm, logger=TRUE)
+# })
 
