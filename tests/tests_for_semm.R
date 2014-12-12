@@ -5,31 +5,32 @@ library(nlsem)
 
 # --> TODO fix tests
 
-# # create model
-# # ------------
-# model <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
-#                      xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.classes=3,
-#                      interaction="", interc.obs=FALSE, interc.lat=FALSE,
-#                      relation.lat="xi1>eta1; xi2>eta2")
-# # set.seed(127)
-# pars.orig <- runif(count_free_parameters(model), 0.1, 1.5)
-# data <- simulate(model, parameters=pars.orig)
-# 
-# parameters <- runif(count_free_parameters(model), 0.1, 1.5)
-# system.time(
-#     res.nlminb <- em(model, data, parameters, logger=TRUE, optimizer="nlminb")
-# )
-# system.time(
-#     res.optim <- em(model, data, parameters, logger=TRUE, optimizer="optim")
-# )
-# 
+# create model
+# ------------
+model <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
+                     xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.classes=3,
+                     interaction="", interc.obs=FALSE, interc.lat=FALSE,
+                     relation.lat="eta1~xi1,eta2~xi2")
+set.seed(188)
+pars.orig <- runif(count_free_parameters(model), 0.3, 1.2)
+data <- simulate(model, parameters=pars.orig)
+
+set.seed(188)
+pars.start <- runif(count_free_parameters(model), 0.1, 1.5)
+system.time(
+    res.nlminb <- em(model, data, pars.start, logger=TRUE, optimizer="nlminb")
+)
+system.time(
+    res.optim <- em(model, data, pars.start, logger=TRUE, optimizer="optim")
+)
+
 # EMSEM example: STEMM model for structural equation models
 # =========================================================
 mod <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
                      xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.classes=2,
                      interaction="",
                      interc.obs=TRUE, interc.lat=FALSE,
-                     relation.lat="xi1>eta1;xi2>eta2;eta1>eta2;eta2>eta1")
+                     relation.lat="eta1~xi1,eta2~xi2,eta2~eta1,eta1~eta2")
 
 dat <- as.data.frame(mod)
 
@@ -51,33 +52,34 @@ parameters <- c(
                 rep(1, 2),      # Phi
                 rep(4, 2)       # tau
 )
+set.seed(1)
 parameters <- runif(count_free_parameters(model), 0.1, 1.5)
+set.seed(7)
 data <- simulate(model, parameters=parameters)
 
 system.time({
-    res <- em(model, data, parameters, logger=TRUE, optimizer="nlminb",
-                 control=list(iter.max=1))
+    res <- em(model, data, parameters, logger=TRUE, max.iter=1000)
 })
 
 # small model
 # ------------
-model_semm <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
+model <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
                      xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
                      interaction="", interc.obs=FALSE, interc.lat=FALSE,
-                     relation.lat="xi1,xi2>eta1")
+                     relation.lat="eta1~xi1+xi2")
 
-pars.orig_semm <- c(
+pars.orig <- c(
                      # class 1
-                     1.5, 1,        # Lambda.x
-                     0.7,           # Lambda.y
+                     1, 1,        # Lambda.x
+                     1,           # Lambda.y
                      0.2, 0.3,      # Gamma
                      rep(0.5, 4),   # Theta.d
                      0.5, 0.5,      # Theta.e
                      0.5,           # Psi
                      rep(0.8, 3),   # Phi
                      # class 2
-                     1, 1.2,        # Lambda.x
-                     1.4,           # Lambda.y
+                     1, 1,        # Lambda.x
+                     1,           # Lambda.y
                      0.8, 0.9,      # Gamma
                      rep(0.5, 4),   # Theta.d
                      0.5, 0.5,      # Theta.e
@@ -85,13 +87,12 @@ pars.orig_semm <- c(
                      rep(0.8, 3)    # Phi
 )
 
-data_semm <- simulate(model_semm, parameters=pars.orig_semm)
+data <- simulate(model, parameters=pars.orig)
 
 set.seed(3)
-parameters_semm <- runif(count_free_parameters(model_semm), 0.1, 1.5)
-
+parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 
 system.time({
-    res_semm <- em(model_semm, data_semm, parameters_semm, logger=TRUE)
+    res<- em(model, data, parameters, logger=TRUE, max.mstep=10)
 })
 
