@@ -173,8 +173,6 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
         for (c in seq_len(num.classes)) {
             res$par[[c]] <- est[[c]]$par
             res$objective <- res$objective + est[[c]]$objective
-            res$convergence[[c]] <- est[[c]]$convergence
-            res$message[[c]] <- est[[c]]$message
             res$iterations <- est[[c]]$iterations
         }
         names(res$par) <- paste0("class", seq_len(num.classes))

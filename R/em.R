@@ -1,6 +1,6 @@
 # em.R
 #
-# last mod: Nov/25/2014, NU
+# last mod: Dec/12/2014, KN
 
 # Performs EM-algorithm for different models of class 'lms', 'semm', and
 # soon 'nsemm'
@@ -108,10 +108,15 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         # in case break happens before first m-step
         if (is.null(ll.ret)) {ll.ret <- final$objective}
 
+        # convergence of em
+        if (num.iter == max.iter) {
+            em_convergence <- "no"
+        } else {em_convergence <- "yes"}
+
+
         out <- list(model.class=class(model), coefficients=final$par,
                     objective=-final$objective,
-                    convergence_final_step=final$convergence,
-                    message_final_step=final$message,
+                    em_convergence=em_convergence,
                     negHessian=final$hessian,
                     loglikelihoods=-ll.ret,
                     info=model$info[1:4])
