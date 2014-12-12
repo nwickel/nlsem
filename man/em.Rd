@@ -77,14 +77,14 @@ model1 <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                        xi="x1-x3,x4-x6", eta="y1-y3",
                        interaction="xi1:xi2")
 # simulate data
-pars.orig1 <- c(0.6, 0.7, 0.8, 0.7,                                  # Lambda.x
-              0.5, 0.3,                                              # Lambda.y
-              0.2, 0.4,                                              # Gamma
-              0.51, 0.64, 0.36, 0.25, 0.67, 0.23,                    # Theta.d
-              0.31, 0.45, 0.15,                                      # Theta.e
-              0.2,                                                   # Psi
-              0.49, 0.64, 0.54,                                      # A
-              0.7                                                    # Omega
+pars.orig1 <- c(0.6, 0.7, 0.8, 0.7,                  # Lambda.x
+              0.5, 0.3,                              # Lambda.y
+              0.2, 0.4,                              # Gamma
+              0.51, 0.64, 0.36, 0.25, 0.67, 0.23,    # Theta.d
+              0.31, 0.45, 0.15,                      # Theta.e
+              0.2,                                   # Psi
+              0.49, 0.64, 0.54,                      # A
+              0.7                                    # Omega
               )
 dat1 <- simulate(model1, seed=34, parameters=pars.orig1)
 
@@ -108,21 +108,21 @@ model2 <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
 # simulate data
 pars.orig2 <- c(
                 # class 1
-                1, 1,        # Lambda.x
-                1,           # Lambda.y
-                0.2, 0.3,      # Gamma
-                rep(0.5, 4),   # Theta.d
-                0.5, 0.5,      # Theta.e
-                0.5,           # Psi
-                rep(0.8, 3),   # Phi
+                1, 1,           # Lambda.x
+                1,              # Lambda.y
+                0.2, 0.3,       # Gamma
+                rep(0.5, 4),    # Theta.d
+                0.5, 0.5,       # Theta.e
+                0.5,            # Psi
+                rep(0.8, 3),    # Phi
                 # class 2
-                1, 1,        # Lambda.x
-                1,           # Lambda.y
-                0.8, 0.9,      # Gamma
-                rep(0.5, 4),   # Theta.d
-                0.5, 0.5,      # Theta.e
-                0.5,           # Psi
-                rep(0.8, 3)    # Phi
+                1, 1,           # Lambda.x
+                1,              # Lambda.y
+                0.8, 0.9,       # Gamma
+                rep(0.5, 4),    # Theta.d
+                0.5, 0.5,       # Theta.e
+                0.5,            # Psi
+                rep(0.8, 3)     # Phi
 )
 
 dat2 <- simulate(model2, seed=1, parameters=pars.orig2)
