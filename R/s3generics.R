@@ -192,15 +192,13 @@ logLik.emEst <- function(object, ...){
         warning("extra arguments discarded")
 
     out <- object$objective
-    attr(out, "df") <- length(object$par)
+    attr(out, "df") <- length(unlist(object$coef))
     class(out) <- "logLik"
     out
 }
 
 anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
-    # Adapted from anova.polr by Brian Ripley and anova.eba by Florian
-    # Wickelmaier
-
+    # Adapted from anova.polr by Brian Ripley
 
     test <- match.arg(test)
     dots <- list(...)
@@ -216,23 +214,23 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
 
     dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
 
-    s <- order(dflist, decreasing=TRUE)
+    s <- order(dflist)
     mlist <- mlist[s]
     dflist <- dflist[s]
 
     lls <- sapply(mlist, function(x) -2*x$objective)
     tss <- c("", paste(1:(nt - 1), 2:nt, sep = " vs "))
-    df <- c(NA, -diff(dflist))
-    x2 <- c(NA, diff(lls))
+    df <- c(NA, diff(dflist))
+    x2 <- c(NA, -diff(lls))
     pr <- c(NA, 1 - pchisq(x2[-1], df[-1]))
     out <- data.frame(Model=names(mlist), Resid.df=dflist, Deviance=lls,
                       Test=tss, Df=df, LRtest=x2, Prob=pr)
-    names(out) <- c("Model", "Resid. df", "Resid. Dev", "Test",
+    names(out) <- c("Model", "Numb. coef", "-2logLik", "Test",
                     "   Df", "LR stat.", "Pr(>Chi)")
     rownames(out) <- 1:nt
     if (test == "none") out <- out[, 1:6]
     class(out) <- c("Anova", "data.frame")
-    attr(out, "heading") <- "Analysis of deviance table for (nonlinear) SEM\n"
+    attr(out, "heading") <- "Chi Square test statistic for (nonlinear) SEM\n"
     out
 }
 
@@ -249,7 +247,7 @@ AIC.emEst <- function(object, ..., k=2) {
 
         dflist <- sapply(mlist, function(x) length(x$coef))
 
-        aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(x$coef))
+        aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(unlist(x$coef)))
         s <- order(aic, decreasing=TRUE)
         aic <- aic[s]
         dflist <- dflist[s]

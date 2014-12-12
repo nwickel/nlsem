@@ -14,8 +14,10 @@ mu_lms <- function(model, z) {
     matrices <- model$matrices$class1
     k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
     n    <- nrow(matrices$A)          # number of zero rows in Omega
-    if (k < n){
-        z.1  <- c(z, rep(0, n - k))   # [z_1 0]'
+    if (k < n & k > 0) {
+        z.1 <- c(z, rep(0, n - k))   # [z_1 0]'
+    } else if (k == 0) {
+        z.1 <- rep(0, n - k)
     } else z.1 <- z
     A.z  <- matrices$A %*% z.1 
     mu.x <- matrices$nu.x + matrices$Lambda.x %*% A.z 
@@ -35,8 +37,10 @@ sigma_lms <- function(model, z) {
     matrices <- model$matrices$class1
     k     <- get_k(matrices$Omega)    # number of nonzero rows in Omega
     n     <- nrow(matrices$A)         # number of zero rows in Omega
-    if (k < n){
+    if (k < n & k > 0) {
         z.1  <- c(z, rep(0, n - k))   # [z_1 0]'
+    } else if (k == 0) {
+        z.1 <- rep(0, n - k)
     } else z.1 <- z
     A.z   <- matrices$A %*% z.1 
     d.mat <- get_d(n=n, k=k)
@@ -68,6 +72,11 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 
     V <- quad$n       # matrix of node vectors m x k
     w <- quad$w       # weights
+    if (k == 0){
+        V <- 0
+        w <- 1
+        # do not need mixtures, if I do not have interactions
+    }
 
     stopifnot(sum(w) - 1 < 1e-5)
 
@@ -95,6 +104,7 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
     k <- get_k(mod.filled$matrices$class1$Omega)
     quad <- quadrature(m, k)
     V <- quad$n
+    if (k == 0) V <- as.data.frame(0)
 
     res0 <- sapply(seq_len(nrow(V)), function(i){
               lls <- sum(dmvnorm(dat,

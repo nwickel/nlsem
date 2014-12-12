@@ -491,10 +491,13 @@ rel_lat <- function(x, num.eta, num.xi){
 # Defines model class of a given specification; possible output: 'lms',
 # 'semm', 'nsemm'
 get_model_class <- function(num.classes, interaction) {
-    if (interaction != "") {
-        if (num.classes == 1) model.class <- "lms"
-        else model.class <- "nsemm"
-    } else model.class <- "semm"
+    if (num.classes == 1) {
+        model.class <- "lms"
+    } else {
+        if (interaction != "") {
+            model.class <- "nsemm"
+        } else model.class <- "semm"
+    }
 }
 
 # Obtains parameter names from a given model; used in specify_sem
