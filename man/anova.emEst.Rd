@@ -20,5 +20,4 @@
      analysis-of-variance and analysis-of-deviance tables. It is not
      implemented for a single argument. 
 }
-\seealso{\code{\link{AIC.emEst}}, \code{\link{logLik.emEst}}}
 

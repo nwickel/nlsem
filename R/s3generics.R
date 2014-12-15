@@ -209,6 +209,11 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
         stop('Likelihood Ratio Test only meaningful for models of class "lms".')
     }
 
+    nlist <- sapply(mlist, function(x) x$info$n)
+    if (!all(nlist == object$info$n)) {
+        stop("SEM have not all been fitted to the same data set.")
+    }
+
     names(mlist) <- c(deparse(substitute(object)),
                 as.character(substitute(...[]))[2:length(mlist)])
     if (any(!sapply(mlist, inherits, "emEst")))
@@ -248,13 +253,36 @@ AIC.emEst <- function(object, ..., k=2) {
                           as.character(substitute(...[]))[2:length(mlist)])
         nt <- length(mlist)
 
-        dflist <- sapply(mlist, function(x) length(x$coef))
+        dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
 
         aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(unlist(x$coef)))
         s <- order(aic, decreasing=TRUE)
         aic <- aic[s]
         dflist <- dflist[s]
         out <- data.frame(df=dflist, AIC=aic)
+        rownames(out) <- names(mlist)
+    }
+    out
+}
+
+BIC.emEst <- function(object, ...) {
+
+    dots <- list(...)
+    if (length(dots) == 0){
+        out <- as.numeric(-2*logLik(object) + log(object$info$n)*length(object$coef))
+    } else {
+        mlist <- list(object, ...)
+        names(mlist) <- c(deparse(substitute(object)),
+                          as.character(substitute(...[]))[2:length(mlist)])
+        nt <- length(mlist)
+
+        dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
+
+        bic <- sapply(mlist, function(x) -2*logLik(x) + log(object$info$n)*length(unlist(x$coef)))
+        s <- order(bic, decreasing=TRUE)
+        bic <- bic[s]
+        dflist <- dflist[s]
+        out <- data.frame(df=dflist, BIC=bic)
         rownames(out) <- names(mlist)
     }
     out

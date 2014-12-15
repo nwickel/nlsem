@@ -194,12 +194,15 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         em_convergence <- "no"
     } else {em_convergence <- "yes"}
 
+    info   <- model$info[1:4]
+    info$n <- nrow(data)
+
     out <- list(model.class=class(model), coefficients=final$par,
                 objective=-final$objective,
                 em_convergence=em_convergence,
                 negHessian=final$hessian,
                 loglikelihoods=-ll.ret,
-                info=model$info[1:4])
+                info=info)
 
     # attach w for semm and nsemm
     if (class(model) == "semm" || class(model) == "nsemm") {
