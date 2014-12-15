@@ -47,12 +47,12 @@ mixture structural equation models}
 }
 \value{
     An object of class `emEst' that consists of the following components:
-    \item{model.class}{what class has model that was fitted, can be `lms',
+    \item{model.class}{class of model that was fitted, can be `lms',
     `semm', or `nsemm'.}
     \item{coefficients}{estimated parameters.}
     \item{objective}{final loglikelihood obtained with EM algorithm.}
-    \item{em_convergence}{yes or no. Did EM algorithm convergence?}
-    \item{Hessian}{Hesse matrix for final parameter estimation.}
+    \item{em_convergence}{yes or no. Did EM algorithm converge?}
+    \item{Hessian}{Hessian matrix for final parameter estimation.}
     \item{loglikelihoods}{loglikelihoods obtained during each iteration of
     EM algorithm}
     \item{info}{list of number of exogenous (\code{num.xi}) and endogenous
@@ -73,6 +73,7 @@ mixture structural equation models}
     equation mixture modeling approach for non-normally distributed latent
     predictor variables. \emph{Structural Equation Modeling, 21}, 468-481.
 }
+\seealso{\code{\link{specify_sem}}}
 \examples{
 
 ## LMS

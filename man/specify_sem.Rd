@@ -74,7 +74,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
 
     \code{relation.lat} defines which latent variables influence each
     other. It must be defined like\cr
-    \code{relation.lat='eta1~xi1+xi2;eta2~eta1'}. Free parameters will be
+    \code{relation.lat='eta1~xi1+xi2,eta2~eta1'}. Free parameters will be
     set accordingly in \eqn{\bf B}{Beta} and \eqn{\bf \Gamma}{Gamma}
     matrices. When nothing is defined, \eqn{\bf \Gamma}{Gamma} defaults to
     all \code{NA}s (which means all \eqn{\xi}{xi}'s influence all
@@ -101,6 +101,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     equation mixture modeling approach for non-normally distributed latent
     predictor variables. \emph{Structural Equation Modeling, 21}, 468-481.
 }
+\seealso{\code{\link{create_sem}}}
 \examples{
 # with default constraints
 model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6",
