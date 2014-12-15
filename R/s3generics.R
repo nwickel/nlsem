@@ -16,7 +16,7 @@ as.data.frame.lms <- as.data.frame.semm <- as.data.frame.nsemm <- function(x, ..
     data
 }
 
-simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
+simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
 
     set.seed(seed)
 
@@ -28,7 +28,7 @@ simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     # simulate n data points for each mixture as lms
     dat.sim <- lapply(seq_len(num.classes), function(c) {
                       simulate(lms_ify(object, c),
-                               nsim=nsim, seed=seed, n=n,
+                               nsim=nsim, seed=seed, n=n, m=m,
                                parameters=get_class_parameters(object, parameters)[[c]],
                                ...)
 

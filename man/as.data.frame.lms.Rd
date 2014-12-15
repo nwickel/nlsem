@@ -2,19 +2,25 @@
 \name{as.data.frame.lms}
 \alias{as.data.frame.lms}
 \alias{as.data.frame.semm}
+\alias{as.data.frame.nsemm}
 \title{Coerce to a Data Frame}
 \description{
-     Functions to check if an object is a data frame, or coerce it if
-     possible.
+     Function to coerce an object created with \code{\link{specify_sem}} to
+     a data frame.
 }
 \usage{
 \method{as.data.frame}{lms}(x, ...)
 \method{as.data.frame}{semm}(x, ...)
+\method{as.data.frame}{nsemm}(x, ...)
 }
 \arguments{
-    \item{x}{structural equation model of class 'lms' or 'semm'.}
+    \item{x}{structural equation model of class `lms', `semm', or `nsemm'.}
     \item{...}{additional arguments.}
 }
+\value{
+    Returns a data frame with first column \code{label} and one column for
+    each latent class labeled \code{class1}, \code{class2} and so on.}
+\seealso{\code{\link{specify_sem}}, \code{\link{create_sem}}}
 \examples{
 # specify model
 model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,

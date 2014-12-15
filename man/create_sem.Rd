@@ -4,14 +4,14 @@
 \title{Create a structural equation model from a data frame}
 \description{
     Create model matrices from a data frame with columns \code{label} (for
-    parameter labels) and \code{group1} to \code{groupX}.
+    parameter labels) and \code{class1} to \code{classX}.
 }
 \usage{
     create_sem(dat)
 }
 \arguments{
-    \item{dat}{Dataframe with first column \code{label} and one column for
-    each group labeled \code{group1}, \code{group2} and so on. See
+    \item{dat}{Data frame with first column \code{label} and one column for
+    each latent class labeled \code{class1}, \code{class2} and so on. See
     Details.}
 }
 \details{
@@ -21,8 +21,8 @@
     \code{as.data.frame}. See examples below.
 }
 \value{
-    Gives back an object of class 'lms', 'semm', or 'nsemm' which can be
-    used to estimate parameters using \code{\link{em}}.
+    Gives back an object of class `lms', `semm', or `nsemm' which can be
+    fitted using \code{\link{em}}.
 }
 \seealso{\code{\link{specify_sem}}}
 \examples{

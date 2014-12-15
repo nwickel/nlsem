@@ -1,7 +1,7 @@
 % File src/library/base/man/fill_model.Rd
 \name{fill_model}
 \alias{fill_model}
-\title{Fills an empty model with parameters}
+\title{Fills an empty structural equation model with parameters}
 \description{
     Creates a model of the same class as \code{model} and puts
     \code{parameters} where \code{model} has \code{NA}'s.
@@ -10,12 +10,13 @@
     fill_model(model, parameters)
 }
 \arguments{
-    \item{model}{A model created by \link{specify_sem} or \link{create_sem}.}
-    \item{parameters}{Numeric vector with length of number of free parameters in
-    \code{model}. See \link{count_free_parameters}.}
+    \item{model}{a model created by \code{\link{specify_sem}} or
+    \code{\link{create_sem}}.}
+    \item{parameters}{numeric vector with length of number of free parameters in
+    \code{model}.\cr See \code{\link{count_free_parameters}}.}
 }
 \value{
-    Gives back an object of class 'lms', 'semm', or 'nsemm'.
+    Gives back an object of class `lms', `semm', or `nsemm'.
 }
 \seealso{\code{\link{specify_sem}}, \code{\link{create_sem}},
             \code{\link{count_free_parameters}}}

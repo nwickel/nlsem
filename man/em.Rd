@@ -5,45 +5,29 @@
 mixture structural equation models}
 \description{
     Fits a structural equation model with latent interaction effects using
-    mixture approaches (LMS, STEMM, NSEMM).
+    mixture approaches (LMS, SEMM, NSEMM).
 }
 \usage{
     em(model, data, start, logger=FALSE, convergence=1e-02, max.iter=100,
        m=16, optimizer=c("nlminb", "optim"), max.mstep=1, 
        neg.hessian=TRUE, ...) }
 \arguments{
-    \item{model}{a specified structural equation model of class "lms".}
+    \item{model}{a specified structural equation model of class `lms',
+    `semm', or `nsemm'.}
     \item{data}{the data the model should be fitted to.}
     \item{start}{starting values for parameters.}
     \item{logger}{if output of EM algorithm should be shown during fitting.}
     \item{convergence}{convergence threshold.}
-    \item{max.iter}{maximum number of Iterations before EM algorithm stops.}
-    \item{m}{number of nodes for Hermite-Gaussian quadrature.}
+    \item{max.iter}{maximum number of iterations before EM algorithm stops.}
+    \item{m}{number of nodes for Hermite-Gaussian quadrature. Defaults to
+    16. See Datails.}
     \item{optimizer}{which optimizer should be used in maximization step of
     EM algorithm: \code{\link{nlminb}} or \code{\link{optim}}.}
     \item{max.mstep}{maximum iteration steps the optimizer should use in
-    its mstep during one EM iteration.}
+    its mstep during one EM iteration. Defaults to 1.}
     \item{neg.hessian}{should negative Hessian be calculated in last step
     of iteration.}
     \item{...}{additional arguments. See Details.}
-}
-\value{
-    An object of class 'emEst' that consists of the following components:
-    \item{model.class}{What class model has that was fitted, can be 'lms',
-    'semm', or 'nsemm'.}
-    \item{par}{estimated parameters.}
-    \item{objective}{final loglikelihood obtained with EM algorithm.}
-    \item{convergence_final_step}{convergence message of final step of
-    maximization step either done with \code{\link{optim}}} or
-    \code{\link{nlminb}.}
-    \item{message_final_step}{message of final step. See above.}
-    \item{Hessian}{Hesse matrix for final parameter estimation.}
-    \item{loglikelihoods}{loglikelihoods obtained during each iteratin of
-    EM algorithm}
-    \item{info}{list of number of exogenous (\code{num.xi}) and endogenous
-    (\code{num.eta}) variables and of indicators (\code{num.x} and
-    \code{num.y}). Corresponds to specifications given to
-    \code{\link{specify_sem}} when specifiying structural equation model.}
 }
 \details{
     \code{em} can be used to estimate parameters for structural equation
@@ -54,6 +38,27 @@ mixture structural equation models}
 
     Additional arguments can be passed to \dots for these optimizers. See
     documentation for \code{\link{optim}} and \code{\link{nlminb}}.
+
+    The LMS approach (Klein & Moosbrugger, 2000) uses Hermite-Gauss
+    quadrature for numerical approximation. The nodes used in this
+    approximation need to be prespecified by the user. The more nodes are
+    used the better the numerical approximation but also the slower the
+    calculations.
+}
+\value{
+    An object of class `emEst' that consists of the following components:
+    \item{model.class}{what class has model that was fitted, can be `lms',
+    `semm', or `nsemm'.}
+    \item{coefficients}{estimated parameters.}
+    \item{objective}{final loglikelihood obtained with EM algorithm.}
+    \item{em_convergence}{yes or no. Did EM algorithm convergence?}
+    \item{Hessian}{Hesse matrix for final parameter estimation.}
+    \item{loglikelihoods}{loglikelihoods obtained during each iteration of
+    EM algorithm}
+    \item{info}{list of number of exogenous (\code{num.xi}) and endogenous
+    (\code{num.eta}) variables and of indicators (\code{num.x} and
+    \code{num.y}). Corresponds to specifications given to
+    \code{\link{specify_sem}} when specifiying structural equation model.}
 }
 \references{
     Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
@@ -98,7 +103,7 @@ pars.start1 <- runif(count_free_parameters(model1), 0.4, 0.6)
     summary(res1)
 }
 
-## STEMM
+## SEMM
 ## =====
 # specify model
 model2 <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,

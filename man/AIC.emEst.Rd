@@ -11,7 +11,7 @@
 \method{logLik}{emEst}(object, ...)
 }
 \arguments{
-    \item{object}{estimated structural equation model of class 'emEst'.}
+    \item{object}{estimated structural equation model of class `emEst'.}
     \item{...}{optionally more fitted model objects.}
     \item{k}{numeric, the _penalty_ per parameter to be used; the default
           k = 2 is the classical AIC.}
