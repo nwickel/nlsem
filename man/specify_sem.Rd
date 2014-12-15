@@ -39,21 +39,25 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     for typical structural equation models with the notation used by
     \code{specify_sem} (in matrix notation):
 
-    Structural model for LMS (SEM with interaction effects) and NSEMM (SEM
-    with interaction effects and latent classes):
+    Structural model for LMS (nonlinear SEM) and NSEMM (nonlinear SEM
+    with latent classes):
     \deqn{\boldsymbol{\eta} = \boldsymbol{\alpha} + \boldsymbol{\Gamma}
           \boldsymbol{\xi} + \boldsymbol{\xi}' \boldsymbol{\Omega}
-          \boldsymbol{\xi} + \boldsymbol{\zeta}}
+          \boldsymbol{\xi} + \boldsymbol{\zeta}}{
+          eta = alpha + Gamma xi + xi' Omega xi + zeta}
 
-    Structural model for SEMM (SEM with latent classes):
+    Structural model for SEMM (linear SEM with latent classes):
     \deqn{\boldsymbol{B} \boldsymbol{\eta} = \boldsymbol{\alpha} +
-          \boldsymbol{\Gamma} \boldsymbol{\xi} + \boldsymbol{\zeta}}
+          \boldsymbol{\Gamma} \boldsymbol{\xi} + \boldsymbol{\zeta}}{
+          B eta = alpha + Gamma xi + zeta}
 
     Measurement model:
     \deqn{\textbf{x} = \boldsymbol{\nu}_x + \boldsymbol{\lambda}_x
-          \boldsymbol{\xi} + \boldsymbol{\delta}}
+          \boldsymbol{\xi} + \boldsymbol{\delta}}{
+          x = nu_x + lambda_x xi + delta}
     \deqn{\textbf{y} = \boldsymbol{\nu}_y + \boldsymbol{\lambda}_y
-          \boldsymbol{\eta} + \boldsymbol{\varepsilon}}
+          \boldsymbol{\eta} + \boldsymbol{\varepsilon}}{
+          y = nu_y + lambda_y eta + epsilon}
 
     Which indicators belong to which latent variable is defined by
     \code{xi} and \code{eta}. Must be specified in the following way:
