@@ -69,6 +69,14 @@ count_free_parameters(semm_model)
 parameters <- 1:count_free_parameters(semm_model)
 rm(parameters, semm_model)
 
+# semm with relation.lat
+# =======================
+semm_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
+                         xi="x1-x2,x3-x4,x5-x6,x7-x8", eta="y1-y2,y3-y4,y5-y6",
+                         num.classes=3, interaction="", interc.obs=FALSE,
+                         interc.lat=FALSE,
+                         relation.lat="eta1~xi1,eta2~xi2,eta3~xi3+xi4,eta2~eta1+eta3")
+
 # nsemm
 # -----
 nsemm_model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
@@ -79,12 +87,4 @@ class(nsemm_model)
 count_free_parameters(nsemm_model)
 parameters <- 1:count_free_parameters(nsemm_model)
 rm(parameters, nsemm_model)
-
-# nsemm with relation.lat
-# =======================
-nsemm_model <- specify_sem(num.x=8, num.y=6, num.xi=4, num.eta=3,
-                         xi="x1-x2,x3-x4,x5-x6,x7-x8", eta="y1-y2,y3-y4,y5-y6",
-                         num.classes=3, interaction="", interc.obs=FALSE,
-                         interc.lat=FALSE,
-                         relation.lat="eta1~xi1;eta2~xi2;eta3~xi3+xi4;eta2~eta1+eta3")
 
