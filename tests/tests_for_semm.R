@@ -3,8 +3,6 @@
 
 library(nlsem)
 
-# --> TODO fix tests
-
 # create model
 # ------------
 model <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
@@ -17,12 +15,12 @@ data <- simulate(model, parameters=pars.orig)
 
 set.seed(188)
 pars.start <- runif(count_free_parameters(model), 0.1, 1.5)
-system.time(
-    res.nlminb <- em(model, data, pars.start, logger=TRUE, optimizer="nlminb")
-)
-system.time(
-    res.optim <- em(model, data, pars.start, logger=TRUE, optimizer="optim")
-)
+# system.time(
+#     res.nlminb <- em(model, data, pars.start, logger=TRUE, optimizer="nlminb")
+# )
+# system.time(
+#     res.optim <- em(model, data, pars.start, logger=TRUE, optimizer="optim")
+# )
 
 # EMSEM example: STEMM model for structural equation models
 # =========================================================
