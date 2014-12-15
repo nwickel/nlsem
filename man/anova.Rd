@@ -1,5 +1,5 @@
-% File src/library/base/man/anova.emEst.Rd
-\name{anova.emEst}
+% File src/library/base/man/anova.Rd
+\name{anova}
 \alias{anova.emEst}
 \title{Anova Tables}
 \description{

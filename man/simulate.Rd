@@ -1,5 +1,5 @@
-% File src/library/base/man/simulate.lms.Rd
-\name{simulate.lms}
+% File src/library/base/man/simulate.Rd
+\name{simulate}
 \alias{simulate.lms}
 \alias{simulate.semm}
 \alias{simulate.nsemm}

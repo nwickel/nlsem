@@ -1,5 +1,5 @@
-% File src/library/base/man/as.data.frame.lms.Rd
-\name{as.data.frame.lms}
+% File src/library/base/man/as.data.frame.Rd
+\name{as.data.frame}
 \alias{as.data.frame.lms}
 \alias{as.data.frame.semm}
 \alias{as.data.frame.nsemm}

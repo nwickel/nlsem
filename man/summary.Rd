@@ -1,5 +1,5 @@
-% File src/library/base/man/summary.emEst.Rd
-\name{summary.emEst}
+% File src/library/base/man/summary.Rd
+\name{summary}
 \alias{summary.emEst}
 \title{Summarize output from EM algorithm for structural equation models}
 \description{
