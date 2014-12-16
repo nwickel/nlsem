@@ -27,8 +27,9 @@ Here, interaction and quadratic terms as well as latent classes can be modeled.
 
 All three models can be specified with \code{\link{specify_sem}}. Depending on the
 specification of \code{interaction} and the number of latent classes
-(\code{num.classes}) the returned object will be of class `lms', `semm', or
-`nsemm'. Each of those can be estimated using \code{\link{em}}.
+(\code{num.classes}) the returned object will be of class \code{lms},
+\code{semm}, or \code{nsemm}. Each of those can be estimated using
+\code{\link{em}}.
 }
 \references{
     Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of

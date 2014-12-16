@@ -12,8 +12,8 @@ mixture structural equation models}
        m=16, optimizer=c("nlminb", "optim"), max.mstep=1, 
        neg.hessian=TRUE, ...) }
 \arguments{
-    \item{model}{a specified structural equation model of class `lms',
-    `semm', or `nsemm'.}
+    \item{model}{a specified structural equation model of class \code{lms},
+    \code{semm}, or \code{nsemm}.}
     \item{data}{the data the model should be fitted to.}
     \item{start}{starting values for parameters.}
     \item{logger}{if output of EM algorithm should be shown during fitting.}
@@ -46,9 +46,9 @@ mixture structural equation models}
     calculations.
 }
 \value{
-    An object of class `emEst' that consists of the following components:
-    \item{model.class}{class of model that was fitted, can be `lms',
-    `semm', or `nsemm'.}
+    An object of class \code{emEst} that consists of the following components:
+    \item{model.class}{class of model that was fitted, can be \code{lms},
+    \code{semm}, or \code{nsemm}.}
     \item{coefficients}{estimated parameters.}
     \item{objective}{final loglikelihood obtained with EM algorithm.}
     \item{em_convergence}{yes or no. Did EM algorithm converge?}

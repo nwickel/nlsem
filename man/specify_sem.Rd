@@ -85,8 +85,8 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     \eqn{\eta}{eta}'s) and \eqn{\bf B}{Beta} is an identity matrix.
 }
 \value{
-    An object of class `lms', `semm', or `nsemm' which can be used to
-    estimate parameters using \code{\link{em}} that consists of the
+    An object of class \code{lms}, \code{semm}, or \code{nsemm} which can be
+    used to estimate parameters using \code{\link{em}} that consists of the
     following components:
     \item{matrices}{list of matrices specifying the structural equation
     model.}

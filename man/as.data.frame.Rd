@@ -14,7 +14,8 @@
 \method{as.data.frame}{nsemm}(x, ...)
 }
 \arguments{
-    \item{x}{structural equation model of class `lms', `semm', or `nsemm'.}
+    \item{x}{structural equation model of class \code{lms}, \code{semm}, or
+    \code{nsemm}.}
     \item{...}{additional arguments.}
 }
 \value{

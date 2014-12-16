@@ -9,7 +9,7 @@
 \method{summary}{emEst}(object, ...)
 }
 \arguments{
-    \item{object}{estimated structural equation model of class `emEst'
+    \item{object}{estimated structural equation model of class \code{emEst}
     obtained from \code{\link{em}}.}
     \item{...}{additional arguments.}
 }

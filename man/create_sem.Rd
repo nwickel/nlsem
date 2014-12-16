@@ -21,8 +21,8 @@
     \code{as.data.frame}. See examples below.
 }
 \value{
-    Gives back an object of class `lms', `semm', or `nsemm' which can be
-    fitted using \code{\link{em}}.
+    Gives back an object of class \code{lms}, \code{semm}, or \code{nsemm}
+    which can be fitted using \code{\link{em}}.
 }
 \seealso{\code{\link{specify_sem}}}
 \examples{

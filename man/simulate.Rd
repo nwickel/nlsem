@@ -13,15 +13,15 @@
 \method{simulate}{nsemm}(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...)
 }
 \arguments{
-    \item{object}{structural equation model of class `lms', `semm' or
-    `nsemm'.}
+    \item{object}{structural equation model of class \code{lms},
+    \code{semm}, or \code{nsemm}.}
     \item{parameters}{`true' parameters which should be used to simulate
     data.}
     \item{nsim}{number of response vectors to simulate.  Defaults to 1.}
     \item{seed}{set seed. Default is NULL.}
     \item{n}{data for how many observations should be simulated.}
     \item{m}{number of nodes for Hermite-Gaussian quadrature. Only needed
-    for `lms' and `nsemm'.}
+    for \code{lms} and \code{nsemm}.}
     \item{...}{additional arguments.}
 }
 \value{
