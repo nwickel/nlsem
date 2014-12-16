@@ -119,7 +119,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         num.iter <- num.iter + 1
   
         if(num.iter == max.iter){
-            #warning("Maximum number of iterations was reached. EM algorithm might not have converged.")
+            warning("Maximum number of iterations was reached. EM algorithm might not have converged.")
             break
         }
     }
