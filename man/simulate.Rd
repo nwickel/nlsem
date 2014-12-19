@@ -35,8 +35,8 @@ model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
                      interaction="xi1:xi2")
 
 # original parameters
-pars.orig <- c(.6, .5, .4, .5, .4, .6, .5, .2, .6, .7, .3, .2, .5, .7, .3, .4,
-                .6, .2, .3, .4, .6, .8)
+pars.orig <- c(.6, .5, .4, .5, .4, .6, .5, .2, .6, .7, .3, .2, .5,
+               .7, .3, .4, .6, .2, .3, .4, .6, .8)
 
 # simulate data from model
 dat <- simulate(model, parameters=pars.orig)

@@ -1,8 +1,7 @@
 % File src/library/base/man/em.Rd
 \name{em}
 \alias{em}
-\title{Maximum likelihood estimation of latent interaction effects and
-mixture structural equation models}
+\title{Maximum likelihood estimation of structural equation mixture models}
 \description{
     Fits a structural equation model with latent interaction effects using
     mixture approaches (LMS, SEMM, NSEMM).
