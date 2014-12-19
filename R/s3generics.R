@@ -63,7 +63,7 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
                               sigma=sigma_semm(matrices=mod.filled$matrices[[c]]))
                               })
 
-    # see simulate_lms for explanation
+    # see simulate.lms for explanation
     border <- cumsum(w)
     prob <- runif(n)
 

@@ -1,6 +1,6 @@
 import(stats)
 
-importFrom(mvtnorm, dmvnorm)
+importFrom(mvtnorm, dmvnorm, rmvnorm)
 importFrom(gaussquad, hermite.h.quadrature.rules)
 importFrom(nlme, fdHess)
 
