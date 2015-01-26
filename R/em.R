@@ -107,7 +107,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
 
         if(logger == TRUE) {
             cat("Results of maximization \n")
-            cat(paste0("Final loglikelihood: ", round(-m.step$objective, 3), "\n"))
+            cat(paste0("Loglikelihood: ", round(-m.step$objective, 3), "\n"))
             cat(paste0("Convergence: ", m.step$convergence, "\n"))
             cat(paste0("Number of iterations: ", m.step$iterations, "\n"))
             cat("----------------------------------- \n")
@@ -125,13 +125,13 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
     }
     cat("-----------------------------------\n")
     cat("EM completed \n")
-    cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))
-    cat(paste0("Final loglikelihood: ", round(-ll.new, 3),"\n"))
+    #cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))
+    #cat(paste0("Final loglikelihood: ", round(-ll.new, 3),"\n"))
     cat("-----------------------------------\n")
 
     cat("-----------------------------------\n")
     if (neg.hessian == TRUE) {
-        cat("Computing Hessian \n")
+        cat("Computing negative Hessian \n")
     } else {
         cat("Computing final model \n")
     }
