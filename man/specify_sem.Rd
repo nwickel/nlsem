@@ -7,7 +7,7 @@
 }
 \usage{
 specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
-            interaction="all", interc.obs=FALSE,
+            interaction="none", interc.obs=FALSE,
             interc.lat=FALSE, relation.lat="default")
 }
 \arguments{
@@ -21,9 +21,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     \item{eta}{which observed variables are indicators for which endogenous
     variable. See Details.}
     \item{interaction}{define which interaction terms should be included.
-    Default is `all' which means that all interactions between exogenous
-    variables are included. See Details for how to enter interaction
-    terms.}
+    Default is `none'. See Details for how to enter interaction terms.}
     \item{interc.obs}{logical. If intercepts for measurement model should be
     estimated. Default is \code{FALSE} (intercepts are fixed at 0).}
     \item{interc.lat}{logical. If intercepts for latent variable model should be
