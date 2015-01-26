@@ -93,10 +93,6 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     \item{info}{list of informations about structural equation model.}
 }
 \references{
-    Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
-    latent interaction effects with the LMS method. \emph{Psychometrika, 65},
-    457--474.
-
     Jedidi, K., Jagpal, H. S., & DeSarbo, W. S. (1997). STEMM: A General
     Finite Mixture Structural Equation Model, \emph{Journal of
     Classification, 14}, 23--50.
@@ -104,6 +100,10 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     Kelava, A., Nagengast, B., & Brandt, H. (2014). A nonlinear structural
     equation mixture modeling approach for non-normally distributed latent
     predictor variables. \emph{Structural Equation Modeling, 21}, 468-481.
+
+    Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
+    latent interaction effects with the LMS method. \emph{Psychometrika, 65},
+    457--474.
 }
 \seealso{\code{\link{create_sem}}}
 \examples{
