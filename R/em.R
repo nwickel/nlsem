@@ -108,7 +108,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         if(logger == TRUE) {
             cat("Results of maximization \n")
             cat(paste0("Loglikelihood: ", round(-m.step$objective, 3), "\n"))
-            cat(paste0("Convergence: ", m.step$convergence, "\n"))
+            cat(paste0("Convergence: ", m.step$convergence[1], "\n"))
             cat(paste0("Number of iterations: ", m.step$iterations, "\n"))
             cat("----------------------------------- \n")
         }
@@ -199,8 +199,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
 
     out <- list(model.class=class(model), coefficients=final$par,
                 objective=-final$objective,
-                em_convergence=em_convergence,
-                negHessian=final$hessian,
+                em.convergence=em_convergence,
+                neg.hessian=final$hessian,
                 loglikelihoods=-ll.ret,
                 info=info)
 

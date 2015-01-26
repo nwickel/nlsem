@@ -160,7 +160,8 @@ summary.emEst <- function(object, ...) {
     logLik.table <- cbind(object$loglikelihoods, abs.change, rel.change)
     dimnames(logLik.table) <- list(1:iterations, c("loglikelihood", "difference", "relative change"))
 
-    ans <- list(estimates=est.table,
+    ans <- list(model=object$model.class,
+                estimates=est.table,
                 iterations=iterations,
                 finallogLik=object$objective,
                 logLikelihoods=logLik.table)
@@ -176,13 +177,16 @@ summary.emEst <- function(object, ...) {
 
 print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
                                cs.ind=2:3, ...) {
-
+    
+    cat("\nSummary for model of class", x$model, "\n")
     cat("\nEstimates:\n")
     printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
     cat("\nNumber of iterations:", x$iterations,
-        "\nFinal loglikelihood:", round(x$finallogLik, 3), 
-        "\nFinal weights:", round(x$class.weights, 3), "\n\n")
-    cat("\nLikelihoods:\n")
+        "\nFinal loglikelihood:", round(x$finallogLik, 3)) 
+    if (x$model == "semm" || x$model == "nsemm"){
+        cat("\nFinal weights:", round(x$class.weights, 3))
+    }
+    cat("\n\n", "\nLikelihoods:\n")
     printCoefmat(x$logLikelihoods, digits=6, cs.ind=2:3, ...)
 
 }
