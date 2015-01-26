@@ -108,7 +108,7 @@ pars.start1 <- runif(count_free_parameters(model1), 0.4, 0.6)
 # specify model
 model2 <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
                      xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
-                     interaction="", interc.obs=FALSE, interc.lat=FALSE,
+                     interaction="none", interc.obs=FALSE, interc.lat=FALSE,
                      relation.lat="eta1~xi1+xi2")
 # simulate data
 pars.orig2 <- c(

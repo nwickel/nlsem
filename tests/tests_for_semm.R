@@ -9,7 +9,7 @@ library(nlsem)
 # create model
 mod <- specify_sem(num.x=4, num.y=4, num.xi=2, num.eta=2,
                      xi="x1-x2,x3-x4", eta="y1-y2,y3-y4", num.classes=2,
-                     interaction="",
+                     interaction="none",
                      interc.obs=FALSE, interc.lat=FALSE,
                      relation.lat="eta1~xi1,eta2~xi2,eta2~eta1,eta1~eta2")
 
@@ -55,7 +55,7 @@ parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 # ------------
 model <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
                      xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
-                     interaction="", interc.obs=FALSE, interc.lat=FALSE,
+                     interaction="none", interc.obs=FALSE, interc.lat=FALSE,
                      relation.lat="eta1~xi1+xi2")
 
 pars.orig <- c(

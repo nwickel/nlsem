@@ -8,7 +8,7 @@
 # Define model specification for different SEMs with nonlinear effects;
 # possible objects classes are 'lms', 'semm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
-                          interaction="all", interc.obs=FALSE,
+                          interaction="none", interc.obs=FALSE,
                           interc.lat=FALSE, relation.lat="default"){
 
     # check arguments
@@ -21,7 +21,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0, num.classes > 0)
 
     # check if only defined xi's are in the interaction
-    if (interaction != "all" && interaction != "") {
+    if (interaction != "none") {
         interact.matrix <- calc_interaction_matrix(unlist(strsplit(interaction, ",")))
         if (max(interact.matrix) > num.xi) {
             stop("Interaction effects contain more xi's than defined.")
@@ -109,9 +109,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     tau <- matrix(0, nrow=num.xi, ncol=1)
     # Omega
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
-    if (interaction == "all"){
-        Omega[upper.tri(Omega)] <- NA
-    } else if (interaction != "") {
+    if (interaction != "none"){
         interaction.s <- unlist(strsplit(interaction, ","))
         ind <- calc_interaction_matrix(interaction.s)
         Omega[ind] <- NA
@@ -269,7 +267,7 @@ create_sem <- function(dat){
     model <- list(matrices=matrices, info=info)
 
     if (all(is.na(Omega.matrix))) {
-        interaction <- ""
+        interaction <- "none"
     } else interaction <- "not_empty"
 
     class(model) <- get_model_class(num.classes, interaction)
@@ -494,7 +492,7 @@ get_model_class <- function(num.classes, interaction) {
     if (num.classes == 1) {
         model.class <- "lms"
     } else {
-        if (interaction != "") {
+        if (interaction != "none") {
             model.class <- "nsemm"
         } else model.class <- "semm"
     }
