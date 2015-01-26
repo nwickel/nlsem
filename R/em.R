@@ -1,9 +1,9 @@
 # em.R
 #
-# last mod: Dec/12/2014, KN
+# last mod: Jan/26/2015, NU
 
 # Performs EM-algorithm for different models of class 'lms', 'semm', and
-# soon 'nsemm'
+# 'nsemm'
 em <- function(model, data, start, logger=FALSE, convergence=1e-02,
                 max.iter=100, m=16, optimizer=c("nlminb", "optim"),
                 max.mstep=1, neg.hessian=TRUE, ...) {
@@ -21,7 +21,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
 
     if (class(model) == "lms" || class(model) == "nsemm"){
         n.na <- length(which(is.na(model$matrices$class1$Omega)))
-        if (any(start[-c(1:(length(start) - 3))] == 0)){
+        if (any(start[-c(1:(length(start) - n.na))] == 0)){
             stop("Starting parameters for Omega should not be 0.")
         }
     }
@@ -194,7 +194,7 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         em_convergence <- "no"
     } else {em_convergence <- "yes"}
 
-    info   <- model$info[1:4]
+    info   <- model$info[c("num.xi","num.eta","num.x","num.y")]
     info$n <- nrow(data)
 
     out <- list(model.class=class(model), coefficients=final$par,
@@ -206,8 +206,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
 
     # attach w for semm and nsemm
     if (class(model) == "semm" || class(model) == "nsemm") {
-        out$info <- model$info[c(1:4,7)]
-    }
+        out$info <- model$info[c("num.xi", "num.eta", "num.x", "num.y",
+                                 "num.classes", "w")] }
 
     class(out) <- "emEst"
     out
