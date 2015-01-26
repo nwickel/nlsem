@@ -26,6 +26,10 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
         }
     }
 
+    if (anyNA(model$matrices$class1$Omega) && model$info$num.eta > 1){
+        stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")
+    }
+
     cat("-----------------------------------\n")
     cat("Starting EM-algorithm for", class(model), "\n")
     cat(paste("Convergence: ", convergence, "\n"))
