@@ -322,7 +322,9 @@ fill_model <- function(model, parameters) {
             }
         }
         # make 'symmetric' matrices symmetric
-        matrices.c$Psi <- fill_symmetric(matrices.c$Psi)
+        tryCatch({ matrices.c$Psi <- fill_symmetric(matrices.c$Psi) },
+                                       error=function(e) e,
+                                       warning=function(w) w)
         tryCatch({ matrices.c$Phi <- fill_symmetric(matrices.c$Phi) },
                                        error=function(e) e,
                                        warning=function(w) w)

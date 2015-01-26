@@ -122,11 +122,11 @@ summary.emEst <- function(object, ...) {
     # estimates
     est <- object$coefficients
 
-    warn.msg <- "Standard errors could not be computed, because negative hessian was either not available or singular"
+    warn.msg <- "Standard errors could not be computed, because negative Hessian was either not available or singular"
 
     # standard errors
     if (is.numeric(est)) {
-        s.error <- tryCatch({sqrt(diag(solve(object$negHessian)))},
+        s.error <- tryCatch({sqrt(diag(solve(object$neg.hessian)))},
             error=function(e) {
                 warning(warn.msg)
                 NA
@@ -138,7 +138,7 @@ summary.emEst <- function(object, ...) {
     } else {
         est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
                             s.error <- tryCatch({
-                                sqrt(diag(solve(object$negHessian[[c]])))
+                                sqrt(diag(solve(object$neg.hessian[[c]])))
                             }, error=function(e) {
                                 warning(warn.msg)
                                 NA

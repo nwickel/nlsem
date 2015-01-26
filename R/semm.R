@@ -81,8 +81,12 @@ loglikelihood_semm <- function(parameters, matrices, data, p, w) {
             matrices[[i]] <- matrix.i
         }
     }
-    matrices$Psi <- fill_symmetric(matrices$Psi)
-    matrices$Phi <- fill_symmetric(matrices$Phi)
+    tryCatch({ matrices$Psi <- fill_symmetric(matrices$Psi) },
+                                       error=function(e) e,
+                                       warning=function(w) w)
+    tryCatch({ matrices$Phi <- fill_symmetric(matrices$Phi) },
+                                       error=function(e) e,
+                                       warning=function(w) w)
 
     N <- nrow(data)
     N.c <- sum(p)
