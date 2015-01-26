@@ -15,9 +15,9 @@
     Details.}
 }
 \details{
-    Labels on column \code{label} need to be labeled in a certain way.
-    Labels can be looked at when an object created with
-    \code{\link{specify_sem}} is transformed to a data frame with
+    Labels in column \code{label} need to be labeled in a certain way.
+    Labels can be looked up by creating an object with
+    \code{\link{specify_sem}} and then transforming it to a data frame with
     \code{as.data.frame}. See examples below.
 }
 \value{

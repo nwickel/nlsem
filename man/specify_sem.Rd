@@ -15,9 +15,9 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     \item{num.y}{number of observed variables for eta.}
     \item{num.xi}{number of latent exogenous variabeles.}
     \item{num.eta}{number of latent endognous variables.}
-    \item{num.classes}{number of latent classes}
+    \item{num.classes}{number of latent classes.}
     \item{xi}{which observed variables are indicators for which exogenous
-    variable. See Details}
+    variable. See Details.}
     \item{eta}{which observed variables are indicators for which endogenous
     variable. See Details.}
     \item{interaction}{define which interaction terms should be included.
@@ -35,7 +35,7 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
 \details{
     The notation for the \code{matrices} given back by \code{specify_sem}
     follows typical notation used in structural equation modeling. The
-    notation, of course, may vary depending. Therefore, here are examples
+    notation, of course, may vary dependingly. Therefore, here are examples
     for typical structural equation models with the notation used by
     \code{specify_sem} (in matrix notation):
 

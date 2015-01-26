@@ -53,7 +53,7 @@
     \item{em_convergence}{yes or no. Did EM algorithm converge?}
     \item{Hessian}{Hessian matrix for final parameter estimation.}
     \item{loglikelihoods}{loglikelihoods obtained during each iteration of
-    EM algorithm}
+    EM algorithm.}
     \item{info}{list of number of exogenous (\code{num.xi}) and endogenous
     (\code{num.eta}) variables and of indicators (\code{num.x} and
     \code{num.y}). Corresponds to specifications given to
