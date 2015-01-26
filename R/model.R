@@ -258,6 +258,7 @@ create_sem <- function(dat){
         class <- paste0("class",c)
         par.names[[c]] <- as.character(dat$label[is.na(dat[,class])])
     }
+
     names(par.names) <- paste0("class", 1:num.classes)
     w <- matrix(1/num.classes, nrow=num.classes, ncol=1)
 
@@ -271,6 +272,10 @@ create_sem <- function(dat){
     } else interaction <- "not_empty"
 
     class(model) <- get_model_class(num.classes, interaction)
+
+    if (class(model) == "lms"){
+        model$info$par.names <- model$info$par.names$class1
+    }
 
     # bounds for parameters (variances > 0)
     model$info$bounds <- bounds(model)
