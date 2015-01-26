@@ -207,7 +207,8 @@ em <- function(model, data, start, logger=FALSE, convergence=1e-02,
     # attach w for semm and nsemm
     if (class(model) == "semm" || class(model) == "nsemm") {
         out$info <- model$info[c("num.xi", "num.eta", "num.x", "num.y",
-                                 "num.classes", "w")] }
+                                 "num.classes", "w")] 
+        out$info$n <- nrow(data) }
 
     class(out) <- "emEst"
     out
