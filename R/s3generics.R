@@ -180,8 +180,8 @@ print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
     cat("\nEstimates:\n")
     printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
     cat("\nNumber of iterations:", x$iterations,
-        "\nFinal loglikelihood:", format(x$finallogLik, digits=digits), 
-        "\nFinal weights:" format(x$class.weights, digits=digits), "\n\n")
+        "\nFinal loglikelihood:", round(x$finallogLik, 3), 
+        "\nFinal weights:", round(x$class.weights, 3), "\n\n")
     cat("\nLikelihoods:\n")
     printCoefmat(x$logLikelihoods, digits=6, cs.ind=2:3, ...)
 
