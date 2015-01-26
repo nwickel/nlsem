@@ -4,7 +4,7 @@
 
 # Performs EM-algorithm for different models of class 'lms', 'semm', and
 # 'nsemm'
-em <- function(model, data, start, logger=FALSE, convergence=1e-02,
+em <- function(model, data, start, logger=TRUE, convergence=1e-02,
                 max.iter=100, m=16, optimizer=c("nlminb", "optim"),
                 max.mstep=1, neg.hessian=TRUE, ...) {
 
