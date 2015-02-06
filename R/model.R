@@ -8,8 +8,8 @@
 # Define model specification for different SEMs with nonlinear effects;
 # possible objects classes are 'lms', 'semm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
-                          interaction="none", interc.obs=FALSE,
-                          interc.lat=FALSE, relation.lat="default"){
+                          interaction="none", interc.obs=TRUE,
+                          interc.lat=TRUE, relation.lat="default"){
 
     # check arguments
     if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
@@ -94,7 +94,9 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     # nu's
     if (interc.obs){
         nu.x <- matrix(NA, nrow=num.x, ncol=1)
-        nu.y <- matrix(NA, nrow=num.y, ncol=1)
+        for (i in seq_len(num.xi)) nu.x[xi.ind[[i]][1]] <- 0
+        nu.y <- matrix(c(0, rep(NA, num.y - 1)), nrow=num.y, ncol=1)
+        for (i in seq_len(num.eta)) nu.x[eta.ind[[i]][1]] <- 0
     } else {
         nu.x <- matrix(0, nrow=num.x, ncol=1)
         nu.y <- matrix(0, nrow=num.y, ncol=1)
@@ -106,7 +108,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
         alpha <- matrix(0, nrow=num.eta, ncol=1)
     }
     # tau
-    tau <- matrix(0, nrow=num.xi, ncol=1)
+    tau <- matrix(NA, nrow=num.xi, ncol=1)
     # Omega
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
     if (interaction != "none"){
@@ -139,7 +141,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
                                   Omega=Omega)
         }
     }
-    names(matrices) <- paste0("class",seq_len(num.classes))
+    names(matrices) <- paste0("class", seq_len(num.classes))
 
     # class weights w
     w <- matrix(1/num.classes, nrow=num.classes, ncol=1)
@@ -504,6 +506,15 @@ get_model_class <- function(num.classes, interaction) {
         } else model.class <- "semm"
     }
 }
+
+# get_model_class <- function(num.classes, interaction) {
+#     if (num.classes == 1 && interaction != "none") {
+#         model.class <- "lms"
+#     } else if (num.classes != 1 && interaction != "none") {
+#             model.class <- "nsemm"
+#     } else model.class <- "semm"
+# }
+
 
 # Obtains parameter names from a given model; used in specify_sem
 get_parnames <- function(model) {
