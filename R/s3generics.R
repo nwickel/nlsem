@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Dec/04/2014, KN
+# last mod Feb/06/2015, KN
 
 #--------------- main functions ---------------
 
@@ -122,27 +122,16 @@ summary.emEst <- function(object, ...) {
     # estimates
     est <- object$coefficients
 
-    warn.msg <- "Standard errors could not be computed, because negative Hessian was either not available or singular"
-
     # standard errors
     if (is.numeric(est)) {
-        s.error <- tryCatch({sqrt(diag(solve(object$neg.hessian)))},
-            error=function(e) {
-                warning(warn.msg)
-                NA
-            })
+        s.error <- calc_standard_error(object$neg.hessian)
         tvalue <- est / s.error
         pvalue <- 2 * pnorm(-abs(tvalue))
         est.table <- cbind(est, s.error, tvalue, pvalue)
         dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
     } else {
         est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
-                            s.error <- tryCatch({
-                                sqrt(diag(solve(object$neg.hessian[[c]])))
-                            }, error=function(e) {
-                                warning(warn.msg)
-                                NA
-                            })
+                            s.error <- calc_standard_error(object$neg.hessian[[c]])
                             tvalue <- est[[c]] / s.error
                             pvalue <- 2 * pnorm(-abs(tvalue))
                             est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
@@ -318,4 +307,20 @@ rel_change <- function(x) {
     rel.change
 }
 
-
+calc_standard_error <- function(neg.hessian) {
+    warn.msg <- "Standard errors could not be computed, because negative Hessian was either not available or singular"
+    s.error <- tryCatch({
+                    sqrt(diag(solve(neg.hessian)))
+                }, error=function(e) {
+                    NA
+                }, warning=function(w) {
+                     if (grepl("NaN", conditionMessage(w))) {
+                       suppressWarnings(sqrt(diag(solve(neg.hessian))))
+                    } else{
+                        sqrt(diag(solve(neg.hessian)))
+                    }
+                })
+                if (all(is.na(s.error))) warning(warn.msg)
+                if (any(is.nan(s.error))) warning("Standard errors for some coefficients could not be computed.") 
+    s.error
+}
