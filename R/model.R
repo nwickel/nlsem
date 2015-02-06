@@ -95,8 +95,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     if (interc.obs){
         nu.x <- matrix(NA, nrow=num.x, ncol=1)
         for (i in seq_len(num.xi)) nu.x[xi.ind[[i]][1]] <- 0
-        nu.y <- matrix(c(0, rep(NA, num.y - 1)), nrow=num.y, ncol=1)
-        for (i in seq_len(num.eta)) nu.x[eta.ind[[i]][1]] <- 0
+        nu.y <- matrix(NA, nrow=num.y, ncol=1)
+        for (i in seq_len(num.eta)) nu.y[eta.ind[[i]][1]] <- 0
     } else {
         nu.x <- matrix(0, nrow=num.x, ncol=1)
         nu.y <- matrix(0, nrow=num.y, ncol=1)

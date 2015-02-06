@@ -36,8 +36,6 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
     cat("-----------------------------------\n")
     cat("-----------------------------------\n")
 
-    ll.old   <- 0     # loglikelihood of the last iteration
-    ll.new   <- 1     # loglikelihood of the current iteration
     ll.ret   <- NULL
     num.iter <- 0     # number of iterations
     if (class(model) == "semm" || class(model) == "nsemm") {
@@ -45,12 +43,15 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
     } else {
         par.new <- convert_parameters_lms(model, start)
     }
-    par.old  <- 0
+    ll.new <- 0
 
-    while(abs(ll.old - ll.new) > convergence) { # as long as no convergence reached
-    #while(sum((par.old - par.new)^2) > convergence) { # as long as no convergence reached
-        if(ll.new - ll.old > 0.001 && num.iter > 3) {
-            warning("Likelihood should be decreasing.")
+    run <- TRUE
+    while(run) { # as long as no convergence is reached
+
+        if (num.iter > 3){
+            if(ll.new - ll.old) {
+                warning("Likelihood should be decreasing.")
+            }
         }
 
         if(logger == TRUE) {
@@ -126,7 +127,9 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
             warning("Maximum number of iterations was reached. EM algorithm might not have converged.")
             break
         }
+        if (abs(ll.old - ll.new) < convergence) run <- FALSE
     }
+
     cat("-----------------------------------\n")
     cat("EM completed \n")
     #cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))
