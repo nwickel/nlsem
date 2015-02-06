@@ -274,7 +274,8 @@ BIC.emEst <- function(object, ...) {
 
     dots <- list(...)
     if (length(dots) == 0){
-        out <- as.numeric(-2*logLik(object) + log(object$info$n)*length(object$coef))
+        out <- as.numeric(-2*logLik(object) +
+               log(object$info$n)*length(unlist(object$coef)))
     } else {
         mlist <- list(object, ...)
         names(mlist) <- c(deparse(substitute(object)),
