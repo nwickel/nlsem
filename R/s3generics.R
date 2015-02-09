@@ -309,11 +309,15 @@ plot.emEst <- function(x, y, ...) {
 # calculates relative change defined as absolute difference divided by
 # maximum absolute value
 rel_change <- function(x) {
+    
+    if (length(x) == 1) {
+        rel.change <- 0
+    } else {
+        rel.change <- numeric(length(x))
+        for (i in 2:length(rel.change)){
 
-    rel.change <- numeric(length(x))
-    for (i in 2:length(rel.change)){
-
-        rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
+            rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
+        }
     }
     rel.change
 }
