@@ -24,8 +24,8 @@
 \seealso{\code{\link{specify_sem}}, \code{\link{create_sem}}}
 \examples{
 # specify model
-model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
-                     xi="x1-x3,x4-x6", eta="y1-y3", interaction="xi1:xi2")
+model <- specify_sem(num.x = 6, num.y = 3, num.xi = 2, num.eta = 1,
+                     xi = "x1-x3,x4-x6", eta = "y1-y3", interaction = "xi1:xi2")
 
 # coerce to data frame
 as.data.frame(model)

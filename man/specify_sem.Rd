@@ -6,9 +6,9 @@
     Specify a structural equation model with constraints.
 }
 \usage{
-specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
-            interaction="none", interc.obs=FALSE,
-            interc.lat=FALSE, relation.lat="default")
+specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes = 1,
+            interaction = "none", interc.obs = TRUE,
+            interc.lat = TRUE, relation.lat = "default")
 }
 \arguments{
     \item{num.x}{number of observed variables for xi.}
@@ -23,9 +23,9 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     \item{interaction}{define which interaction terms should be included.
     Default is `none'. See Details for how to enter interaction terms.}
     \item{interc.obs}{logical. If intercepts for measurement model should be
-    estimated. Default is \code{FALSE} (intercepts are fixed at 0).}
+    estimated. Default is \code{TRUE} (first intercept is fixed at 0).}
     \item{interc.lat}{logical. If intercepts for latent variable model should be
-    estimated. Default is \code{FALSE} (intercepts are fixed at 0).}
+    estimated. Default is \code{TRUE} (first intercept is fixed at 0).}
     \item{relation.lat}{define relations between latent variables.
     Influences Beta and Gamma matrices. For `defaults' and how to define
     see Details.}
@@ -106,8 +106,8 @@ specify_sem(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
 \seealso{\code{\link{create_sem}}}
 \examples{
 # with default constraints
-model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1, xi="x1-x3,x4-x6",
-                     eta="y1-y3")
+model <- specify_sem(num.x = 6, num.y = 3, num.xi = 2, num.eta = 1,
+                     xi = "x1-x3,x4-x6", eta = "y1-y3")
 
 # create data frame
 specs <- as.data.frame(model)

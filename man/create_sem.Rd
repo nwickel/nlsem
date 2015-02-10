@@ -27,7 +27,8 @@
 \seealso{\code{\link{specify_sem}}}
 \examples{
 # specify model
-model <- specify_sem(4, 1, 2, 1, xi="x1-x2,x3-x4", eta="y1")
+model <- specify_sem(num.x = 4, num.y = 1, num.xi = 2, num.eta = 1, 
+         xi = "x1-x2,x3-x4", eta = "y1", interaction = "xi1:xi2")
 # create data frame
 dat <- as.data.frame(model)
 # recreate model

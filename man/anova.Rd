@@ -6,7 +6,7 @@
     Calculate likelihood ratio tests to compare two or more structural equation models.
 }
 \usage{
-\method{anova}{emEst}(object, ..., test=c("Chisq", "none"))
+\method{anova}{emEst}(object, ..., test = c("Chisq", "none"))
 }
 \arguments{
     \item{object}{estimated structural equation model of class \code{emEst}.}

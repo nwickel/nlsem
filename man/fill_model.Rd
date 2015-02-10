@@ -22,7 +22,9 @@
             \code{\link{count_free_parameters}}}
 \examples{
 # specify model
-model <- specify_sem(4, 1, 2, 1, xi="x1-x2,x3-x4", eta="y1")
-parameters <- runif(count_free_parameters(model), 0.2, 1)
-fill_model(model, parameters)
+model <- specify_sem(num.x = 4, num.y = 1, num.xi = 2, num.eta = 1, 
+                     xi = "x1-x2,x3-x4", eta = "y1",
+                     interaction = "xi1:xi2")
+pars <- runif(count_free_parameters(model))
+fill_model(model, parameters = pars)
 }

@@ -8,9 +8,9 @@
     Simulate data from a structural equation mixture model.
 }
 \usage{
-\method{simulate}{lms}(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...)
-\method{simulate}{semm}(object, nsim=1, seed=NULL, n=400, parameters, ...)
-\method{simulate}{nsemm}(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...)
+\method{simulate}{lms}(object, nsim = 1, seed = NULL, n = 400, m = 16, parameters, ...)
+\method{simulate}{semm}(object, nsim = 1, seed = NULL, n = 400, parameters, ...)
+\method{simulate}{nsemm}(object, nsim = 1, seed = NULL, n = 400, m = 16, parameters, ...)
 }
 \arguments{
     \item{object}{structural equation model of class \code{lms},
@@ -30,15 +30,16 @@
 }
 \examples{
 # specify model
-model <- specify_sem(num.x=6, num.y=3, num.xi=2, num.eta=1,
-                     xi="x1-x3,x4-x6", eta="y1-y3",
-                     interaction="xi1:xi2")
+model <- specify_sem(num.x = 6, num.y = 3, num.xi = 2, num.eta = 1,
+                     xi = "x1-x3,x4-x6", eta = "y1-y3",
+                     interaction = "xi1:xi2")
 
 # original parameters
 pars.orig <- c(.6, .5, .4, .5, .4, .6, .5, .2, .6, .7, .3, .2, .5,
-               .7, .3, .4, .6, .2, .3, .4, .6, .8)
+               .7, .3, .4, .6, .2, .3, .4, .6, .2, .2, .2, .2, .3,
+               .3, 1, 0, 0, .8)
 
 # simulate data from model
-dat <- simulate(model, parameters=pars.orig)
+dat <- simulate(model, parameters = pars.orig)
 }
 
