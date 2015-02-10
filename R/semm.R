@@ -41,7 +41,7 @@ sigma_semm <- function(matrices) {
 
     # TODO check if this warning is really necessary
     if (!isSymmetric(sigma)) warning("Sigma is not symmetric. This is probably due to numerical calculation.")
-    tryCatch(solve(sigma), error = function(e) stop("Sigma is not nonsingular."))
+    tryCatch(solve(sigma), error = function(e) stop("Sigma is singular."))
 
     sigma
 }
