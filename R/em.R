@@ -49,8 +49,8 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
     while(run) { # as long as no convergence is reached
 
         if (num.iter > 3){
-            if(ll.new - ll.old) {
-                warning("Likelihood should be decreasing.")
+            if (ll.new - ll.old > 0) {
+                warning("Loglikelihood should be increasing.")
             }
         }
 
