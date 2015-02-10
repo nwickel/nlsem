@@ -17,7 +17,6 @@ dat <- as.data.frame(mod)
 
 dat[c(2,8,10,16),2:3]   <- 1    # Lambda.x.21 & 42 and Lambda.y.21 & 42
 dat[c(58,62),2:3]       <- 0    # psi.21 and phi.21
-dat[75:76,2:3]          <- NA   # tau
 dat[65:74,2:3]          <- 1    # nu.x and nu.y
 
 model <- create_sem(dat)
@@ -46,43 +45,4 @@ parameters <- runif(count_free_parameters(model), 0.1, 1.5)
 # system.time(
 #     res <- em(model, data, parameters, logger=TRUE, max.iter=1000)
 # )
-
-# system.time({
-#     res <- em(model, data, parameters, logger=TRUE, max.iter=1000)
-# })
-
-# smaller model
-# ------------
-model <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1,
-                     xi="x1-x2,x3-x4", eta="y1-y2", num.classes=2,
-                     interaction="none", interc.obs=FALSE, interc.lat=FALSE,
-                     relation.lat="eta1~xi1+xi2")
-
-pars.orig <- c(
-                     # class 1
-                     1, 1,        # Lambda.x
-                     1,           # Lambda.y
-                     0.2, 0.3,      # Gamma
-                     rep(0.5, 4),   # Theta.d
-                     0.5, 0.5,      # Theta.e
-                     0.5,           # Psi
-                     rep(0.8, 3),   # Phi
-                     # class 2
-                     1, 1,        # Lambda.x
-                     1,           # Lambda.y
-                     0.8, 0.9,      # Gamma
-                     rep(0.5, 4),   # Theta.d
-                     0.5, 0.5,      # Theta.e
-                     0.5,           # Psi
-                     rep(0.8, 3)    # Phi
-)
-
-data <- simulate(model, seed=1, parameters=pars.orig)
-
-set.seed(3)
-parameters <- runif(count_free_parameters(model), 0.1, 1.5)
-
-# system.time({
-#     res<- em(model, data, parameters, logger=TRUE, max.mstep=1)
-# })
 
