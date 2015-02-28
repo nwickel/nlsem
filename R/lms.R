@@ -1,7 +1,7 @@
 # lms.R
 #
 # created: Sep/11/2014, NU
-# last mod: Nov/25/2014, NU
+# last mod: Feb/26/2015, NU
 
 #--------------- main functions ---------------
 
@@ -20,9 +20,11 @@ mu_lms <- function(model, z) {
         z.1 <- rep(0, n - k)
     } else z.1 <- z
     A.z  <- matrices$A %*% z.1 
-    mu.x <- matrices$nu.x + matrices$Lambda.x %*% A.z 
+    mu.x <- matrices$nu.x + matrices$Lambda.x %*% (matrices$tau + A.z )
+            # added tau's, are not in the original equations
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% (matrices$alpha +
-            matrices$Gamma %*% A.z + t(A.z) %*% matrices$Omega %*% A.z)
+            matrices$Gamma %*% (matrices$tau + A.z) + t(matrices$tau + A.z)
+            %*% matrices$Omega %*% (matrices$tau + A.z))
     mu   <- c(mu.x, mu.y)
 
     mu
