@@ -8,7 +8,7 @@
 }
 \usage{
     em(model, data, start, logger = TRUE, convergence = 1e-02, max.iter = 100,
-       m = 16, optimizer = c("nlminb", "optim"), max.mstep = 1, 
+       m = 16, optimizer = c("nlminb", "optim"), max.mstep = 1, max.lms=1,
        neg.hessian = TRUE, ...) }
 \arguments{
     \item{model}{a specified structural equation model of class \code{lms},
@@ -27,6 +27,8 @@
     EM algorithm: \code{\link{nlminb}} or \code{\link{optim}}.}
     \item{max.mstep}{maximum iteration steps the optimizer should use in
     its mstep during one EM iteration. Defaults to 1.}
+    \item{max.lms}{maximum iteration steps for lms inside of NSEMM model.
+    Defaults to 1 (and should only be changed for valid reasons).}
     \item{neg.hessian}{should negative Hessian be calculated in last step
     of iteration.}
     \item{...}{additional arguments. See Details.}
