@@ -5,7 +5,7 @@
 
 #--------------- main functions ---------------
 
-estep_nsemm <- function(model, parameters, data, logger, ...) {
+estep_nsemm <- function(model, parameters, data, max.lms, ...) {
     num.classes <- model$info$num.classes
 
     class.parameters <- get_class_parameters(model, parameters)
@@ -14,14 +14,11 @@ estep_nsemm <- function(model, parameters, data, logger, ...) {
     # lms for each class
     # Note that B is not estimated
     for (c in seq_len(num.classes)) {
-        if (logger == TRUE) {
-            cat("LMS for class ", c, "\n")
-        }
         lms.model <- lms_ify(model, c)
 
         # em for lms
         est <- em(model=lms.model, data=data, start=class.parameters[[c]],
-                  logger=logger, neg.hessian=FALSE, ...)
+                  logger=FALSE, neg.hessian=FALSE, max.iter=max.lms, ...)
 
         par.new <- c(par.new, est$coefficients)
     }

@@ -6,7 +6,7 @@
 # 'nsemm'
 em <- function(model, data, start, logger=TRUE, convergence=1e-02,
                 max.iter=100, m=16, optimizer=c("nlminb", "optim"),
-                max.mstep=1, neg.hessian=TRUE, ...) {
+                max.mstep=1, max.lms=1, neg.hessian=TRUE, ...) {
 
     stopifnot(class(model) == "lms" || class(model) == "semm" ||
               class(model) == "nsemm")
@@ -79,7 +79,7 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
             },
             "nsemm" = {
                 res <- estep_nsemm(model=model, parameters=par.old, data=data,
-                                   logger=logger, ...)
+                                   max.lms=max.lms, ...)
                 P            <- res$P
                 model$info$w <- res$w.c
                 par.old      <- res$par.old
