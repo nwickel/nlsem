@@ -1,5 +1,5 @@
 Package: nlsem
-Version: 0.3
+Version: 0.2-1
 Date: 2015-03-11
 Title: Fitting Structural Equation Mixture Models
 Authors@R: c(person("Nora", "Umbach",

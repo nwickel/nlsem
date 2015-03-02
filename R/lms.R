@@ -19,9 +19,10 @@ mu_lms <- function(model, z) {
     } else if (k == 0) {
         z.1 <- rep(0, n - k)
     } else z.1 <- z
+            # added quadratic effects, not in original equations
     A.z  <- matrices$A %*% z.1 
     mu.x <- matrices$nu.x + matrices$Lambda.x %*% (matrices$tau + A.z )
-            # added tau's, are not in the original equations
+            # added tau's, not in the original equations
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% (matrices$alpha +
             matrices$Gamma %*% (matrices$tau + A.z) + t(matrices$tau + A.z)
             %*% matrices$Omega %*% (matrices$tau + A.z))
@@ -47,7 +48,8 @@ sigma_lms <- function(model, z) {
     A.z   <- matrices$A %*% z.1 
     d.mat <- get_d(n=n, k=k)
     Lx.A  <- matrices$Lambda.x %*% matrices$A
-    temp  <- matrices$Gamma %*% matrices$A + t(A.z) %*% matrices$Omega %*% matrices$A
+    temp  <- matrices$Gamma %*% matrices$A + t(matrices$tau + A.z) %*% matrices$Omega %*% matrices$A
+            # added tau's, not in original equations
     s11   <- Lx.A %*% d.mat %*% t(Lx.A) + matrices$Theta.d 
     s12   <- Lx.A %*% d.mat %*% t(temp) %*% t(matrices$Lambda.y)
     s21   <- t(s12)
