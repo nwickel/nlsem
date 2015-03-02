@@ -5,7 +5,8 @@
 
 #--------------- main functions ---------------
 
-estep_nsemm <- function(model, parameters, data, max.lms, ...) {
+estep_nsemm <- function(model, parameters, data, max.lms, convergence,
+                        logger=FALSE, ...) {
     num.classes <- model$info$num.classes
 
     class.parameters <- get_class_parameters(model, parameters)
@@ -18,7 +19,8 @@ estep_nsemm <- function(model, parameters, data, max.lms, ...) {
 
         # em for lms
         est <- em(model=lms.model, data=data, start=class.parameters[[c]],
-                  logger=FALSE, neg.hessian=FALSE, max.iter=max.lms, ...)
+                  logger=logger, neg.hessian=FALSE, max.iter=max.lms,
+                  convergence=convergence, ...)
 
         par.new <- c(par.new, est$coefficients)
     }

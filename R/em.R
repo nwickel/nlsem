@@ -30,11 +30,13 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
         stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")
     }
 
-    cat("-----------------------------------\n")
-    cat("Starting EM-algorithm for", class(model), "\n")
-    cat(paste("Convergence: ", convergence, "\n"))
-    cat("-----------------------------------\n")
-    cat("-----------------------------------\n")
+    if(logger == TRUE) {
+        cat("-----------------------------------\n")
+        cat("Starting EM-algorithm for", class(model), "\n")
+        cat(paste("Convergence: ", convergence, "\n"))
+        cat("-----------------------------------\n")
+        cat("-----------------------------------\n")
+    }
 
     ll.ret   <- NULL
     num.iter <- 0     # number of iterations
@@ -79,7 +81,8 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
             },
             "nsemm" = {
                 res <- estep_nsemm(model=model, parameters=par.old, data=data,
-                                   max.lms=max.lms, ...)
+                                   max.lms=max.lms,
+                                   convergence=convergence, ...)
                 P            <- res$P
                 model$info$w <- res$w.c
                 par.old      <- res$par.old
@@ -130,19 +133,22 @@ em <- function(model, data, start, logger=TRUE, convergence=1e-02,
         if (abs(ll.old - ll.new) < convergence) run <- FALSE
     }
 
-    cat("-----------------------------------\n")
-    cat("EM completed \n")
-    #cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))
-    #cat(paste0("Final loglikelihood: ", round(-ll.new, 3),"\n"))
-    cat("-----------------------------------\n")
+    
+    if(logger == TRUE) {
+        cat("-----------------------------------\n")
+        cat("EM completed \n")
+        #cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))
+        #cat(paste0("Final loglikelihood: ", round(-ll.new, 3),"\n"))
+        cat("-----------------------------------\n")
 
-    cat("-----------------------------------\n")
-    if (neg.hessian == TRUE) {
-        cat("Computing negative Hessian \n")
-    } else {
-        cat("Computing final model \n")
+        cat("-----------------------------------\n")
+        if (neg.hessian == TRUE) {
+            cat("Computing negative Hessian \n")
+        } else {
+            cat("Computing final model \n")
+        }
+        cat("-----------------------------------\n")
     }
-    cat("-----------------------------------\n")
 
     switch(class(model),
        "lms" = {
