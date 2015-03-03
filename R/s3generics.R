@@ -83,10 +83,16 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
 
     # Gauss-Hermite quadrature
     k <- get_k(object$matrices$class1$Omega)
-    quad <- quadrature(m=m, k=k)
-    V <- quad$n
-    w <- quad$w
-    
+    if (k != 0){
+        quad <- quadrature(m=m, k=k)
+        V <- quad$n
+        w <- quad$w
+    } else {
+        V <- 0
+        w <- 1
+        # do not need mixtures, if I do not have interactions
+    }
+
     parameters <- convert_parameters_lms(object, parameters)
     names(object$matrices$class1)[grep("Phi", names(object$matrices$class1))] <- "A"
 
@@ -98,24 +104,25 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
                            mean=mu_lms(model=mod.filled, z=V[i,]),
                            sigma=sigma_lms(model=mod.filled, z=V[i,]))
                            })
+    dat <- dat.sim
 
     # decide which data points from each mixture should be included in
     # simulated data set: weights give intervall borders between 0 and 1;
     # we draw random numbers from a uniform distribution and check in what
     # intervall they lie: the ith element from that distribution will be
     # taken and put into the data frame
-    border <- cumsum(w)
-    prob <- runif(n)
+    if (k != 0){
+        border <- cumsum(w)
+        prob <- runif(n)
 
-    dat <- NULL
-    for (i in seq_len(n)){
-        ind <- sum(prob[i] > border) + 1
-        dat <- rbind(dat, dat.sim[[ind]][i,])
+        dat <- NULL
+        for (i in seq_len(n)){
+            ind <- sum(prob[i] > border) + 1
+            dat <- rbind(dat, dat.sim[[ind]][i,])
+        }
     }
-
     dat
 }
-
 
 summary.emEst <- function(object, ...) {
 

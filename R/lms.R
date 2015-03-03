@@ -72,11 +72,11 @@ estep_lms <- function(model, parameters, dat, m, ...) {
     mod.filled <- fill_model(model=model, parameters=parameters)
 
     k <- get_k(mod.filled$matrices$class1$Omega)
+    if (k != 0){
     quad <- quadrature(m, k)
-
     V <- quad$n       # matrix of node vectors m x k
     w <- quad$w       # weights
-    if (k == 0){
+    } else {
         V <- 0
         w <- 1
         # do not need mixtures, if I do not have interactions

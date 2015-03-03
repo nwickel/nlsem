@@ -42,7 +42,6 @@ mstep_nsemm <- function(model, parameters, P, data, optimizer, max.mstep,
                                 data=data, optimizer=optimizer,
                                 max.mstep=max.mstep, control=control, ...)
 
-    cat("===================================\n")
     est
 }
 
