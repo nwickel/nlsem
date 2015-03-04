@@ -187,7 +187,56 @@ print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
 
 }
 
-logLik.emEst <- function(object, ...){
+summary.qmlEst <- function(object, ...) {
+
+    # estimates
+    est <- object$coefficients
+
+    # standard errors
+    if (is.numeric(est)) {
+        s.error <- calc_standard_error(object$neg.hessian)
+        tvalue <- est / s.error
+        pvalue <- 2 * pnorm(-abs(tvalue))
+        est.table <- cbind(est, s.error, tvalue, pvalue)
+        dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+    } else {
+        est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
+                            s.error <- calc_standard_error(object$neg.hessian[[c]])
+                            tvalue <- est[[c]] / s.error
+                            pvalue <- 2 * pnorm(-abs(tvalue))
+                            est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
+                            dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
+                                                         c("Estimate", "Std. Error",
+                                                           "t value", "Pr(>|z|)"))
+                            est.table
+                           }))
+    }
+
+    ans <- list(model=object$model.class,
+                estimates=est.table,
+                iterations=object$iterations,
+                finallogLik=object$objective)
+
+    if (object$model.class == "semm" || object$model.class == "nsemm") {
+        ans$class.weights <- object$info$w
+    }
+
+    class(ans) <- "summary.qmlEst"
+
+    ans
+}
+
+print.summary.qmlEst <- function(x, digits=max(3, getOption("digits") - 3),
+                               cs.ind=2:3, ...) {
+    
+    cat("\nSummary for model of class", x$model, "estimated with QML\n")
+    cat("\nEstimates:\n")
+    printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
+    cat("\nNumber of iterations:", x$iterations,
+        "\nFinal loglikelihood:", round(x$finallogLik, 3), "\n") 
+}
+
+logLik.emEst <- logLik.qmlEst <- function(object, ...){
     if(length(list(...)))
         warning("extra arguments discarded")
 
@@ -197,7 +246,7 @@ logLik.emEst <- function(object, ...){
     out
 }
 
-anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
+anova.emEst <- anova.qmlEst <- function(object, ..., test=c("Chisq", "none")) {
     # Adapted from anova.polr by Brian Ripley
     
     test <- match.arg(test)
@@ -243,7 +292,7 @@ anova.emEst <- function(object, ..., test=c("Chisq", "none")) {
     out
 }
 
-AIC.emEst <- function(object, ..., k=2) {
+AIC.emEst <- AIC.qmlEst <- function(object, ..., k=2) {
 
     dots <- list(...)
     if (length(dots) == 0){
@@ -266,7 +315,7 @@ AIC.emEst <- function(object, ..., k=2) {
     out
 }
 
-BIC.emEst <- function(object, ...) {
+BIC.emEst <- BIC.qmlEst <- function(object, ...) {
 
     dots <- list(...)
     if (length(dots) == 0){

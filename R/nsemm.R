@@ -1,39 +1,46 @@
 # nsemm.R
 #
 # created: Nov/14/2014, KN
-# last mod: Dec/03/2014, NU
+# last mod: Feb/04/2015, NU
 
 #--------------- main functions ---------------
 
-estep_nsemm <- function(model, parameters, data, max.lms, convergence,
-                        logger=FALSE, ...) {
+estep_nsemm <- function(model, parameters, data, max.lms, qml,
+                        convergence, logger=FALSE, ...) {
+
     num.classes <- model$info$num.classes
 
     class.parameters <- get_class_parameters(model, parameters)
     par.new <- NULL
 
-    # lms for each class
+    # lms or qml for each class
     # Note that B is not estimated
     for (c in seq_len(num.classes)) {
         lms.model <- lms_ify(model, c)
 
-        # em for lms
-        est <- em(model=lms.model, data=data, start=class.parameters[[c]],
-                  logger=logger, neg.hessian=FALSE, max.iter=max.lms,
-                  convergence=convergence, ...)
+        if (qml == FALSE) {
+            # em for lms
+            est <- em(model=lms.model, data=data, start=class.parameters[[c]],
+                      logger=logger, neg.hessian=FALSE, max.iter=max.lms,
+                      convergence=convergence, ...)
+    
+            par.new <- c(par.new, est$coefficients)
+        } else {
+            est <- mstep_qml(model=lms.model, data=data, parameters=class.parameters[[c]],
+                             neg.hessian=FALSE, max.iter=max.lms, ...)
 
-        par.new <- c(par.new, est$coefficients)
+            par.new <- c(par.new, est$par)
+        }
     }
 
     # e-step for semm
-    # Note that Omega and A are not estimated
+    # Note that Omega and A (Psi for QML) are not estimated
     P <- estep_semm(model=model, parameters=par.new, data=data)
     w.c <- colSums(P) / nrow(data)
 
     res <- list(P=P, w.c=w.c, par.old=par.new)
     res
 }
-
 
 mstep_nsemm <- function(model, parameters, P, data, optimizer, max.mstep,
                         control=list(), ...) {

@@ -9,18 +9,25 @@ export(
     count_free_parameters,
     create_sem,
     fill_model,
-    em
+    em,
+    qml
     )
 
 S3method(simulate, lms)
 S3method(simulate, semm)
 S3method(simulate, nsemm)
 S3method(summary, emEst)
+S3method(summary, qmlEst)
 S3method(print, summary.emEst)
+S3method(print, summary.qmlEst)
 S3method(logLik, emEst)
+S3method(logLik, qmlEst)
 S3method(anova, emEst)
+S3method(anova, qmlEst)
 S3method(AIC, emEst)
+S3method(AIC, qmlEst)
 S3method(BIC, emEst)
+S3method(BIC, qmlEst)
 S3method(plot, emEst)
 S3method(as.data.frame, lms)
 S3method(as.data.frame, semm)
