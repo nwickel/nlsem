@@ -563,13 +563,14 @@ bounds <- function(model) {
         out <- list(upper=upper, lower=lower)
     } else if (class(model) == "semm" || class(model) == "nsemm") {
 
-        lower <- rep(-Inf, length(model$info$par.names$class1))
-        upper <- rep(Inf, length(model$info$par.names$class1))
-
         lower.class <- list()
         upper.class <- list()
 
         for (c in seq_len(model$info$num.classes)) {
+
+            lower.class[[c]] <- rep(-Inf, length(model$info$par.names[[c]]))
+            upper.class[[c]] <- rep(Inf, length(model$info$par.names[[c]]))
+
             if (model$info$num.x > 1){
                 t.d <- paste0("Theta.d", diag_ind(model$info$num.x))
             } else t.d <- "Theta.d"
@@ -583,10 +584,9 @@ bounds <- function(model) {
                 phi <- paste0("Phi", diag_ind(model$info$num.eta))
             } else phi <- "Phi"
 
-            lower[model$info$par.names[[c]] %in% c(t.d, t.e, psi, phi)] <- 0
-            lower.class[[c]] <- lower
-            upper.class[[c]] <- upper
+            lower.class[[c]][model$info$par.names[[c]] %in% c(t.d, t.e, psi, phi)] <- 0
         }
+
         names(lower.class) <- paste0("class",seq_len(model$info$num.classes))
         names(upper.class) <- paste0("class",seq_len(model$info$num.classes))
         out <- list(upper=upper.class, lower=lower.class)
