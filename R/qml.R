@@ -200,7 +200,7 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
 
         if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
-                                        model=model, dat=dat, P=P)$Hessian
+                                        model=model, data=data)$Hessian
   
         }
     }

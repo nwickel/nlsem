@@ -7,9 +7,9 @@
     mixture approaches (LMS, SEMM, NSEMM).
 }
 \usage{
-    em(model, data, start, logger = TRUE, convergence = 1e-02, max.iter = 100,
-       m = 16, optimizer = c("nlminb", "optim"), max.mstep = 1, max.lms=1,
-       neg.hessian = TRUE, ...) }
+    em(model, data, start, qml = FALSE, logger = TRUE, convergence = 1e-02,
+       max.iter = 100, m = 16, optimizer = c("nlminb", "optim"),
+       max.mstep = 1, max.lms=1, neg.hessian = TRUE, ...) }
 \arguments{
     \item{model}{a specified structural equation model of class \code{lms},
     \code{semm}, or \code{nsemm}.}
@@ -18,6 +18,9 @@
     as specified in \code{\link{specify_sem}}. Data matrix needs no column
     names (will be ignored anyways).}
     \item{start}{starting values for parameters.}
+    \item{qml}{logical. Indicating if QML estimation should be used instead
+    of LMS for estimation of nonlinear effects. Defaults to FALSE. QML is
+    much faster, though.}
     \item{logger}{if output of EM algorithm should be shown during fitting.}
     \item{convergence}{convergence threshold.}
     \item{max.iter}{maximum number of iterations before EM algorithm stops.}
