@@ -1,7 +1,7 @@
 # qml.R
 #
 # created: Feb/04/2015, NU
-# last mod: Feb/04/2015, NU
+# last mod: Feb/05/2015, NU
 
 #--------------- main functions ---------------
 
@@ -78,10 +78,14 @@ sigma_qml <- function(model, data) {
     x <- data[, 1:model$info$num.x]
     y <- data[, (model$info$num.x + 1):dim(data)[2]]
     
-    # Transformation von y
-    beta <- m$Lambda.y[-1,] 
-    R <- cbind(-beta, diag(length(beta)))
-    u <- y %*% t(R)
+    if (model$info$num.y > 1) {
+        # Transformation von y
+        beta <- m$Lambda.y[-1,] 
+        R <- cbind(-beta, diag(length(beta)))
+        u <- y %*% t(R)
+    } else {
+        u <- 0
+    }
     
     # Eqs 15, 16
     Sigma1 <- m$Phi - m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*%
@@ -131,10 +135,15 @@ loglikelihood_qml <- function(parameters, model, data) {
     mean.qml <- mu_qml(model = mod.filled, data=data)
     sigma.qml  <- sigma_qml(model = mod.filled, data=data)
     
-    beta <- mod.filled$matrices$class1$Lambda.y[-1,] 
-    R <- cbind(-beta, diag(length(beta)))
-    u <- y %*% t(R)
-    
+    if (model$info$num.y > 1) {
+        # Transformation von y
+        beta <- mod.filled$matrices$class1$Lambda.y[-1,] 
+        R <- cbind(-beta, diag(length(beta)))
+        u <- y %*% t(R)
+    } else {
+        u <- 0
+    }
+
     # Eq 10: densities
     f2 <- dmvnorm(cbind(x, u), mean = mean.qml[[1]], sigma = sigma.qml[[1]],
           log = FALSE)
