@@ -5,7 +5,7 @@
 
 #--------------- main functions ---------------
 
-estep_nsemm <- function(model, parameters, data, max.lms, qml,
+estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
                         convergence, logger=FALSE, ...) {
 
     num.classes <- model$info$num.classes
@@ -21,13 +21,14 @@ estep_nsemm <- function(model, parameters, data, max.lms, qml,
         if (qml == FALSE) {
             # em for lms
             est <- em(model=lms.model, data=data, start=class.parameters[[c]],
-                      logger=logger, neg.hessian=FALSE, max.iter=max.lms,
+                      logger=logger, neg.hessian=FALSE,
+                      max.iter=max.singleClass,
                       convergence=convergence, ...)
     
             par.new <- c(par.new, est$coefficients)
         } else {
             est <- mstep_qml(model=lms.model, data=data, parameters=class.parameters[[c]],
-                             neg.hessian=FALSE, max.iter=max.lms, ...)
+                             neg.hessian=FALSE, max.iter=max.singleClass, ...)
 
             par.new <- c(par.new, est$par)
         }
@@ -54,7 +55,7 @@ mstep_nsemm <- function(model, parameters, P, data, optimizer, max.mstep,
 
 #--------------- helper functions ---------------
 
-# create lms model for a specific class of an nsemm model
+# create singleClass model for a specific class of an nsemm model
 lms_ify <- function(model, c) {
     lms.model <- list(matrices=list(class1=model$matrices[[c]]),
                       info=model$info)
@@ -62,6 +63,6 @@ lms_ify <- function(model, c) {
     lms.model$info$bounds$upper <- model$info$bounds$upper[[c]]
     lms.model$info$bounds$lower <- model$info$bounds$lower[[c]]
     lms.model$info$num.classes <- 1
-    class(lms.model) = "lms"
+    class(lms.model) = "singleClass"
     lms.model
 }

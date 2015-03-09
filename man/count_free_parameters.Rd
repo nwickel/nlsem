@@ -3,8 +3,8 @@
 \alias{count_free_parameters}
 \title{Count free parameters of structural equation model}
 \description{
-    Counts free parameters of a structural equation model of class \code{lms},
-    \code{semm}, or \code{nsemm}.
+    Counts free parameters of a structural equation model of class
+    \code{singleClass}, \code{semm}, or \code{nsemm}.
 }
 \usage{
     count_free_parameters(model)

@@ -16,7 +16,7 @@
     \code{model}.\cr See \code{\link{count_free_parameters}}.}
 }
 \value{
-    Gives back an object of class \code{lms}, \code{semm}, or \code{nsemm}.
+    Gives back an object of class \code{singleClass}, \code{semm}, or \code{nsemm}.
 }
 \seealso{\code{\link{specify_sem}}, \code{\link{create_sem}},
             \code{\link{count_free_parameters}}}

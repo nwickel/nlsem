@@ -6,7 +6,7 @@
 #--------------- main functions ---------------
 
 # Define model specification for different SEMs with nonlinear effects;
-# possible objects classes are 'lms', 'semm', 'nsemm'; exported function
+# possible objects classes are 'singleClass', 'semm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
                           interaction="none", interc.obs=TRUE,
                           interc.lat=TRUE, relation.lat="default"){
@@ -122,7 +122,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     # make a list of the matrices for each class
     matrices <- list()
     for (c in seq_len(num.classes)) {
-        if (model.class == "lms") {
+        if (model.class == "singleClass") {
             matrices[[c]] <- list(Lambda.x=Lambda.x, Lambda.y=Lambda.y,
                                   Gamma=Gamma, Theta.d=Theta.d,
                                   Theta.e=Theta.e, Psi=Psi, Phi=Phi,
@@ -153,7 +153,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
                                                par.names=list(), w=w))
 
     # add parameter names to model
-    if (model.class == "lms") {
+    if (model.class == "singleClass") {
         model$info$par.names <- get_parnames(model)$class1
     } else {
         model$info$par.names <- get_parnames(model)
@@ -275,7 +275,7 @@ create_sem <- function(dat){
 
     class(model) <- get_model_class(num.classes, interaction)
 
-    if (class(model) == "lms"){
+    if (class(model) == "singleClass"){
         model$info$par.names <- model$info$par.names$class1
     }
 
@@ -298,7 +298,7 @@ count_free_parameters <- function(model) {
 # mostly needed to simulate data from a prespecified model; NOT exported
 fill_model <- function(model, parameters) {
 
-    stopifnot(class(model) == "lms" || class(model) == "semm"
+    stopifnot(class(model) == "singleClass" || class(model) == "semm"
               || class(model) == "nsemm")
 
     stopifnot(count_free_parameters(model) == length(parameters))
@@ -306,7 +306,7 @@ fill_model <- function(model, parameters) {
     matrices <- model$matrices
 
     for (c in seq_len(model$info$num.classes)) {
-        if (class(model) == "lms") {
+        if (class(model) == "singleClass") {
             par.names <- model$info$par.names
         } else {
             par.names <- model$info$par.names[[c]]
@@ -495,11 +495,11 @@ rel_lat <- function(x, num.eta, num.xi){
     out
 }
 
-# Defines model class of a given specification; possible output: 'lms',
-# 'semm', 'nsemm'
+# Defines model class of a given specification; possible output:
+# 'singleClass', 'semm', 'nsemm'
 get_model_class <- function(num.classes, interaction) {
     if (num.classes == 1) {
-        model.class <- "lms"
+        model.class <- "singleClass"
     } else {
         if (interaction != "none") {
             model.class <- "nsemm"
@@ -509,7 +509,7 @@ get_model_class <- function(num.classes, interaction) {
 
 # get_model_class <- function(num.classes, interaction) {
 #     if (num.classes == 1 && interaction != "none") {
-#         model.class <- "lms"
+#         model.class <- "singleClass"
 #     } else if (num.classes != 1 && interaction != "none") {
 #             model.class <- "nsemm"
 #     } else model.class <- "semm"
@@ -545,7 +545,7 @@ diag_ind <- function(num) diag(matrix(seq_len(num^2), num))
 bounds <- function(model) {
 
     # variances to (0, Inf)
-    if (class(model) == "lms") {
+    if (class(model) == "singleClass") {
 
         lower <- rep(-Inf, count_free_parameters(model))
         upper <- rep(Inf, count_free_parameters(model))

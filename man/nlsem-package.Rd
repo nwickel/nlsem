@@ -27,9 +27,9 @@ interaction and quadratic terms as well as latent classes can be modeled.
 
 All three models can be specified with \code{\link{specify_sem}}. Depending
 on the specification of \code{interaction} and the number of latent classes
-(\code{num.classes}) the returned object will be of class \code{lms},
-\code{semm}, or \code{nsemm}. Each of these can be estimated using
-\code{\link{em}}.
+(\code{num.classes}) the returned object will be of class
+\code{singleClass}, \code{semm}, or \code{nsemm}. Each of these can be
+estimated using \code{\link{em}}.
 }
 \references{
     Jedidi, K., Jagpal, H. S., & DeSarbo, W. S. (1997). STEMM: A General

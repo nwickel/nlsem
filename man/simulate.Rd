@@ -1,6 +1,6 @@
 % File src/library/base/man/simulate.Rd
 \name{simulate}
-\alias{simulate.lms}
+\alias{simulate.singleClass}
 \alias{simulate.semm}
 \alias{simulate.nsemm}
 \title{Simulate data from a structural equation model}
@@ -8,12 +8,12 @@
     Simulate data from a structural equation mixture model.
 }
 \usage{
-\method{simulate}{lms}(object, nsim = 1, seed = NULL, n = 400, m = 16, parameters, ...)
+\method{simulate}{singleClass}(object, nsim = 1, seed = NULL, n = 400, m = 16, parameters, ...)
 \method{simulate}{semm}(object, nsim = 1, seed = NULL, n = 400, parameters, ...)
 \method{simulate}{nsemm}(object, nsim = 1, seed = NULL, n = 400, m = 16, parameters, ...)
 }
 \arguments{
-    \item{object}{structural equation model of class \code{lms},
+    \item{object}{structural equation model of class \code{singleClass},
     \code{semm}, or \code{nsemm}.}
     \item{parameters}{`true' parameters which should be used to simulate
     data.}
@@ -21,7 +21,7 @@
     \item{seed}{set seed. Default is NULL.}
     \item{n}{data for how many observations should be simulated.}
     \item{m}{number of nodes for Hermite-Gaussian quadrature. Only needed
-    for \code{lms} and \code{nsemm}.}
+    for \code{singleClass} and \code{nsemm}.}
     \item{...}{additional arguments.}
 }
 \value{

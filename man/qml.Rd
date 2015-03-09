@@ -10,7 +10,8 @@
     qml(model, data, start, max.iter = 150, optimizer = c("nlminb",
         "optim"), neg.hessian = TRUE, ...) }
 \arguments{
-    \item{model}{a specified structural equation model of class \code{lms}.}
+    \item{model}{a specified structural equation model of class
+    \code{singleClass}.}
     \item{data}{the data the model should be fitted to. Data needs to be a
     matrix and variables need to be in the order x1, x2, ..., y1, y2, ...
     as specified in \code{\link{specify_sem}}. Data matrix needs no column
@@ -34,7 +35,7 @@
 \value{
     An object of class \code{qmlEst} that consists of the following components:
     \item{model.class}{class of model that was fitted. Will always be
-    \code{lms}.}
+    \code{singleClass}.}
     \item{coefficients}{estimated parameters.}
     \item{objective}{final loglikelihood obtained with EM algorithm.}
     \item{convergence}{convergence code for optimizer. See documentation
@@ -53,14 +54,14 @@
 \seealso{\code{\link{specify_sem}}}
 \examples{
 # specify model of class LMS
-lms <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1, xi="x1-x2,x3-x4",
+sc <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1, xi="x1-x2,x3-x4",
                    eta="y1-y2", interaction="xi1:xi2", interc.obs=FALSE) 
 
 # set default constraints
-spec <- as.data.frame(lms)
+spec <- as.data.frame(sc)
 spec[spec$label \%in\% c("tau1", "tau2"), "class1"] <- 0
 # create new model
-lms <- create_sem(spec)
+sc <- create_sem(spec)
 
 # simulate data
 pars.orig <- c(0.6, 0.7,                 # Lx
@@ -74,12 +75,12 @@ pars.orig <- c(0.6, 0.7,                 # Lx
                0.7                       # Omega
               )
 
-dat <- simulate(lms, parameters=pars.orig, seed=81)
+dat <- simulate(sc, parameters=pars.orig, seed=81)
 
 # fit model
-start <- runif(count_free_parameters(lms))
+start <- runif(count_free_parameters(sc))
 \dontrun{
-qml1 <- qml(lms, dat, start)
+qml1 <- qml(sc, dat, start)
 summary(qml1)
 }
 

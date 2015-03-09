@@ -1,6 +1,6 @@
 % File src/library/base/man/as.data.frame.Rd
 \name{as.data.frame}
-\alias{as.data.frame.lms}
+\alias{as.data.frame.singleClass}
 \alias{as.data.frame.semm}
 \alias{as.data.frame.nsemm}
 \title{Coerce to a Data Frame}
@@ -9,13 +9,13 @@
      a data frame.
 }
 \usage{
-\method{as.data.frame}{lms}(x, ...)
+\method{as.data.frame}{singleClass}(x, ...)
 \method{as.data.frame}{semm}(x, ...)
 \method{as.data.frame}{nsemm}(x, ...)
 }
 \arguments{
-    \item{x}{structural equation model of class \code{lms}, \code{semm}, or
-    \code{nsemm}.}
+    \item{x}{structural equation model of class \code{singleClass},
+    \code{semm}, or \code{nsemm}.}
     \item{...}{additional arguments.}
 }
 \value{

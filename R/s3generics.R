@@ -5,7 +5,7 @@
 
 #--------------- main functions ---------------
 
-as.data.frame.lms <- as.data.frame.semm <- as.data.frame.nsemm <- function(x, ...) {
+as.data.frame.singleClass <- as.data.frame.semm <- as.data.frame.nsemm <- function(x, ...) {
     data <- data.frame(
         label = names(unlist(x$matrices$class1)))
     for (c in seq_len(length(x$matrices))) {
@@ -34,7 +34,7 @@ simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, .
 
     })
 
-    # see simulate_lms for explanation
+    # see simulate.singleClass for explanation
     border <- cumsum(w)
     prob <- runif(n)
 
@@ -63,7 +63,7 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
                               sigma=sigma_semm(matrices=mod.filled$matrices[[c]]))
                               })
 
-    # see simulate.lms for explanation
+    # see simulate.singleClass for explanation
     border <- cumsum(w)
     prob <- runif(n)
 
@@ -76,7 +76,7 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     dat
 }
 
-simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
+simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
 
     # set seed
     set.seed(seed)
@@ -93,7 +93,7 @@ simulate.lms <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...
         # do not need mixtures, if I do not have interactions
     }
 
-    parameters <- convert_parameters_lms(object, parameters)
+    parameters <- convert_parameters_singleClass(object, parameters)
     names(object$matrices$class1)[grep("Phi", names(object$matrices$class1))] <- "A"
 
     mod.filled <- fill_model(object, parameters)
@@ -255,8 +255,8 @@ anova.emEst <- anova.qmlEst <- function(object, ..., test=c("Chisq", "none")) {
         stop('anova is not implemented for a single "emEst" object')
 
     mlist <- list(object, ...)
-    if (any(!sapply(mlist, function(x) x$model.class == "lms"))) {
-        stop('Likelihood Ratio Test only meaningful for models of class "lms".')
+    if (any(!sapply(mlist, function(x) x$model.class == "singleClass"))) {
+        stop('Likelihood Ratio Test only meaningful for models of class "singleClass".')
     }
 
     nlist <- sapply(mlist, function(x) x$info$n)

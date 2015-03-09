@@ -13,7 +13,7 @@ export(
     qml
     )
 
-S3method(simulate, lms)
+S3method(simulate, singleClass)
 S3method(simulate, semm)
 S3method(simulate, nsemm)
 S3method(summary, emEst)
@@ -29,7 +29,7 @@ S3method(AIC, qmlEst)
 S3method(BIC, emEst)
 S3method(BIC, qmlEst)
 S3method(plot, emEst)
-S3method(as.data.frame, lms)
+S3method(as.data.frame, singleClass)
 S3method(as.data.frame, semm)
 S3method(as.data.frame, nsemm)
 

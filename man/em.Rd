@@ -9,10 +9,10 @@
 \usage{
     em(model, data, start, qml = FALSE, logger = TRUE, convergence = 1e-02,
        max.iter = 100, m = 16, optimizer = c("nlminb", "optim"),
-       max.mstep = 1, max.lms=1, neg.hessian = TRUE, ...) }
+       max.mstep = 1, max.singleClass=1, neg.hessian = TRUE, ...) }
 \arguments{
-    \item{model}{a specified structural equation model of class \code{lms},
-    \code{semm}, or \code{nsemm}.}
+    \item{model}{a specified structural equation model of class
+    \code{singleClass}, \code{semm}, or \code{nsemm}.}
     \item{data}{the data the model should be fitted to. Data needs to be a
     matrix and variables need to be in the order x1, x2, ..., y1, y2, ...
     as specified in \code{\link{specify_sem}}. Data matrix needs no column
@@ -30,8 +30,9 @@
     EM algorithm: \code{\link{nlminb}} or \code{\link{optim}}.}
     \item{max.mstep}{maximum iteration steps the optimizer should use in
     its mstep during one EM iteration. Defaults to 1.}
-    \item{max.lms}{maximum iteration steps for lms inside of NSEMM model.
-    Defaults to 1 (and should only be changed for valid reasons).}
+    \item{max.singleClass}{maximum iteration steps for singleClass model
+    inside of NSEMM model. Defaults to 1 (and should only be changed for
+    valid reasons).}
     \item{neg.hessian}{should negative Hessian be calculated in last step
     of iteration.}
     \item{...}{additional arguments. See Details.}
@@ -54,8 +55,8 @@
 }
 \value{
     An object of class \code{emEst} that consists of the following components:
-    \item{model.class}{class of model that was fitted, can be \code{lms},
-    \code{semm}, or \code{nsemm}.}
+    \item{model.class}{class of model that was fitted, can be
+    \code{singleClass}, \code{semm}, or \code{nsemm}.}
     \item{coefficients}{estimated parameters.}
     \item{objective}{final loglikelihood obtained with EM algorithm.}
     \item{em_convergence}{yes or no. Did EM algorithm converge?}

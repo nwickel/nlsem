@@ -213,7 +213,7 @@ quadrature <- function(m, k) {
 }
 
 # Convert parameters for Phi in LMS model to A 
-convert_parameters_lms <- function(model, parameters) {
+convert_parameters_singleClass <- function(model, parameters) {
 
     names(parameters) <- model$info$par.names
     Phi <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
