@@ -11,6 +11,14 @@ em <- function(model, data, start, qml=FALSE, logger=TRUE, convergence=1e-02,
     stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
               class(model) == "nsemm")
 
+    if (is.matrix(data)) {
+        data <- data
+    } else if (is.data.frame(data)) {
+        data <- as.matrix(data)
+    } else {
+        stop("data need to be a matrix or a data frame.")
+    }
+
     if (!count_free_parameters(model) == length(start)){
         stop("Number of starting parameters is not equal to number of free parameters in model.")
     }
