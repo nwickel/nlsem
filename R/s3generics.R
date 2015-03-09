@@ -342,7 +342,7 @@ BIC.emEst <- BIC.qmlEst <- function(object, ...) {
 plot.emEst <- function(x, y, ...) {
 
     plot(x$loglikelihoods, type="l", xlab="Number of iterations", 
-         ylab="log likelihood", axes=F)
+         ylab="log likelihood", axes=F, ...)
     axis(1, at=1:length(x$loglikelihoods))
     axis(2)
     box()
