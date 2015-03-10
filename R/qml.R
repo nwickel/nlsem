@@ -113,10 +113,15 @@ sigma_qml <- function(model, data) {
     
     # sigma.y1 ist conditional gegeben x und u
     # Eq 17
-    sigma.y1 <- diag((c(m$Gamma) + 2*x %*% t(L1) %*% m$Omega) %*% Sigma1
-                %*% t(c(m$Gamma) + 2*x %*% t(L1) %*% m$Omega)) + Sigma2 + 
+    # sigma.y1 <- diag((c(m$Gamma) + 2*x %*% t(L1) %*% m$Omega) %*% Sigma1
+    #             %*% t(c(m$Gamma) + 2*x %*% t(L1) %*% m$Omega)) + Sigma2 + 
+    #             Sigma3
+    # --> original equation from paper: faulty!
+
+    sigma.y1 <- diag((c(m$Gamma) + x %*% t(L1) %*% (m$Omega + t(m$Omega))) %*% Sigma1
+                %*% t(c(m$Gamma) + x %*% t(L1) %*% (m$Omega + t(m$Omega)))) + Sigma2 +
                 Sigma3
-    
+ 
     sigma.xy <- list(sigma.xu, sigma.y1)
 
     sigma.xy
@@ -148,7 +153,7 @@ loglikelihood_qml <- function(parameters, model, data) {
     f2 <- dmvnorm(cbind(x, u), mean = mean.qml[[1]], sigma = sigma.qml[[1]],
           log = FALSE)
     # Originalimplementierung: produziert NaN weil sds negativ werden
-    f3 <- dnorm(y[,1], mean = mean.qml[[2]], sd = abs(sigma.qml[[2]]), 
+    f3 <- dnorm(y[,1], mean = mean.qml[[2]], sd = sqrt(sigma.qml[[2]]), 
           log = FALSE)
 
     # Alternative1 mit abs(sd)
