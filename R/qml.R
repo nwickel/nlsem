@@ -9,7 +9,7 @@ qml <- function(model, data, start, max.iter=150,
                 optimizer=c("nlminb", "optim"), neg.hessian=TRUE, ...) {
 
     est <- mstep_qml(model=model, data=data, parameters=start,
-                       neg.hessian=neg.hessian, ...)
+                       neg.hessian=neg.hessian, optimizer=optimizer, ...)
 
     names(est$par) <- model$info$par.names
     
@@ -197,6 +197,7 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                      control=control, ...) 
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
+        #names(est) <- gsub("counts", "iterations", names(est))
 
         if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
