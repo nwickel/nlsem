@@ -166,6 +166,12 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                       optimizer=c("nlminb", "optim"), max.iter=1,
                       control=list(), ...) {
 
+    if (anyNA(model$matrices$class1$tau) ||
+        anyNA(model$matrices$class1$nu.x) ||
+        anyNA(model$matrices$class1$nu.y)) { 
+            stop("QML is only implemented for standaradized latent predictor variables (yet).")
+    }
+
     # optimizer
     optimizer <- match.arg(optimizer)
 
