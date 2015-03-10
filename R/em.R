@@ -1,6 +1,6 @@
 # em.R
 #
-# last mod: Jan/26/2015, NU
+# last mod: Mar/10/2015, NU
 
 # Performs EM-algorithm for different models of class 'singleClass', 'semm', and
 # 'nsemm'
@@ -124,7 +124,7 @@ em <- function(model, data, start, qml=FALSE, logger=TRUE, convergence=1e-02,
         if(logger == TRUE) {
             cat("Results of maximization \n")
             cat(paste0("Loglikelihood: ", round(-m.step$objective, 3), "\n"))
-            cat(paste0("Convergence: ", m.step$convergence[1], "\n"))
+            cat(paste0("Convergence message: ", m.step$convergence[1], "\n"))
             cat(paste0("Number of iterations: ", m.step$iterations, "\n"))
             cat("----------------------------------- \n")
         }

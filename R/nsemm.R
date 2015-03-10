@@ -20,10 +20,14 @@ estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
 
         if (qml == FALSE) {
             # em for lms
+            suppressWarnings(
             est <- em(model=lms.model, data=data, start=class.parameters[[c]],
                       logger=logger, neg.hessian=FALSE,
                       max.iter=max.singleClass,
                       convergence=convergence, ...)
+            )
+            # suppress warnings since they are non-informative in this
+            # intermediate step
     
             par.new <- c(par.new, est$coefficients)
         } else {
@@ -35,7 +39,7 @@ estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
     }
 
     # e-step for semm
-    # Note that Omega and A (Psi for QML) are not estimated
+    # Note that Omega and A are not estimated
     P <- estep_semm(model=model, parameters=par.new, data=data)
     w.c <- colSums(P) / nrow(data)
 
