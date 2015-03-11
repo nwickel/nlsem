@@ -1,7 +1,7 @@
 # qml.R
 #
 # created: Feb/04/2015, NU
-# last mod: Feb/05/2015, NU
+# last mod: Feb/11/2015, NU
 
 #--------------- main functions ---------------
 
@@ -33,7 +33,7 @@ mu_qml <- function(model, data) {
     y <- data[, (model$info$num.x + 1):dim(data)[2]]
     
     if (model$info$num.y > 1) {
-        # Transformation von y
+        # transformation of y
         beta <- m$Lambda.y[-1,] 
         R <- cbind(-beta, diag(length(beta)))
         u <- y %*% t(R)
@@ -51,19 +51,18 @@ mu_qml <- function(model, data) {
     L2 <- -m$Theta.e[1,1] %*% t(beta) %*% solve(R %*% m$Theta.e %*% t(R))
     
     # m.x is unconditional
-    # m.u entspricht Mittelwertsvektor für R %*% epsilon (also 0)
-    # Eq 14: dort ist aber mu.x <- 0, also ohne Mittelwertsstruktur wie hier
+    # m.u mean vector for R %*% epsilon (0)
+    # Eq 14: but mu.x <- 0, i.e., without means for xi
     mu.x  <- m$nu.x + m$Lambda.x %*% m$tau 
     mu.u  <- as.matrix(rep(0, length(beta)))
-    # zu mu.u: hier muss noch irgendwie "nu" implementiert werden.
     
-    # m.y1 ist conditional gegeben x und u
+    # m.y1 is conditional given x and u
     # Eq 12 
     mu.y1 <- sum(diag(m$Omega %*% Sigma1)) + c(m$alpha) + m$Gamma %*% 
              L1 %*% t(x) + diag(x %*% t(L1) %*% m$Omega %*% L1 %*% t(x)) +
              L2 %*% t(u)
     
-    mu.xu <- c(mu.x, mu.u)    # Mittelwert für f2
+    mu.xu <- c(mu.x, mu.u)    # mean for f2
     mu <- list(mu.xu, mu.y1)  
 
     mu
@@ -79,7 +78,7 @@ sigma_qml <- function(model, data) {
     y <- data[, (model$info$num.x + 1):dim(data)[2]]
     
     if (model$info$num.y > 1) {
-        # Transformation von y
+        # transformation of y
         beta <- m$Lambda.y[-1,] 
         R <- cbind(-beta, diag(length(beta)))
         u <- y %*% t(R)
@@ -111,7 +110,7 @@ sigma_qml <- function(model, data) {
     sigma.xu[1:p1, 1:p1] <- sigma.x
     sigma.xu[(p1+1):(p1+p2), (p1+1):(p1+p2)] <- sigma.u
     
-    # sigma.y1 ist conditional gegeben x und u
+    # sigma.y1 is conditional given x and u
     # Eq 17
     # sigma.y1 <- diag((c(m$Gamma) + 2*x %*% t(L1) %*% m$Omega) %*% Sigma1
     #             %*% t(c(m$Gamma) + 2*x %*% t(L1) %*% m$Omega)) + Sigma2 + 
@@ -141,7 +140,7 @@ loglikelihood_qml <- function(parameters, model, data) {
     sigma.qml  <- sigma_qml(model = mod.filled, data=data)
     
     if (model$info$num.y > 1) {
-        # Transformation von y
+        # transformation of y
         beta <- mod.filled$matrices$class1$Lambda.y[-1,] 
         R <- cbind(-beta, diag(length(beta)))
         u <- y %*% t(R)
@@ -152,15 +151,10 @@ loglikelihood_qml <- function(parameters, model, data) {
     # Eq 10: densities
     f2 <- dmvnorm(cbind(x, u), mean = mean.qml[[1]], sigma = sigma.qml[[1]],
           log = FALSE)
-    # Originalimplementierung: produziert NaN weil sds negativ werden
+    # original implementation: produces NaN when sds are negative
     f3 <- dnorm(y[,1], mean = mean.qml[[2]], sd = sqrt(sigma.qml[[2]]), 
           log = FALSE)
 
-    # Alternative1 mit abs(sd)
-    # f3 <- dnorm(y[,1], mean = mean.QML[[2]], sd = sqrt(abs(cov.QML[[2]])),log = F)
-    # Alternative2 mit kleinem sd
-    # f3 <- dnorm(y[,1], mean = mean.QML[[2]], sd = sqrt(abs(cov.QML[[2]])),log = F)
-    
     lls <- sum(log(f2*f3))
     res <- res + lls
     
