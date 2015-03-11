@@ -1,0 +1,18 @@
+Changes in 0.3
+
+  * New function: qml(), estimate single-class model with QML as an
+    alternative to LMS
+  * specify_sem(): model with num.classes = 1 will be of class
+    'singleClass' now instead of 'lms'
+  * Data set: jordan, PISA 2006 jordan sample
+  * em(): Changed logger output for NSEMM models so readability is higher;
+  added max.lms = 1 so EM for single groups will only iterate once
+
+Changes in 0.2
+
+  * specify_sem(): changed default for interaction to "none"; fixed bug so
+  psi can be set to a fixed value now; changed default constraints
+  * summary.emEst(): added weights to print method
+  * em(): added error message when more than one eta is specified; put
+  logger = TRUE as default
+
