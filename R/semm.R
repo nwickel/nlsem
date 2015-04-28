@@ -179,19 +179,19 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
 
         if (neg.hessian == TRUE) {
             for (c in seq_len(num.classes)) {
-                if (optimizer == "nlminb") {
+                #if (optimizer == "nlminb") {
                     res$hessian[[c]] <- fdHess(pars=est[[c]]$par,
                                                fun=loglikelihood_semm,
                                                matrices=model$matrices[[c]],
                                                data=data, p=P[,c],
                                                w=model$info$w[[c]])$Hessian
-                } else {
-                    res$hessian[[c]] <- optimHess(par=est[[c]]$par,
-                                                fn=loglikelihood_semm,
-                                                matrices=model$matrices[[c]],
-                                                data=data, p=P[,c],
-                                                w=model$info$w[c])
-                }
+                #} else {
+                #    res$hessian[[c]] <- optimHess(par=est[[c]]$par,
+                #                                fn=loglikelihood_semm,
+                #                                matrices=model$matrices[[c]],
+                #                                data=data, p=P[,c],
+                #                                w=model$info$w[c])
+                #}
             }
         names(res$hessian) <- paste0("class", seq_len(num.classes))
         }
