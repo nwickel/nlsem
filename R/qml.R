@@ -45,8 +45,8 @@ mu_qml <- function(model, data) {
     Sigma1 <- m$Phi - m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*%
               m$Phi %*% t(m$Lambda.x) + m$Theta.d) %*% m$Lambda.x %*% m$Phi 
 
-    L1 <- m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*% m$Phi %*%
-              t(m$Lambda.x) + m$Theta.d)
+    L1 <- m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*% 
+          m$Phi %*% t(m$Lambda.x) + m$Theta.d)
 
     L2 <- -m$Theta.e[1,1] %*% t(beta) %*% solve(R %*% m$Theta.e %*% t(R))
     
@@ -54,13 +54,25 @@ mu_qml <- function(model, data) {
     # m.u mean vector for R %*% epsilon (0)
     # Eq 14: but mu.x <- 0, i.e., without means for xi
     mu.x  <- m$nu.x + m$Lambda.x %*% m$tau 
-    mu.u  <- as.matrix(rep(0, length(beta)))
+    #mu.u  <- as.matrix(rep(0, length(beta)))
+    mu.u  <- R %*% m$nu.y
     
+    mtau.m   <- matrix(rep(m$tau, N), 2, N, byrow=FALSE)
+    mux.m  <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
+    malpha.m   <- matrix(rep(m$alpha, N), 1, N, byrow=TRUE)
+    mnuy1.m <- matrix(rep(m$nu.y[1], N), 1, N, byrow=TRUE)
+    muu.m  <- matrix(rep(mu.u, N), N, 2, byrow=TRUE)
+ 
     # m.y1 is conditional given x and u
     # Eq 12 
-    mu.y1 <- sum(diag(m$Omega %*% Sigma1)) + c(m$alpha) + m$Gamma %*% 
-             L1 %*% t(x) + diag(x %*% t(L1) %*% m$Omega %*% L1 %*% t(x)) +
-             L2 %*% t(u)
+
+    mu.y1 <- mnuy1.m + malpha.m + m$Gamma %*% (mtau.m + L1 %*% t(x - mux.m)) + 
+           diag(t((mtau.m + L1 %*% t(x - mux.m))) %*% m$Omega %*% (mtau.m + L1 %*%
+           t(x - mux.m))) + L2 %*% t(u - muu.m) + sum(diag(m$Omega %*% Sigma1))
+
+    #mu.y1 <- sum(diag(m$Omega %*% Sigma1)) + c(m$alpha) + m$Gamma %*% 
+    #         L1 %*% t(x) + diag(x %*% t(L1) %*% m$Omega %*% L1 %*% t(x)) +
+    #         L2 %*% t(u)
     
     mu.xu <- c(mu.x, mu.u)    # mean for f2
     mu <- list(mu.xu, mu.y1)  
@@ -94,9 +106,19 @@ sigma_qml <- function(model, data) {
     L1 <- m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*% m$Phi %*%
           t(m$Lambda.x) + m$Theta.d)
     L2 <- -m$Theta.e[1,1] %*% t(beta) %*% solve(R %*% m$Theta.e %*% t(R))
+
+    mux.m    <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
+    mtau.m   <- matrix(rep(m$t, N), 2, N, byrow=FALSE)
+    mGamma.m <- matrix(rep(m$Gamma, N), N, 2, byrow=TRUE)
+ 
     
     # Eq 18
     Sigma3 <- var.z(m$Omega, Sigma1)
+
+    Sigma4 <- diag((((mGamma.m + t(mtau.m + L1 %*% t(x - mux.m))) %*%
+              (m$Omega + t(m$Omega)))) %*% Sigma1 %*% t(((mGamma.m +
+              t(mtau.m + L1 %*% t(x - mux.m))) %*% (m$Omega +
+              t(m$Omega))))) + Sigma3
     
     # Eq 14
     # Cov(x), Cov(u)
@@ -117,10 +139,12 @@ sigma_qml <- function(model, data) {
     #             Sigma3
     # --> original equation from paper: faulty!
 
-    sigma.y1 <- diag((c(m$Gamma) + x %*% t(L1) %*% (m$Omega + t(m$Omega))) %*% Sigma1
-                %*% t(c(m$Gamma) + x %*% t(L1) %*% (m$Omega + t(m$Omega)))) + Sigma2 +
-                Sigma3
+    #sigma.y1 <- diag((c(m$Gamma) + x %*% t(L1) %*% (m$Omega + t(m$Omega))) %*% Sigma1
+    #            %*% t(c(m$Gamma) + x %*% t(L1) %*% (m$Omega + t(m$Omega)))) + Sigma2 +
+    #            Sigma3
  
+    sigma.y1 <- Sigma2 + Sigma4
+
     sigma.xy <- list(sigma.xu, sigma.y1)
 
     sigma.xy
@@ -149,11 +173,9 @@ loglikelihood_qml <- function(parameters, model, data) {
     }
 
     # Eq 10: densities
-    f2 <- dmvnorm(cbind(x, u), mean = mean.qml[[1]], sigma = sigma.qml[[1]],
-          log = FALSE)
+    f2 <- dmvnorm(cbind(x, u), mean = mean.qml[[1]], sigma = sigma.qml[[1]])
     # original implementation: produces NaN when sds are negative
-    f3 <- dnorm(y[,1], mean = mean.qml[[2]], sd = sqrt(sigma.qml[[2]]), 
-          log = FALSE)
+    f3 <- dnorm(y[,1], mean = mean.qml[[2]], sd = sqrt(sigma.qml[[2]]))
 
     lls <- sum(log(f2*f3))
     res <- res + lls
@@ -165,11 +187,11 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                       optimizer=c("nlminb", "optim"), max.iter=1,
                       control=list(), ...) {
 
-    if (anyNA(model$matrices$class1$tau) ||
-        anyNA(model$matrices$class1$nu.x) ||
-        anyNA(model$matrices$class1$nu.y)) { 
-            stop("QML is only implemented for standaradized latent predictor variables (yet).")
-    }
+    #if (anyNA(model$matrices$class1$tau) ||
+    #    anyNA(model$matrices$class1$nu.x) ||
+    #    anyNA(model$matrices$class1$nu.y)) { 
+    #        stop("QML is only implemented for standardized latent predictor variables (yet).")
+    #}
 
     # optimizer
     optimizer <- match.arg(optimizer)
@@ -217,27 +239,27 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
 
 #--------------- helper functions ---------------
 
-
 var.z <- function(Omega, Sigma1){
 
-    ds <- dim(Sigma1)[1]
-    varz <- 0
-    
-    # Eq 18
-    for(i in 1:ds){
-      for(j in 1:ds){
-        for(k in 1:ds){
-          for(s in 1:ds){
-            varzij <- Omega[i,j]*Omega[k,s]*(Sigma1[i,j]*Sigma1[k,s] +
-                      Sigma1[i,k]*Sigma1[j,s] + Sigma1[i,s]*Sigma1[j,k])
-            varz <- varz + varzij
-          }
+  ds <- dim(Sigma1)[1]
+  varz <- 0
+  
+  # Eq 18
+  for(i in 1:ds){
+    for(j in 1:ds){
+      for(k in 1:ds){
+        for(l in 1:ds){
+          #varzij <- Omega[i,j]*Omega[k,s]*(Sigma1[i,j]*Sigma1[k,s]+Sigma1[i,k]*Sigma1[j,s]+Sigma1[i,s]*Sigma1[j,k])
+          varzij <- Omega[i,j]*Omega[k,l]*(Sigma1[i,k]*Sigma1[j,l]+Sigma1[i,l]*Sigma1[j,k])
+          varz <- varz+varzij
         }
       }
     }
-    varz <- varz - sum(diag(Omega %*% Sigma1))^2
-    
-    varz
+  }
+  #varz <- varz-sum(diag(Omega%*%Sigma1))^2
+
+  varz
 }
+
 
 
