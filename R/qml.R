@@ -53,13 +53,15 @@ mu_qml <- function(model, data) {
     # m.x is unconditional
     # m.u mean vector for R %*% epsilon (0)
     # Eq 14: but mu.x <- 0, i.e., without means for xi
-    mu.x  <- m$nu.x + m$Lambda.x %*% m$tau 
-    #mu.u  <- as.matrix(rep(0, length(beta)))
-    mu.u  <- R %*% m$nu.y
+    mu.x <- m$nu.x + m$Lambda.x %*% m$tau
+    #mu.u <- as.matrix(rep(0, length(beta)))
+    mu.u <- R %*% m$nu.y
     
-    mtau.m   <- matrix(rep(m$tau, N), 2, N, byrow=FALSE)
-    mux.m  <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
-    malpha.m   <- matrix(rep(m$alpha, N), 1, N, byrow=TRUE)
+    # TODO This is not generic -- needs to be adjusted!
+    # --> only works for one model
+    mtau.m <- matrix(rep(m$tau, N), 2, N, byrow=FALSE)
+    mux.m <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
+    malpha.m <- matrix(rep(m$alpha, N), 1, N, byrow=TRUE)
     mnuy1.m <- matrix(rep(m$nu.y[1], N), 1, N, byrow=TRUE)
     muu.m  <- matrix(rep(mu.u, N), N, 2, byrow=TRUE)
  
@@ -107,8 +109,11 @@ sigma_qml <- function(model, data) {
           t(m$Lambda.x) + m$Theta.d)
     L2 <- -m$Theta.e[1,1] %*% t(beta) %*% solve(R %*% m$Theta.e %*% t(R))
 
-    mux.m    <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
-    mtau.m   <- matrix(rep(m$t, N), 2, N, byrow=FALSE)
+    mu.x <- m$nu.x + m$Lambda.x %*% m$tau
+
+    # TODO This is not generic -- needs to be adjusted!
+    mux.m <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
+    mtau.m <- matrix(rep(m$t, N), 2, N, byrow=FALSE)
     mGamma.m <- matrix(rep(m$Gamma, N), N, 2, byrow=TRUE)
  
     
