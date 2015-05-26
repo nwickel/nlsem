@@ -368,7 +368,6 @@ rel_change <- function(x) {
 }
 
 calc_standard_error <- function(neg.hessian) {
-    warn.msg <- "Standard errors could not be computed, because negative Hessian was either not available or singular"
     s.error <- tryCatch({
                     sqrt(diag(solve(neg.hessian)))
                 }, error=function(e) {
@@ -377,10 +376,10 @@ calc_standard_error <- function(neg.hessian) {
                      if (grepl("NaN", conditionMessage(w))) {
                        suppressWarnings(sqrt(diag(solve(neg.hessian))))
                     } else{
-                        sqrt(diag(solve(neg.hessian)))
+                       sqrt(diag(solve(neg.hessian)))
                     }
                 })
-                if (all(is.na(s.error))) warning(warn.msg)
+                if (all(is.na(s.error))) warning("Standard errors could not be computed, because negative Hessian was either not available or singular")
                 if (any(is.nan(s.error))) warning("Standard errors for some coefficients could not be computed.") 
     s.error
 }
