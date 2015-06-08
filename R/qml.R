@@ -8,6 +8,9 @@
 qml <- function(model, data, start, max.iter=150, 
                 optimizer=c("nlminb", "optim"), neg.hessian=TRUE, ...) {
 
+    if (model$info$num.y > 1) stop("QML is not implemented for more than
+    one eta.")
+
     est <- mstep_qml(model=model, data=data, parameters=start,
                        neg.hessian=neg.hessian, optimizer=optimizer, ...)
 
@@ -57,13 +60,13 @@ mu_qml <- function(model, data) {
     #mu.u <- as.matrix(rep(0, length(beta)))
     mu.u <- R %*% m$nu.y
     
-    # TODO This is not generic -- needs to be adjusted!
-    # --> only works for one model
-    mtau.m <- matrix(rep(m$tau, N), 2, N, byrow=FALSE)
-    mux.m <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
-    malpha.m <- matrix(rep(m$alpha, N), 1, N, byrow=TRUE)
-    mnuy1.m <- matrix(rep(m$nu.y[1], N), 1, N, byrow=TRUE)
-    muu.m  <- matrix(rep(mu.u, N), N, 2, byrow=TRUE)
+    N <- nrow(data)
+
+    mtau.m <- matrix(rep(m$tau, N), nrow=model$info$num.xi, ncol=N, byrow=FALSE)
+    mux.m <- matrix(rep(mu.x, N), nrow=N, ncol=model$info$num.x, byrow=TRUE)
+    malpha.m <- matrix(rep(m$alpha, N), nrow=model$info$num.eta, ncol=N, byrow=TRUE)
+    mnuy1.m <- matrix(rep(m$nu.y[1], N), nrow=model$info$num.eta, ncol=N, byrow=TRUE)
+    muu.m <- matrix(rep(mu.u, N), nrow=N, ncol=model$info$num.y-model$info$num.eta, byrow=TRUE)
  
     # m.y1 is conditional given x and u
     # Eq 12 
@@ -111,12 +114,12 @@ sigma_qml <- function(model, data) {
 
     mu.x <- m$nu.x + m$Lambda.x %*% m$tau
 
-    # TODO This is not generic -- needs to be adjusted!
-    mux.m <- matrix(rep(mu.x, N), N, 6, byrow=TRUE)
-    mtau.m <- matrix(rep(m$t, N), 2, N, byrow=FALSE)
-    mGamma.m <- matrix(rep(m$Gamma, N), N, 2, byrow=TRUE)
- 
-    
+    N <- nrow(data)
+
+    mux.m <- matrix(rep(mu.x, N), nrow=N, ncol=model$info$num.x, byrow=TRUE)
+    mtau.m <- matrix(rep(m$tau, N), nrow=model$info$num.xi, ncol=N, byrow=FALSE)
+    mGamma.m <- matrix(rep(m$Gamma, N), nrow=N, ncol=model$info$num.xi, byrow=TRUE)
+
     # Eq 18
     Sigma3 <- var.z(m$Omega, Sigma1)
 
@@ -192,12 +195,6 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                       optimizer=c("nlminb", "optim"), max.iter=1,
                       control=list(), ...) {
 
-    #if (anyNA(model$matrices$class1$tau) ||
-    #    anyNA(model$matrices$class1$nu.x) ||
-    #    anyNA(model$matrices$class1$nu.y)) { 
-    #        stop("QML is only implemented for standardized latent predictor variables (yet).")
-    #}
-
     # optimizer
     optimizer <- match.arg(optimizer)
 
@@ -254,14 +251,12 @@ var.z <- function(Omega, Sigma1){
     for(j in 1:ds){
       for(k in 1:ds){
         for(l in 1:ds){
-          #varzij <- Omega[i,j]*Omega[k,s]*(Sigma1[i,j]*Sigma1[k,s]+Sigma1[i,k]*Sigma1[j,s]+Sigma1[i,s]*Sigma1[j,k])
           varzij <- Omega[i,j]*Omega[k,l]*(Sigma1[i,k]*Sigma1[j,l]+Sigma1[i,l]*Sigma1[j,k])
           varz <- varz+varzij
         }
       }
     }
   }
-  #varz <- varz-sum(diag(Omega%*%Sigma1))^2
 
   varz
 }
