@@ -8,7 +8,7 @@
 qml <- function(model, data, start, max.iter=150, 
                 optimizer=c("nlminb", "optim"), neg.hessian=TRUE, ...) {
 
-    if (model$info$num.y > 1) stop("QML is not implemented for more than
+    if (model$info$num.eta > 1) stop("QML is not implemented for more than
     one eta.")
 
     est <- mstep_qml(model=model, data=data, parameters=start,
