@@ -14,8 +14,8 @@ models using an expectation-maximization (EM) algorithm. Three different
 approaches are implemented. Firstly, the Latent Moderated Structural
 Equations (LMS) approach (Klein & Moosbrugger, 2000), which allows for
 two-way interaction and quadratic terms in the structural model. Due to the
-nonlinearity, the latent predictor variables cannot be assumed to be
-normally distributed. Therefore, the latent predictor's distribution is
+nonlinearity, the latent criterion variables cannot be assumed to be
+normally distributed. Therefore, the latent criterins's distribution is
 approximated with a mixture of normal distributions. Secondly, the
 Structural Equation finite Mixture Model (STEMM or SEMM) approach (Jedidi,
 Jagpal & DeSarbo, 1997), which uses mixtures to model latent classes. In
