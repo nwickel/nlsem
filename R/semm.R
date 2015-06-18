@@ -111,7 +111,7 @@ loglikelihood_semm_constraints <- function(parameters, model, data, P) {
         T.c <- 1/N.c * Reduce('+', lapply(1:N, function(i)(
                                            P[i,c] * (data[i,]-mu.c) %*% 
                                            t(data[i,]-mu.c))))
-        res <- res+(1/2 * N.c * (log(det(sigma.c)) + sum(diag(T.c %*%
+        res <- res + (1/2 * N.c * (log(det(sigma.c)) + sum(diag(T.c %*%
                                            solve(sigma.c))) - 2*log(w.c)))
     }
 
@@ -200,12 +200,18 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
     } else {
     # Maximization of all classes together
         if (optimizer == "nlminb") {
+            if (is.null(control$iter.max)) {
+                control$iter.max <- max.mstep
+            } else {
+                warning("iter.max is set for nlminb. max.mstep will be ignored.")
+            }
             suppress_NaN_warnings(
                 est <- nlminb(start=parameters,
                               objective=loglikelihood_semm_constraints, data=data,
                               model=model, P=P,
                               upper=unlist(model$info$bounds$upper),
-                              lower=unlist(model$info$bounds$lower), ...)
+                              lower=unlist(model$info$bounds$lower),
+                              control=control, ...)
             )
             if (neg.hessian == TRUE){
                 est$hessian <- fdHess(pars=est$par,
@@ -213,17 +219,25 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
                                       model=model, data=data, P=P)$Hessian
             }
         } else {
+            if (is.null(control$maxit)){
+                control$maxit <- max.mstep
+            } else {
+                warning("maxit is set for optim. max.mstep will be ignored.")
+            }
             est <- optim(par=parameters, fn=loglikelihood_semm_constraints,
                          model=model, data=data, P=P,
                          upper=unlist(model$info$bounds$upper),
                          lower=unlist(model$info$bounds$lower),
-                         method="L-BFGS-B", ...)
+                         method="L-BFGS-B", control=control, ...)
             # fit est to nlminb output
             names(est) <- gsub("value", "objective", names(est))
             if (neg.hessian == TRUE) {
-                est$hessian <- optimHess(est$par,
-                                         fn=loglikelihood_semm_constraints,
-                                         model=model, P=P, data=data)
+                est$hessian <- fdHess(pars=est$par,
+                                      fun=loglikelihood_semm_constraints,
+                                      model=model, data=data, P=P)$Hessian
+                #est$hessian <- optimHess(est$par,
+                #                         fn=loglikelihood_semm_constraints,
+                #                         model=model, P=P, data=data)
             }
         }
         est
