@@ -12,7 +12,8 @@ qml <- function(model, data, start, max.iter=150,
     one eta.")
 
     est <- mstep_qml(model=model, data=data, parameters=start,
-                       neg.hessian=neg.hessian, optimizer=optimizer, ...)
+                       neg.hessian=neg.hessian, optimizer=optimizer,
+                       max.iter=max.iter, ...)
 
     names(est$par) <- model$info$par.names
     
