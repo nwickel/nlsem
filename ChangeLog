@@ -1,3 +1,12 @@
+Changes in 0.3.1
+
+  * New function: get_factor_scroes(), calculate Bartlett factor scores
+    from parameter estimates
+  * qml(): works with non-centeres exogenous variables now; fixed bug,
+    max.iter does what it is supposed to do now
+  * estep_lms(): fixed weird error message: "Error in
+    !all.equal(rowSums(P), rep(1, nrow(P))) : invalid argument type"
+
 Changes in 0.3
 
   * New function: qml(), estimate single-class model with QML as an
@@ -6,13 +15,13 @@ Changes in 0.3
     'singleClass' now instead of 'lms'
   * Data set: jordan, PISA 2006 jordan sample
   * em(): Changed logger output for NSEMM models so readability is higher;
-  added max.lms = 1 so EM for single groups will only iterate once
+    added max.lms = 1 so EM for single groups will only iterate once
 
 Changes in 0.2
 
   * specify_sem(): changed default for interaction to "none"; fixed bug so
-  psi can be set to a fixed value now; changed default constraints
+    psi can be set to a fixed value now; changed default constraints
   * summary.emEst(): added weights to print method
   * em(): added error message when more than one eta is specified; put
-  logger = TRUE as default
+    logger = TRUE as default
 
