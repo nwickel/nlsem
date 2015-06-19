@@ -149,6 +149,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
+                                               xi=xi,eta=eta,
                                                num.classes=num.classes,
                                                par.names=list(), w=w))
 

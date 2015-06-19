@@ -109,8 +109,8 @@ loglikelihood_semm_constraints <- function(parameters, model, data, P) {
         mu.c <- mu_semm(model.filled$matrices[[c]])
         sigma.c <- sigma_semm(model.filled$matrices[[c]])
         T.c <- 1/N.c * Reduce('+', lapply(1:N, function(i)(
-                                           P[i,c] * (data[i,]-mu.c) %*% 
-                                           t(data[i,]-mu.c))))
+                                           P[i,c] * (data[i,] - mu.c) %*%
+                                           t(data[i,] - mu.c))))
         res <- res + (1/2 * N.c * (log(det(sigma.c)) + sum(diag(T.c %*%
                                            solve(sigma.c))) - 2*log(w.c)))
     }

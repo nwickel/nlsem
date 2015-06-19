@@ -215,7 +215,7 @@ em <- function(model, data, start, qml=FALSE, logger=TRUE, convergence=1e-02,
         em_convergence <- "no"
     } else {em_convergence <- "yes"}
 
-    info   <- model$info[c("num.xi","num.eta","num.x","num.y")]
+    info   <- model$info[c("num.xi","num.eta","num.x","num.y","xi","eta")]
     info$n <- nrow(data)
 
     out <- list(model.class=class(model), coefficients=final$par,
@@ -228,7 +228,7 @@ em <- function(model, data, start, qml=FALSE, logger=TRUE, convergence=1e-02,
     # attach w for semm and nsemm
     if (class(model) == "semm" || class(model) == "nsemm") {
         out$info <- model$info[c("num.xi", "num.eta", "num.x", "num.y",
-                                 "num.classes", "w")] 
+                                 "xi", "eta", "num.classes", "w")] 
         out$info$n <- nrow(data) }
 
     class(out) <- "emEst"
