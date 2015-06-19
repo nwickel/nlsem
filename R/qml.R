@@ -8,14 +8,19 @@
 qml <- function(model, data, start, max.iter=150, 
                 optimizer=c("nlminb", "optim"), neg.hessian=TRUE, ...) {
 
-    if (model$info$num.eta > 1) stop("QML is not implemented for more than
-    one eta.")
+    if (model$info$num.eta > 1) stop("QML is not implemented for more than one eta.")
 
+    suppressWarnings(
     est <- mstep_qml(model=model, data=data, parameters=start,
                        neg.hessian=neg.hessian, optimizer=optimizer,
                        max.iter=max.iter, ...)
+    )
 
     names(est$par) <- model$info$par.names
+
+    if (sum(est$par - start) == 0) {
+      stop("NA/NaN function evaluation. Please try different set of starting parameters.")
+    }
     
     out <- list(model.class=class(model), coefficients=est$par,
                 objective=-est$objective,
