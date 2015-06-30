@@ -8,20 +8,42 @@
 phi_mix <- function(object, direct=TRUE) {
 
   n <- object$info$num.xi
-  nl <- factorial(n + 2 - 1) /
-    (factorial(2)*factorial(n - 1))
+  nl <- factorial(n + 2 - 1) / (factorial(2)*factorial(n - 1))
 
-  phi <- matrix(nrow=n + nl, ncol=n + nl)
-
-  phi[seq_len(n), seq_len(n)] <- second_moments(object)
-  phi[(n+1):nrow(phi), seq_len(n)] <- cov_xyz_indirect(object)
-  phi[seq_len(n), (n+1):nrow(phi)] <- t(phi[(n+1):nrow(phi), seq_len(n)])
-  tmp <- matrix(nrow=nl, ncol=nl)
-  tmp[lower.tri(tmp, diag=T)] <- cov_xy_indirect(object)
-  phi[(n+1):nrow(phi), (n+1):nrow(phi)] <- fill_symmetric(tmp)
+  if (direct) {
   
-  phi
+    phi_l <- list()
+    for (c in seq_len(object$info$num.classes)) {
 
+      phi <- matrix(nrow=n + nl, ncol=n + nl)
+
+      phi[seq_len(n), seq_len(n)] <- second_moments_group(object,
+        paste0("class", c))
+      phi[(n+1):nrow(phi), seq_len(n)] <- cov_xyz(object,
+        direct=direct)[[paste0("class", c)]]
+      phi[seq_len(n), (n+1):nrow(phi)] <- t(phi[(n+1):nrow(phi), seq_len(n)])
+      tmp <- matrix(nrow=nl, ncol=nl)
+      tmp[lower.tri(tmp, diag=T)] <- cov_xy(object, direct=direct)[[paste0("class", c)]]
+      phi[(n+1):nrow(phi), (n+1):nrow(phi)] <- fill_symmetric(tmp)
+
+      phi_l[[c]] <- phi
+    }
+    names(phi_l) <- paste0("class", seq_len(object$info$num.classes))
+    phi_l
+
+  } else {
+
+    phi <- matrix(nrow=n + nl, ncol=n + nl)
+
+    phi[seq_len(n), seq_len(n)] <- second_moments(object)
+    phi[(n+1):nrow(phi), seq_len(n)] <- cov_xyz(object, direct=direct)
+    phi[seq_len(n), (n+1):nrow(phi)] <- t(phi[(n+1):nrow(phi), seq_len(n)])
+    tmp <- matrix(nrow=nl, ncol=nl)
+    tmp[lower.tri(tmp, diag=T)] <- cov_xy(object, direct=direct)
+    phi[(n+1):nrow(phi), (n+1):nrow(phi)] <- fill_symmetric(tmp)
+
+    phi
+  }
 }
 
 #--------------- helper functions ---------------
@@ -99,6 +121,7 @@ fourth_moments_group <- function(object, class="class1") {
 
   nu_ij <- nu_group(object, class)
 
+  # Eq. 34
   nu_ijkl <- NULL
   for (i in seq_len(object$info$num.xi)) {
     for (j in seq_len(object$info$num.xi)) {
@@ -262,91 +285,124 @@ var_xy_indirect <- function(object) {
   out <- var_xy[lower.tri(var_xy, diag=TRUE)]
   out
 }
-## --> function not needed since it is part of cov_xy_indirect, of course!
+## --> function not needed since it is part of cov_xy, of course!
 
-# Eq. 28: covariance of two product terms
-# cov_xy_indirect <- function(object) {
-# 
-#   mu_i <- mu(object)
-#   nu_ij <- second_moments_central(object)
-#   nu_ijk <- third_moments_central(object)
-#   nu_ijkl <- fourth_moments_central(object)
-# 
-#   cov_xy <- array(dim=c(object$info$num.xi, object$info$num.xi,
-#     object$info$num.xi, object$info$num.xi))
-#   for (i in seq_len(object$info$num.xi)) {
-#     for (j in seq_len(object$info$num.xi)) {
-#       for (k in seq_len(object$info$num.xi)) {
-#         for (l in seq_len(object$info$num.xi)) {
-#           cov_xy[i,j,k,l] <- mu_i[i]*mu_i[k]*nu_ij[j,l] +
-#             mu_i[i]*mu_i[l]*nu_ij[j,k] + mu_i[j]*mu_i[k]*nu_ij[i,l] +
-#             mu_i[j]*mu_i[l]*nu_ij[i,k] - nu_ij[i,j]*nu_ij[k,l] +
-#             mu_i[i]*nu_ijk[j,k,l] + mu_i[j]*nu_ijk[i,k,l] +
-#             mu_i[k]*nu_ijk[i,j,l] + mu_i[l]*nu_ijk[i,j,k] +
-#             nu_ijkl[i,j,k,l]
-#         }
-#       }
-#     }
-#   }
-#   m <- matrix(c(cov_xy), nrow=object$info$num.xi^2,
-#     ncol=object$info$num.xi^2)
-#   m_ii <- matrix(diag(m), nrow=object$info$num.xi,
-#     ncol=object$info$num.xi)
-#   m_ii <- m_ii[lower.tri(m_ii, diag=TRUE)]
-#   m_i <- m[upper.tri(m)]
-#   cov_xy
-# }
+cov_xy <- function(object, direct=TRUE) {
 
-cov_xy_indirect <- function(object) {
+  if (direct) {
 
-  mu_i <- mu(object)
-  nu_ij <- second_moments_central(object)
-  nu_ijk <- third_moments_central(object)
-  nu_ijkl <- fourth_moments_central(object)
+    cov_xy_l <- list()
 
-  cov_xy <- NULL
-  for (i in seq_len(object$info$num.xi)) {
-    for (j in seq_len(object$info$num.xi)) {
-      for (k in seq_len(object$info$num.xi)) {
-        for (l in seq_len(object$info$num.xi)) {
+    for (c in seq_len(object$info$num.classes)) {
+      mu_i <- mu_group(object, paste0("class", c))
+      nu_ij <- second_moments_group(object, paste0("class", c))
+      nu_ijk <- third_moments_group(object, paste0("class", c))
+      nu_ijkl <- fourth_moments_group(object, paste0("class", c))
 
-          if ((i == j & j == k & k == l) || (i == j & k == l & i < k) || (j
-          == k & k == l & i < j) || (i == l & j == k & i < j) || (i == j &
-          j == k & i < l)) {
+      cov_xy <- NULL
+      for (i in seq_len(object$info$num.xi)) {
+        for (j in seq_len(object$info$num.xi)) {
+          for (k in seq_len(object$info$num.xi)) {
+            for (l in seq_len(object$info$num.xi)) {
 
-            cov_xy <- c(cov_xy, mu_i[i]*mu_i[k]*nu_ij[j,l] +
-              mu_i[i]*mu_i[l]*nu_ij[j,k] + mu_i[j]*mu_i[k]*nu_ij[i,l] +
-              mu_i[j]*mu_i[l]*nu_ij[i,k] - nu_ij[i,j]*nu_ij[k,l] +
-              mu_i[i]*nu_ijk[j,k,l] + mu_i[j]*nu_ijk[i,k,l] +
-              mu_i[k]*nu_ijk[i,j,l] + mu_i[l]*nu_ijk[i,j,k] +
-              nu_ijkl[i,j,k,l])
+              if ((i == j & j == k & k == l) || (i == j & k == l & i < k) || (j
+              == k & k == l & i < j) || (i == l & j == k & i < j) || (i == j &
+              j == k & i < l)) {
+
+                cov_xy <- c(cov_xy, mu_i[i]*mu_i[k]*nu_ij[j,l] +
+                  mu_i[i]*mu_i[l]*nu_ij[j,k] + mu_i[j]*mu_i[k]*nu_ij[i,l] +
+                  mu_i[j]*mu_i[l]*nu_ij[i,k] - nu_ij[i,j]*nu_ij[k,l] +
+                  mu_i[i]*nu_ijk[j,k,l] + mu_i[j]*nu_ijk[i,k,l] +
+                  mu_i[k]*nu_ijk[i,j,l] + mu_i[l]*nu_ijk[i,j,k] +
+                  nu_ijkl[i,j,k,l])
+              }
+            }
+          }
+        }
+      }
+      cov_xy_l[[c]] <- cov_xy
+    }
+    names(cov_xy_l) <- paste0("class", seq_len(object$info$num.classes))
+    cov_xy_l
+
+  } else {
+
+    mu_i <- mu(object)
+    nu_ij <- second_moments_central(object)
+    nu_ijk <- third_moments_central(object)
+    nu_ijkl <- fourth_moments_central(object)
+
+    cov_xy <- NULL
+    for (i in seq_len(object$info$num.xi)) {
+      for (j in seq_len(object$info$num.xi)) {
+        for (k in seq_len(object$info$num.xi)) {
+          for (l in seq_len(object$info$num.xi)) {
+
+            if ((i == j & j == k & k == l) || (i == j & k == l & i < k) || (j
+            == k & k == l & i < j) || (i == l & j == k & i < j) || (i == j &
+            j == k & i < l)) {
+
+              cov_xy <- c(cov_xy, mu_i[i]*mu_i[k]*nu_ij[j,l] +
+                mu_i[i]*mu_i[l]*nu_ij[j,k] + mu_i[j]*mu_i[k]*nu_ij[i,l] +
+                mu_i[j]*mu_i[l]*nu_ij[i,k] - nu_ij[i,j]*nu_ij[k,l] +
+                mu_i[i]*nu_ijk[j,k,l] + mu_i[j]*nu_ijk[i,k,l] +
+                mu_i[k]*nu_ijk[i,j,l] + mu_i[l]*nu_ijk[i,j,k] +
+                nu_ijkl[i,j,k,l])
+            }
           }
         }
       }
     }
+    cov_xy
   }
-  cov_xy
 }
 
 # Eq. 29: covariance of product term with third variable
-cov_xyz_indirect <- function(object) {
+cov_xyz <- function(object, direct=TRUE) {
 
-  mu_i <- mu(object)
-  nu_ij <- second_moments_central(object)
-  nu_ijk <- third_moments_central(object)
+  if (direct) {
 
-  cov_ijk <- array(dim=c(object$info$num.xi, object$info$num.xi,
-    object$info$num.xi))
-  for (i in seq_len(object$info$num.xi)) {
-    for (j in seq_len(object$info$num.xi)) {
-      for (k in seq_len(object$info$num.xi)) {
-        cov_ijk[i,j,k] <- mu_i[i]*nu_ij[j,k] + mu_i[j]*nu_ij[i,k] + nu_ijk[i,j,k]
+    cov_xyz_l <- list()
+      for (c in seq_len(object$info$num.classes)) {
+
+      mu_i <- mu_group(object, paste0("class", c))
+      nu_ij <- second_moments_group(object, paste0("class", c))
+      nu_ijk <- third_moments_group(object, paste0("class", c))
+
+      cov_ijk <- array(dim=c(object$info$num.xi, object$info$num.xi,
+        object$info$num.xi))
+      for (i in seq_len(object$info$num.xi)) {
+        for (j in seq_len(object$info$num.xi)) {
+          for (k in seq_len(object$info$num.xi)) {
+            cov_ijk[i,j,k] <- mu_i[i]*nu_ij[j,k] + mu_i[j]*nu_ij[i,k] + nu_ijk[i,j,k]
+          }
+        }
+      }
+      cov_ijk
+      cov_xyz_l[[c]] <- c(apply(cov_ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
+    }
+    names(cov_xyz_l) <- paste0("class", seq_len(object$info$num.classes))
+    cov_xyz_l
+
+  } else {
+
+    mu_i <- mu(object)
+    nu_ij <- second_moments_central(object)
+    nu_ijk <- third_moments_central(object)
+
+    cov_ijk <- array(dim=c(object$info$num.xi, object$info$num.xi,
+      object$info$num.xi))
+    for (i in seq_len(object$info$num.xi)) {
+      for (j in seq_len(object$info$num.xi)) {
+        for (k in seq_len(object$info$num.xi)) {
+          cov_ijk[i,j,k] <- mu_i[i]*nu_ij[j,k] + mu_i[j]*nu_ij[i,k] + nu_ijk[i,j,k]
+        }
       }
     }
+    cov_ijk
+    out <- c(apply(cov_ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
+    out
   }
-  cov_ijk
-  out <- c(apply(cov_ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
-  out
 }
 
 
