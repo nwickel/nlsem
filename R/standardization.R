@@ -3,7 +3,7 @@
 # created Jun/30/2015, NU
 # last mod Jun/30/2015, NU
 
-#--------------- main function ---------------
+#--------------- main functions ---------------
 
 phi_mix <- function(object, direct=TRUE) {
 
@@ -44,6 +44,56 @@ phi_mix <- function(object, direct=TRUE) {
 
     phi
   }
+}
+
+standardize <- function(object) {
+
+  pars <- coef(object)
+
+  # direct approach
+  if (is.list(pars) || object$model.class == "singleClass") {
+
+    gamma <- c(pars$class1[grep("Gamma", names(pars$class1))],
+      pars$class1[grep("Omega", names(pars$class1))])
+
+    phi <- phi_mix(object, direct=TRUE)$class1
+
+    if (length(gamma) == nrow(phi)) {
+
+      psi <- var_eta(parameters=gamma, phi=phi, psi=pars$class1[grep("Psi",
+        names(pars$class1))])
+
+      nl <- matrix( nrow=object$info$num.xi, ncol=object$info$num.xi)
+      nl[lower.tri(nl, diag=TRUE)] <- pars$class1[grep("Omega", names(pars$class1))]
+      nl <- fill_symmetric(nl)
+
+      mu.i <- mu_group(object, "class1")
+
+      gamma_dot <- numeric(length(gamma))
+      for (i in seq_along(gamma)) {
+
+        gamma_dot[i] <- gamma[i] + gamma[]
+        # TODO: Parameter names? I need to be able to identify xi1, xi2,
+        # xi1:xi1, xi1:xi2, xi2:xi2.
+
+      }
+
+
+    } else {
+
+
+    }
+
+
+  # indirect approach
+  } else {
+
+    phi <- phi_mix(object, direct=FALSE)
+
+
+  }
+
+
 }
 
 #--------------- helper functions ---------------
@@ -382,4 +432,12 @@ cov_xyz <- function(object, direct=TRUE) {
   }
 }
 
+# Eq. 39: variance of eta
+
+var_eta <- function(parameters, phi, psi) {
+
+  phi_00 <- t(parameters) %*% phi %*% parameters + psi
+  phi_00
+
+}
 
