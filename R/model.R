@@ -267,6 +267,8 @@ create_sem <- function(dat){
 
     info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
                  num.classes=num.classes, par.names=par.names, w=w)
+    # TODO: info$xi and info$eta are missing here! Needed, so
+    # get_factor_scores() will run. --> But maybe change it there!
 
     model <- list(matrices=matrices, info=info)
 

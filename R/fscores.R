@@ -26,7 +26,7 @@ get_factor_scores <- function(object, model, data) {
       xi=object$info$xi, eta=object$info$eta))
 
     # TODO: Decide if you want model as an argument or change em and
-    # specify_sem out put so model can be recreated
+    # specify_sem output so model can be recreated
     # model <- specify_sem(object$info$num.x, object$info$num.y,
     #   object$info$num.xi, object$info$num.eta, object$info$xi,
     #   object$info$eta, object$info$num.classes)
