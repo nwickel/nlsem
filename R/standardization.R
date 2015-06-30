@@ -263,30 +263,7 @@ fourth_moments_central <- function(object) {
   nu_ijkl
 }
 
-## indirect approach
-
-# Eq. 27: variance of product terms
-var_xy_indirect <- function(object) {
-
-  mu_i <- mu(object)
-  nu_ij <- second_moments_central(object)
-  nu_ijk <- third_moments_central(object)
-  nu_ijkl <- fourth_moments_central(object)
-
-  var_xy <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
-  for (i in seq_len(object$info$num.xi)) {
-    for (j in seq_len(object$info$num.xi)) {
-      var_xy[i, j] <- mu_i[i]^2*nu_ij[j,j] + mu_i[j]^2*nu_ij[i,i] +
-        2*mu_i[i]*mu_i[j]*nu_ij[i,j] - nu_ij[i,j]^2 +
-        2*mu_i[i]*nu_ijk[i,j,j] + 2*mu_i[j]*nu_ijk[i,i,j] +
-        nu_ijkl[i,i,j,j]
-    }
-  }
-  out <- var_xy[lower.tri(var_xy, diag=TRUE)]
-  out
-}
-## --> function not needed since it is part of cov_xy, of course!
-
+# Eq. 28: covariance of two product terms
 cov_xy <- function(object, direct=TRUE) {
 
   if (direct) {
