@@ -1,7 +1,7 @@
 # standardization.R
 #
 # created Jun/30/2015, NU
-# last mod Jun/30/2015, NU
+# last mod Jul/01/2015, NU
 
 #--------------- main functions ---------------
 
@@ -13,22 +13,20 @@ phi_mix <- function(object, direct=TRUE) {
   if (direct) {
   
     phi.l <- list()
-    for (c in seq_len(object$info$num.classes)) {
+    for (class in paste0("class", seq_len(object$info$num.classes))) {
 
       phi <- matrix(nrow=n + nl, ncol=n + nl)
 
-      phi[seq_len(n), seq_len(n)] <- second_moments_group(object,
-        paste0("class", c))
+      phi[seq_len(n), seq_len(n)] <- second_moments_group(object, class)
       phi[(n+1):nrow(phi), seq_len(n)] <- cov_xyz(object,
-        direct=direct)[[paste0("class", c)]]
+        direct=direct)[[class]]
       phi[seq_len(n), (n+1):nrow(phi)] <- t(phi[(n+1):nrow(phi), seq_len(n)])
       tmp <- matrix(nrow=nl, ncol=nl)
-      tmp[lower.tri(tmp, diag=T)] <- cov_xy(object, direct=direct)[[paste0("class", c)]]
+      tmp[lower.tri(tmp, diag=T)] <- cov_xy(object, direct=direct)[[class]]
       phi[(n+1):nrow(phi), (n+1):nrow(phi)] <- fill_symmetric(tmp)
 
-      phi.l[[c]] <- phi
+      phi.l[[class]] <- phi
     }
-    names(phi.l) <- paste0("class", seq_len(object$info$num.classes))
     phi.l
 
   } else {
@@ -53,34 +51,49 @@ standardize <- function(object) {
   # direct approach
   if (is.list(pars) || object$model.class == "singleClass") {
 
-    gamma <- c(pars$class1[grep("Gamma", names(pars$class1))],
-      pars$class1[grep("Omega", names(pars$class1))])
+    gamma.dot <- list()
+    for (class in paste0("class", seq_len(object$info$num.classes))) {
+      l <- pars[[class]][grep("Gamma", names(pars[[class]]))]
+      nl <- pars[[class]][grep("Omega", names(pars[[class]]))]
+      gamma <- c(l, nl)
 
-    phi <- phi_mix(object, direct=TRUE)$class1
+      phi <- phi_mix(object, direct=TRUE)[[class]]
 
-    if (length(gamma) == nrow(phi)) {
+      if (length(gamma) == nrow(phi)) {
 
-      psi <- var_eta(parameters=gamma, phi=phi, psi=pars$class1[grep("Psi",
-        names(pars$class1))])
+        phi00 <- var_eta(parameters=gamma, phi=phi, psi=pars[[class]][grep("Psi",
+          names(pars[[class]]))])
 
-      nl <- matrix( nrow=object$info$num.xi, ncol=object$info$num.xi)
-      nl[lower.tri(nl, diag=TRUE)] <- pars$class1[grep("Omega", names(pars$class1))]
-      nl <- fill_symmetric(nl)
+        Omega <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
+        Omega[lower.tri(Omega, diag=TRUE)] <- nl
+        Omega <- fill_symmetric(Omega)
 
-      mu.i <- mu_group(object, "class1")
+        Omega2 <- Omega
+        diag(Omega2) <- 2*diag(Omega)
 
-      gamma_dot <- numeric(length(gamma))
-      for (i in seq_along(gamma)) {
+        mu.i <- mu_group(object, "class1")
 
-        gamma_dot[i] <- gamma[i] + gamma[]
-        # TODO: Parameter names? I need to be able to identify xi1, xi2,
-        # xi1:xi1, xi1:xi2, xi2:xi2.
+        # linear effects
+        phi.l <- phi[seq_len(object$info$num.xi), seq_len(object$info$num.xi)]
+
+        gamma.l <- (l + Omega2 %*% mu.i) * sqrt(diag(phi.l) / phi00)
+
+        # nonlinear effects
+        gamma.nl <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
+        for (i in seq_len(object$info$num.xi)) {
+          for (j in seq_len(object$info$num.xi)) {
+
+            gamma.nl[i,j] <- Omega[i,j] * sqrt(phi.l[i,i]*phi[j,j] / phi00)
+          }
+        }
+
+        gamma.dot[[class]] <- c(gamma.l, gamma.nl[upper.tri(gamma.nl, diag=TRUE)])
+
+      } else {
 
       }
 
-
-    } else {
-
+      gamma.dot
 
     }
 
@@ -93,7 +106,7 @@ standardize <- function(object) {
 
   }
 
-
+  gamma.dot
 }
 
 #--------------- helper functions ---------------
@@ -134,14 +147,12 @@ second_moments_group <- function(object, class="class1") {
   mu.i <- mu_group(object, class)
   nu.ij <- nu_group(object, class)
   
-  mu.ij <- NULL
+  mu.ij <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
   for (i in seq_len(object$info$num.xi)) {
     for (j in seq_len(object$info$num.xi)) {
-      mu.ij <- c(mu.ij, mu.i[i]*mu.i[j] + nu.ij[i, j])
+      mu.ij[i,j] <- mu.i[i]*mu.i[j] + nu.ij[i, j]
     }
   }
-  mu.ij <- matrix(mu.ij, nrow=object$info$num.xi, ncol=object$info$num.xi)
-  # TODO: Check if this works for num.xi > 2
   mu.ij
 
 }
@@ -152,16 +163,15 @@ third_moments_group <- function(object, class="class1") {
   mu.i <- mu_group(object, class)
   mu.ij <- second_moments_group(object, class)
 
-  mu.ijk <- NULL
+  mu.ijk <- array(dim=rep(object$info$num.xi, 3))
   for (i in seq_len(object$info$num.xi)) {
     for (j in seq_len(object$info$num.xi)) {
       for (k in seq_len(object$info$num.xi)) {
-        mu.ijk <- c(mu.ijk, mu.ij[i, j]*mu.i[k] + mu.ij[i, k]*mu.i[j] +
-          mu.ij[j, k]*mu.i[i] - 2*mu.i[i]*mu.i[j]*mu.i[k])
+        mu.ijk[i,j,k] <- mu.ij[i, j]*mu.i[k] + mu.ij[i, k]*mu.i[j] +
+          mu.ij[j, k]*mu.i[i] - 2*mu.i[i]*mu.i[j]*mu.i[k]
       }
     }
   }
-  mu.ijk <- array(mu.ijk, rep(object$info$num.xi, 3))
   mu.ijk
 
 }
@@ -172,40 +182,37 @@ fourth_moments_group <- function(object, class="class1") {
   nu.ij <- nu_group(object, class)
 
   # Eq. 34
-  nu.ijkl <- NULL
+  nu.ijkl <- array(dim=rep(object$info$num.xi, 4))
   for (i in seq_len(object$info$num.xi)) {
     for (j in seq_len(object$info$num.xi)) {
       for (k in seq_len(object$info$num.xi)) {
         for (l in seq_len(object$info$num.xi)) {
-          nu.ijkl <- c(nu.ijkl, nu.ij[i,j]*nu.ij[k,l] + nu.ij[i,k]*nu.ij[j,l] +
-            nu.ij[i,l]*nu.ij[j,k])
+          nu.ijkl[i,j,k,l] <- nu.ij[i,j]*nu.ij[k,l] + nu.ij[i,k]*nu.ij[j,l] +
+            nu.ij[i,l]*nu.ij[j,k]
         }
       }
     }
   }
-  nu.ijkl <- array(nu.ijkl, rep(object$info$num.xi, 4))
 
   mu.i <- mu_group(object, class)
   mu.ij <- second_moments_group(object, class)
   mu.ijk <- third_moments_group(object, class)
 
-  mu.ijkl <- NULL
+  mu.ijkl <- array(dim=rep(object$info$num.xi, 4))
   for (i in seq_len(object$info$num.xi)) {
     for (j in seq_len(object$info$num.xi)) {
       for (k in seq_len(object$info$num.xi)) {
         for (l in seq_len(object$info$num.xi)) {
-          mu.ijkl <- c(mu.ijkl, nu.ijkl + mu.ijk[i,j,k]*mu.i[l] +
+          mu.ijkl[i,j,k,l] <- nu.ijkl[i,j,k,l] + mu.ijk[i,j,k]*mu.i[l] +
             mu.ijk[i,j,l]*mu.i[k] + mu.ijk[i,k,l]*mu.i[j] +
             mu.ijk[j,k,l]*mu.i[i] - mu.ij[i,j]*mu.i[k]*mu.i[l] -
             mu.ij[i,k]*mu.i[j]*mu.i[l] - mu.ij[i,l]*mu.i[j]*mu.i[k] -
             mu.ij[j,k]*mu.i[i]*mu.i[l] - mu.ij[j,l]*mu.i[i]*mu.i[k] -
-            mu.ij[k,l]*mu.i[i]*mu.i[j] + 3*mu.i[i]*mu.i[j]*mu.i[k]*mu.i[l])
+            mu.ij[k,l]*mu.i[i]*mu.i[j] + 3*mu.i[i]*mu.i[j]*mu.i[k]*mu.i[l]
         }
       }
     }
   }
-  mu.ijkl <- array(mu.ijkl, rep(object$info$num.xi, 4))
-  # TOTHINK: How important is the order in these arrays?
   mu.ijkl
 
 }
@@ -320,11 +327,11 @@ cov_xy <- function(object, direct=TRUE) {
 
     cov.xy.l <- list()
 
-    for (c in seq_len(object$info$num.classes)) {
-      mu.i <- mu_group(object, paste0("class", c))
-      nu.ij <- second_moments_group(object, paste0("class", c))
-      nu.ijk <- third_moments_group(object, paste0("class", c))
-      nu.ijkl <- fourth_moments_group(object, paste0("class", c))
+    for (class in paste0("class", seq_len(object$info$num.classes))) {
+      mu.i <- mu_group(object, class)
+      nu.ij <- second_moments_group(object, class)
+      nu.ijk <- third_moments_group(object, class)
+      nu.ijkl <- fourth_moments_group(object, class)
 
       cov.xy <- NULL
       for (i in seq_len(object$info$num.xi)) {
@@ -347,9 +354,8 @@ cov_xy <- function(object, direct=TRUE) {
           }
         }
       }
-      cov.xy.l[[c]] <- cov.xy
+      cov.xy.l[[class]] <- cov.xy
     }
-    names(cov.xy.l) <- paste0("class", seq_len(object$info$num.classes))
     cov.xy.l
 
   } else {
@@ -390,11 +396,11 @@ cov_xyz <- function(object, direct=TRUE) {
   if (direct) {
 
     cov.xyz.l <- list()
-      for (c in seq_len(object$info$num.classes)) {
+      for (class in paste0("class", seq_len(object$info$num.classes))) {
 
-      mu.i <- mu_group(object, paste0("class", c))
-      nu.ij <- second_moments_group(object, paste0("class", c))
-      nu.ijk <- third_moments_group(object, paste0("class", c))
+      mu.i <- mu_group(object, class)
+      nu.ij <- second_moments_group(object, class)
+      nu.ijk <- third_moments_group(object, class)
 
       cov.ijk <- array(dim=c(object$info$num.xi, object$info$num.xi,
         object$info$num.xi))
@@ -406,9 +412,8 @@ cov_xyz <- function(object, direct=TRUE) {
         }
       }
       cov.ijk
-      cov.xyz.l[[c]] <- c(apply(cov.ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
+      cov.xyz.l[[class]] <- c(apply(cov.ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
     }
-    names(cov.xyz.l) <- paste0("class", seq_len(object$info$num.classes))
     cov.xyz.l
 
   } else {
