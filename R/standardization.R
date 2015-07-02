@@ -10,7 +10,21 @@ phi_mix <- function(object, direct=TRUE) {
   n <- object$info$num.xi
   nl <- factorial(n + 2 - 1) / (factorial(2)*factorial(n - 1))
 
-  if (direct) {
+  if (object$model.class == "singleClass") {
+
+    phi <- matrix(nrow=n + nl, ncol=n + nl)
+
+    phi[seq_len(n), seq_len(n)] <- second_moments_group(object, "class1")
+    phi[(n+1):nrow(phi), seq_len(n)] <- cov_xyz(object,
+      direct=direct)
+    phi[seq_len(n), (n+1):nrow(phi)] <- t(phi[(n+1):nrow(phi), seq_len(n)])
+    tmp <- matrix(nrow=nl, ncol=nl)
+    tmp[lower.tri(tmp, diag=T)] <- cov_xy(object, direct=direct)
+    phi[(n+1):nrow(phi), (n+1):nrow(phi)] <- fill_symmetric(tmp)
+
+    phi
+
+  } else if (direct) {
   
     phi.l <- list()
     for (class in paste0("class", seq_len(object$info$num.classes))) {
@@ -46,7 +60,11 @@ phi_mix <- function(object, direct=TRUE) {
 
 standardize <- function(object) {
 
-  pars <- coef(object)
+  if (object$model.class == "singleClass") {
+    pars <- list(class1 = coef(object))
+  } else {
+    pars <- coef(object)
+  }
 
   # direct approach
   if (is.list(pars)) {
@@ -57,7 +75,11 @@ standardize <- function(object) {
       nl <- pars[[class]][grep("Omega", names(pars[[class]]))]
       gamma <- c(l, nl)
 
-      phi <- phi_mix(object, direct=TRUE)[[class]]
+      if (object$model.class == "singleClass") {
+        phi <- phi_mix(object, direct=TRUE)
+      } else {
+        phi <- phi_mix(object, direct=TRUE)[[class]]
+      }
 
       if (length(gamma) == nrow(phi)) {
 
@@ -91,18 +113,14 @@ standardize <- function(object) {
         names(gamma.all) <- names(gamma)
         gamma.dot[[class]] <- gamma.all
 
-      } else if (object$model.class == "singleClass") {
 
-      # TODO need to extend phi_mix for this one!
 
       } else {
 
 
 
       }
-
     }
-
 
   # indirect approach
   } else {
@@ -161,7 +179,13 @@ standardize <- function(object) {
 # first moments
 mu_group <- function(object, class) {
 
-  mu <- coef(object)[[class]][grep("tau", names(coef(object)[[class]]))]
+  if (object$model.class == "singleClass") {
+    pars <- list(class1 = coef(object))
+  } else {
+    pars <- coef(object)
+  }
+
+  mu <- pars[[class]][grep("tau", names(pars[[class]]))]
   mu
 
 }
@@ -179,8 +203,14 @@ mu <- function(object) {
 ## central moments
 nu_group <- function(object, class) {
 
+  if (object$model.class == "singleClass") {
+    pars <- list(class1 = coef(object))
+  } else {
+    pars <- coef(object)
+  }
+
   nu <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
-  nu[lower.tri(nu, diag=TRUE)] <- coef(object)[[class]][grep("Phi", names(coef(object)[[class]]))]
+  nu[lower.tri(nu, diag=TRUE)] <- pars[[class]][grep("Phi", names(pars[[class]]))]
   nu <- fill_symmetric(nu)
   nu
 
@@ -370,7 +400,37 @@ fourth_moments_central <- function(object) {
 # Eq. 28: covariance of two product terms
 cov_xy <- function(object, direct=TRUE) {
 
-  if (direct) {
+  if (object$model.class == "singleClass") {
+
+    mu.i <- mu_group(object, "class1")
+    nu.ij <- second_moments_group(object, "class1")
+    nu.ijk <- third_moments_group(object, "class1")
+    nu.ijkl <- fourth_moments_group(object, "class1")
+
+    cov.xy <- NULL
+    for (i in seq_len(object$info$num.xi)) {
+      for (j in seq_len(object$info$num.xi)) {
+        for (k in seq_len(object$info$num.xi)) {
+          for (l in seq_len(object$info$num.xi)) {
+
+            if ((i == j & j == k & k == l) || (i == j & k == l & i < k) || (j
+            == k & k == l & i < j) || (i == l & j == k & i < j) || (i == j &
+            j == k & i < l)) {
+
+              cov.xy <- c(cov.xy, mu.i[i]*mu.i[k]*nu.ij[j,l] +
+                mu.i[i]*mu.i[l]*nu.ij[j,k] + mu.i[j]*mu.i[k]*nu.ij[i,l] +
+                mu.i[j]*mu.i[l]*nu.ij[i,k] - nu.ij[i,j]*nu.ij[k,l] +
+                mu.i[i]*nu.ijk[j,k,l] + mu.i[j]*nu.ijk[i,k,l] +
+                mu.i[k]*nu.ijk[i,j,l] + mu.i[l]*nu.ijk[i,j,k] +
+                nu.ijkl[i,j,k,l])
+            }
+          }
+        }
+      }
+    }
+    cov.xy
+
+  } else if (direct) {
 
     cov.xy.l <- list()
 
@@ -440,7 +500,25 @@ cov_xy <- function(object, direct=TRUE) {
 # Eq. 29: covariance of product term with third variable
 cov_xyz <- function(object, direct=TRUE) {
 
-  if (direct) {
+  if (object$model.class == "singleClass") {
+
+    mu.i <- mu_group(object, "class1")
+    nu.ij <- second_moments_group(object, "class1")
+    nu.ijk <- third_moments_group(object, "class1")
+
+    cov.ijk <- array(dim=c(object$info$num.xi, object$info$num.xi,
+      object$info$num.xi))
+    for (i in seq_len(object$info$num.xi)) {
+      for (j in seq_len(object$info$num.xi)) {
+        for (k in seq_len(object$info$num.xi)) {
+          cov.ijk[i,j,k] <- mu.i[i]*nu.ij[j,k] + mu.i[j]*nu.ij[i,k] + nu.ijk[i,j,k]
+        }
+      }
+    }
+    cov.xyz <- c(apply(cov.ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
+    cov.xyz
+
+  } else if (direct) {
 
     cov.xyz.l <- list()
       for (class in paste0("class", seq_len(object$info$num.classes))) {
@@ -478,7 +556,6 @@ cov_xyz <- function(object, direct=TRUE) {
         }
       }
     }
-    cov.ijk
     out <- c(apply(cov.ijk, 3, function(x) x[lower.tri(x, diag=TRUE)]))
     out
   }
