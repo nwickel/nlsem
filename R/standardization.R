@@ -49,7 +49,7 @@ standardize <- function(object) {
   pars <- coef(object)
 
   # direct approach
-  if (is.list(pars) || object$model.class == "singleClass") {
+  if (is.list(pars)) {
 
     gamma.dot <- list()
     for (class in paste0("class", seq_len(object$info$num.classes))) {
@@ -71,7 +71,7 @@ standardize <- function(object) {
         Omega2 <- Omega
         diag(Omega2) <- 2*diag(Omega)
 
-        mu.i <- mu_group(object, "class1")
+        mu.i <- mu_group(object, class)
 
         # linear effects
         phi.l <- phi[seq_len(object$info$num.xi), seq_len(object$info$num.xi)]
@@ -87,13 +87,19 @@ standardize <- function(object) {
           }
         }
 
-        gamma.dot[[class]] <- c(gamma.l, gamma.nl[upper.tri(gamma.nl, diag=TRUE)])
+        gamma.all <- c(gamma.l, gamma.nl[upper.tri(gamma.nl, diag=TRUE)])
+        names(gamma.all) <- names(gamma)
+        gamma.dot[[class]] <- gamma.all
+
+      } else if (object$model.class == "singleClass") {
+
+      # TODO need to extend phi_mix for this one!
 
       } else {
 
-      }
 
-      gamma.dot
+
+      }
 
     }
 
@@ -101,9 +107,50 @@ standardize <- function(object) {
   # indirect approach
   } else {
 
+    # pars <- pars[[1]]
+    # TOTHINK Depending on how I implement it this needs to be added.
+
+    l <- pars[grep("Gamma", names(pars))]
+    nl <- pars[grep("Omega", names(pars))]
+    gamma <- c(l, nl)
+
     phi <- phi_mix(object, direct=FALSE)
 
+    if (length(gamma) == nrow(phi)) {
 
+      phi00 <- var_eta(parameters=gamma, phi=phi, psi=pars[grep("Psi",
+        names(pars))])
+
+      Omega <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
+      Omega[lower.tri(Omega, diag=TRUE)] <- nl
+      Omega <- fill_symmetric(Omega)
+
+      Omega2 <- Omega
+      diag(Omega2) <- 2*diag(Omega)
+
+      mu.i <- pars[grep("tau", names(pars))]
+
+      # linear effects
+      phi.l <- phi[seq_len(object$info$num.xi), seq_len(object$info$num.xi)]
+
+      gamma.l <- (l + Omega2 %*% mu.i) * sqrt(diag(phi.l) / phi00)
+
+      # nonlinear effects
+      gamma.nl <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
+      for (i in seq_len(object$info$num.xi)) {
+        for (j in seq_len(object$info$num.xi)) {
+
+          gamma.nl[i,j] <- Omega[i,j] * sqrt(phi.l[i,i]*phi[j,j] / phi00)
+        }
+      }
+
+      gamma.dot <- c(gamma.l, gamma.nl[upper.tri(gamma.nl, diag=TRUE)])
+      names(gamma.dot) <- names(gamma)
+
+    } else {
+
+
+    }
   }
 
   gamma.dot
