@@ -28,7 +28,7 @@ qml <- function(model, data, start, max.iter=150,
                 neg.hessian=est$hessian,
                 iterations=est$iterations,
                 info=model$info[c("num.xi", "num.eta", "num.x", "num.y",
-                "xi", "eta")])
+                "xi", "eta", "num.classes")])
 
     class(out) <- "qmlEst"
     out
