@@ -199,7 +199,7 @@ loglikelihood_qml <- function(parameters, model, data) {
 }
 
 mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
-                      optimizer=c("nlminb", "optim"), max.iter=150,
+                      optimizer=c("nlminb", "optim"), max.iter=1,
                       control=list(), ...) {
 
     # optimizer
