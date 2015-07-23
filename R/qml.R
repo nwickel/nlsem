@@ -10,6 +10,14 @@ qml <- function(model, data, start, max.iter=150,
 
     if (model$info$num.eta > 1) stop("QML is not implemented for more than one eta.")
 
+    if (is.matrix(data)) {
+        data <- data
+    } else if (is.data.frame(data)) {
+        data <- as.matrix(data)
+    } else {
+        stop("data need to be a matrix or a data frame.")
+    }
+
     suppressWarnings(
     est <- mstep_qml(model=model, data=data, parameters=start,
                        neg.hessian=neg.hessian, optimizer=optimizer,
