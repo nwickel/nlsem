@@ -100,12 +100,12 @@ fscores <- function(parameters, num.x, num.y, num.xi, num.eta, xi, eta) {
   Gamma <- b1.mod1 %*% psihat %*% b1.mod2 %*% solve(t(b1.mod2) %*% psihat %*%
            (b1.mod2))
   
-  n <- nrow(dat)
+  n <- nrow(data)
   # eq(5)
   fs <- matrix(0, nrow=n, ncol=num.xi)
   for(i in 1:n){
       fs[i,] <- cbind(-Gamma, (diag(num.xi) + Gamma %*%
-        beta1hat)) %*% (t(t(as.matrix(dat[i,
+        beta1hat)) %*% (t(t(as.matrix(data[i,
         seq_len(num.x)]))) - rbind(beta0hat, matrix(0,
         num.xi, num.eta)))
   }
