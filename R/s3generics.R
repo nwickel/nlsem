@@ -124,7 +124,7 @@ simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, paramet
     dat
 }
 
-summary.emEst <- function(object, ...) {
+summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
 
     # estimates
     est <- object$coefficients
@@ -138,15 +138,14 @@ summary.emEst <- function(object, ...) {
         dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
     } else {
         est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
-                            s.error <- calc_standard_error(object$neg.hessian[[c]])
-                            tvalue <- est[[c]] / s.error
-                            pvalue <- 2 * pnorm(-abs(tvalue))
-                            est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
-                            dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
-                                                         c("Estimate", "Std. Error",
-                                                           "t value", "Pr(>|z|)"))
-                            est.table
-                           }))
+          s.error <- calc_standard_error(object$neg.hessian[[c]])
+          tvalue <- est[[c]] / s.error
+          pvalue <- 2 * pnorm(-abs(tvalue))
+          est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
+          dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
+            c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+          est.table
+        }))
     }
 
     # loglikelihoods
@@ -166,6 +165,8 @@ summary.emEst <- function(object, ...) {
         ans$class.weights <- object$info$w
     }
 
+    ans$print.likelihoods <- print.likelihoods
+
     class(ans) <- "summary.emEst"
 
     ans
@@ -174,16 +175,18 @@ summary.emEst <- function(object, ...) {
 print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
                                cs.ind=2:3, ...) {
     
-    cat("\nSummary for model of class", x$model, "\n")
-    cat("\nEstimates:\n")
-    printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
-    cat("\nNumber of iterations:", x$iterations,
-        "\nFinal loglikelihood:", round(x$finallogLik, 3)) 
-    if (x$model == "semm" || x$model == "nsemm"){
-        cat("\nFinal weights:", round(x$class.weights, 3))
-    }
-    cat("\n\n", "\nLikelihoods:\n")
+  cat("\nSummary for model of class", x$model, "\n")
+  cat("\nEstimates:\n")
+  printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
+  cat("\nNumber of iterations:", x$iterations, "\nFinal loglikelihood:",
+    round(x$finallogLik, 3), "\n") 
+  if (x$model == "semm" || x$model == "nsemm"){
+    cat("\nFinal weights:", round(x$class.weights, 3))
+  }
+  if (x$print.likelihoods) {
+    cat("\n", "\nLikelihoods:\n")
     printCoefmat(x$logLikelihoods, digits=6, cs.ind=2:3, ...)
+  }
 
 }
 
@@ -379,7 +382,7 @@ calc_standard_error <- function(neg.hessian) {
                        sqrt(diag(solve(neg.hessian)))
                     }
                 })
-                if (all(is.na(s.error))) warning("Standard errors could not be computed, because negative Hessian was either not available or singular")
+                if (all(is.na(s.error))) warning("Standard errors could not be computed, because negative Hessian was either not available or singular.")
                 if (any(is.nan(s.error))) warning("Standard errors for some coefficients could not be computed.") 
     s.error
 }

@@ -11,7 +11,7 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
     stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
               class(model) == "nsemm")
 
-    if (class(model) == "nsemm" & neg.hessian = TRUE) {
+    if (class(model) == "nsemm" & neg.hessian == TRUE) {
         neg.hessian = FALSE
         cat("Negative Hessian cannot be computed for model of class 'nsemm'. neg.hessian will be set to FALSE.")
     }
