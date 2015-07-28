@@ -57,12 +57,6 @@
 sc <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1, xi="x1-x2,x3-x4",
                    eta="y1-y2", interaction="xi1:xi2", interc.obs=FALSE) 
 
-# set default constraints
-spec <- as.data.frame(sc)
-spec[spec$label \%in\% c("tau1", "tau2"), "class1"] <- 0
-# create new model
-sc <- create_sem(spec)
-
 # simulate data
 pars.orig <- c(0.6, 0.7,                 # Lx
                0.8,                      # Ly
@@ -72,6 +66,7 @@ pars.orig <- c(0.6, 0.7,                 # Lx
                0.2,                      # Psi
                0.49, 0.235, 0.64,        # Phi
                1,                        # alpha
+               1, 1,                     # tau
                0.7                       # Omega
               )
 
