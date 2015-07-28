@@ -4,12 +4,17 @@
 
 # Performs EM-algorithm for different models of class 'singleClass', 'semm', and
 # 'nsemm'
-em <- function(model, data, start, qml=FALSE, logger=TRUE, convergence=1e-02,
+em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
                 max.iter=100, m=16, optimizer=c("nlminb", "optim"),
                 max.mstep=1, max.singleClass=1, neg.hessian=TRUE, ...) {
 
     stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
               class(model) == "nsemm")
+
+    if (class(model) == "nsemm" & neg.hessian = TRUE) {
+        neg.hessian = FALSE
+        cat("Negative Hessian cannot be computed for model of class 'nsemm'. neg.hessian will be set to FALSE.")
+    }
 
     if (is.matrix(data)) {
         data <- data
