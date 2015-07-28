@@ -149,7 +149,6 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     # create model with matrices and info
     model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                                num.x=num.x, num.y=num.y,
-                                               xi=xi,eta=eta,
                                                num.classes=num.classes,
                                                par.names=list(), w=w))
 
@@ -228,15 +227,7 @@ create_sem <- function(dat){
         Omega.matrix    <- matrix(dat[dat$label %in% Omega, paste0("class",c)],
                                   nrow=num.xi, ncol=num.xi)
 
-        if (num.classes == 1) {
-            matrices[[c]] <- list(Lambda.x=Lambda.x.matrix,
-                                  Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
-                                  Theta.d=Theta.d.matrix,
-                                  Theta.e=Theta.e.matrix, Psi=Psi.matrix,
-                                  Phi=Phi.matrix, nu.x=nu.x.matrix,
-                                  nu.y=nu.y.matrix, alpha=alpha.matrix,
-                                  tau=tau.matrix, Omega=Omega.matrix)
-        } else if (all(is.na(Omega.matrix))) {
+        if (all(is.na(Omega.matrix))) {
             matrices[[c]] <- list(Lambda.x=Lambda.x.matrix,
                                   Lambda.y=Lambda.y.matrix, Gamma=Gamma.matrix,
                                   Beta=Beta.matrix, Theta.d=Theta.d.matrix,
@@ -267,8 +258,6 @@ create_sem <- function(dat){
 
     info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
                  num.classes=num.classes, par.names=par.names, w=w)
-    # TODO: info$xi and info$eta are missing here! Needed, so
-    # get_factor_scores() will run. --> But maybe change it there!
 
     model <- list(matrices=matrices, info=info)
 

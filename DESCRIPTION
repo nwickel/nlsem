@@ -1,6 +1,6 @@
 Package: nlsem
-Version: 0.3.1
-Date: 2015-03-11
+Version: 0.4
+Date: 2015-07-28
 Title: Fitting Structural Equation Mixture Models
 Authors@R: c(person("Nora", "Umbach",
                     role = c("aut", "cre"),

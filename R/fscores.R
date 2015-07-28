@@ -9,6 +9,13 @@ get_factor_scores <- function(object, model, data) {
     stop("object is not of class 'emEst' or 'qmlEst'.")
   }
 
+  ind <- list()
+  for (i in seq_len(ncol(model$matrices$class1$Lambda.x))) {
+    ind.rows <- seq_len(nrow(model$matrices$class1$Lambda.x))
+    lambda.i <- which(model$matrices$class1$Lambda.x[,i] == 0)
+    ind[[i]] <- ind.rows[-lambda.i]
+  }
+
   # check if model and object can possibly belong together
   if (object$info$num.x != model$info$num.x || object$info$num.x !=
       model$info$num.x || object$info$num.x != model$info$num.x ||
@@ -23,14 +30,8 @@ get_factor_scores <- function(object, model, data) {
     fs.l <- lapply(pars, FUN=function(x)fscores(parameters=x,
       num.x=object$info$num.x, num.y=object$info$num.y,
       num.xi=object$info$num.xi, num.eta=object$info$num.eta,
-      xi=object$info$xi, eta=object$info$eta, data=data))
+      ind=ind, data=data))
 
-    # TODO: Decide if you want model as an argument or change em and
-    # specify_sem output so model can be recreated
-    # model <- specify_sem(object$info$num.x, object$info$num.y,
-    #   object$info$num.xi, object$info$num.eta, object$info$xi,
-    #   object$info$eta, object$info$num.classes)
-    
     P <- estep_semm(model=model, parameters=unlist(pars), data=data)
 
     ws <- NULL
@@ -42,7 +43,7 @@ get_factor_scores <- function(object, model, data) {
   } else {
     fs <- fscores(parameters=pars, num.x=object$info$num.x,
       num.y=object$info$num.y, num.xi=object$info$num.xi,
-      num.eta=object$info$num.eta, xi=object$info$xi, eta=object$info$eta,
+      num.eta=object$info$num.eta, ind=ind,
       data=data)
   }
   fs 
@@ -52,14 +53,10 @@ get_factor_scores <- function(object, model, data) {
 
 # Calculate Bartlett factor scores from parameter estimates of structural
 # equation model
-fscores <- function(parameters, num.x, num.y, num.xi, num.eta, xi, eta,
-  data) {
+fscores <- function(parameters, num.x, num.y, num.xi, num.eta, ind, data) {
 
   pars <- parameters
   psi <- pars[grep("Theta.d", names(pars))]
-  
-  xi.s <- unlist(strsplit(xi, ","))
-  ind <- lapply(xi.s, FUN=grep_ind)
   
   psihat <- diag(psi[c(unlist(lapply(ind, function(x)x[-1])),
     sapply(ind, function(x)x[1]))])

@@ -1,12 +1,12 @@
 # em.R
 #
-# last mod: Mar/10/2015, NU
+# last mod: Jul/28/2015, NU
 
 # Performs EM-algorithm for different models of class 'singleClass', 'semm', and
 # 'nsemm'
-em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
-                max.iter=100, m=16, optimizer=c("nlminb", "optim"),
-                max.mstep=1, max.singleClass=1, neg.hessian=TRUE, ...) {
+em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
+               max.iter=100, m=16, optimizer=c("nlminb", "optim"),
+               max.mstep=1, max.singleClass=1, neg.hessian=TRUE, ...) {
 
     stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
               class(model) == "nsemm")
@@ -43,7 +43,7 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
         stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")
     }
 
-    if(logger == TRUE) {
+    if(verbose == TRUE) {
         cat("-----------------------------------\n")
         cat("Starting EM-algorithm for", class(model), "\n")
         cat(paste("Convergence: ", convergence, "\n"))
@@ -69,7 +69,7 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
             }
         }
 
-        if(logger == TRUE) {
+        if(verbose == TRUE) {
             cat(paste("Iteration", num.iter+1, "\n"))
             cat("Doing expectation-step \n")
         }
@@ -88,7 +88,7 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
            "semm" = {
                 P <- estep_semm(model=model, parameters=par.old, data=data)
                 model$info$w <- colSums(P) / nrow(data)
-                if (logger == TRUE) {
+                if (verbose == TRUE) {
                     cat("Class weights: ", round(model$info$w, digits=4), "\n")
                 }
             },
@@ -99,13 +99,13 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
                 P            <- res$P
                 model$info$w <- res$w.c
                 par.old      <- res$par.old
-                if (logger == TRUE) {
+                if (verbose == TRUE) {
                     cat("Class weights: ", round(model$info$w, digits=4), "\n")
                 }
             }
         )
   
-        if(logger == TRUE){
+        if(verbose == TRUE){
             cat("Doing maximization-step \n")
         }
         
@@ -126,7 +126,7 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
                                   max.mstep=max.mstep, ...) }
         )
 
-        if(logger == TRUE) {
+        if(verbose == TRUE) {
             cat("Results of maximization \n")
             cat(paste0("Loglikelihood: ", round(-m.step$objective, 3), "\n"))
             cat(paste0("Convergence message: ", m.step$convergence[1], "\n"))
@@ -147,7 +147,7 @@ em <- function(model, data, start, qml=FALSE, verbose=False, convergence=1e-02,
     }
 
     
-    if(logger == TRUE) {
+    if(verbose == TRUE) {
         cat("-----------------------------------\n")
         cat("EM completed \n")
         #cat(paste0("Previous loglikelihood: ", round(-ll.old, 3), "\n"))

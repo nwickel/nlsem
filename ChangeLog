@@ -1,8 +1,8 @@
-Changes in 0.3.1
+Changes in 0.4
 
-  * New function: get_factor_scroes(), calculate Bartlett factor scores
+  * New function: get_factor_scores(), calculate Bartlett factor scores
     from parameter estimates
-  * qml(): works with non-centeres exogenous variables now; fixed bug,
+  * qml(): works with non-centered exogenous variables now; fixed bug,
     max.iter does what it is supposed to do now
   * estep_lms(): fixed weird error message: "Error in
     !all.equal(rowSums(P), rep(1, nrow(P))) : invalid argument type"

@@ -26,6 +26,7 @@ model <- specify_sem(num.x = 11, num.y = 4, num.xi = 2, num.eta = 1,
 
 data("jordan")
 
+set.seed(123)
 start <- runif(count_free_parameters(model))
 \dontrun{
 res <- em(model, jordan, start)

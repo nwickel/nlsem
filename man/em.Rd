@@ -7,7 +7,7 @@
   mixture approaches (LMS, SEMM, NSEMM).
 }
 \usage{
-  em(model, data, start, qml = FALSE, verbose = TRUE, convergence = 1e-02,
+  em(model, data, start, qml = FALSE, verbose = FALSE, convergence = 1e-02,
      max.iter = 100, m = 16, optimizer = c("nlminb", "optim"),
      max.mstep = 1, max.singleClass=1, neg.hessian = TRUE, ...) }
 \arguments{
@@ -113,7 +113,7 @@ data("jordan")
 set.seed(110)
 start <- runif(count_free_parameters(model))
 \dontrun{
-res <- em(model, jordan, start, convergence=1)
+res <- em(model, jordan, start, convergence=1, verbose=TRUE)
 summary(res)
 plot(res)
 }

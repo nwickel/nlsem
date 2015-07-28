@@ -6,7 +6,7 @@
   Summarize data from object obtained from \code{\link{em}}.
 }
 \usage{
-\method{summary}{emEst}(object, loglikelihood = FALSE, ...)
+\method{summary}{emEst}(object, print.likelihoods = FALSE, ...)
 }
 \arguments{
   \item{object}{estimated structural equation model of class \code{emEst}
