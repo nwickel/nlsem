@@ -1,11 +1,11 @@
 # fscores.R
 #
 # created: Jun/19/2015, NU
-# last mod: Jun/19/2015, NU
+# last mod: Jul/28/2015, NU
 
 get_factor_scores <- function(object, model, data) {
 
-  if (class(object) != "emEst" || class(object) != "qmlEst") {
+  if (all(class(object) != "emEst", class(object) != "qmlEst")) {
     stop("object is not of class 'emEst' or 'qmlEst'.")
   }
 
@@ -23,7 +23,7 @@ get_factor_scores <- function(object, model, data) {
     fs.l <- lapply(pars, FUN=function(x)fscores(parameters=x,
       num.x=object$info$num.x, num.y=object$info$num.y,
       num.xi=object$info$num.xi, num.eta=object$info$num.eta,
-      xi=object$info$xi, eta=object$info$eta))
+      xi=object$info$xi, eta=object$info$eta, data=data))
 
     # TODO: Decide if you want model as an argument or change em and
     # specify_sem output so model can be recreated
@@ -42,7 +42,8 @@ get_factor_scores <- function(object, model, data) {
   } else {
     fs <- fscores(parameters=pars, num.x=object$info$num.x,
       num.y=object$info$num.y, num.xi=object$info$num.xi,
-      num.eta=object$info$num.eta, xi=object$info$xi, eta=object$info$eta)
+      num.eta=object$info$num.eta, xi=object$info$xi, eta=object$info$eta,
+      data=data)
   }
   fs 
 
@@ -51,7 +52,8 @@ get_factor_scores <- function(object, model, data) {
 
 # Calculate Bartlett factor scores from parameter estimates of structural
 # equation model
-fscores <- function(parameters, num.x, num.y, num.xi, num.eta, xi, eta) {
+fscores <- function(parameters, num.x, num.y, num.xi, num.eta, xi, eta,
+  data) {
 
   pars <- parameters
   psi <- pars[grep("Theta.d", names(pars))]
@@ -104,10 +106,10 @@ fscores <- function(parameters, num.x, num.y, num.xi, num.eta, xi, eta) {
   # eq(5)
   fs <- matrix(0, nrow=n, ncol=num.xi)
   for(i in 1:n){
-      fs[i,] <- cbind(-Gamma, (diag(num.xi) + Gamma %*%
-        beta1hat)) %*% (t(t(as.matrix(data[i,
-        seq_len(num.x)]))) - rbind(beta0hat, matrix(0,
-        num.xi, num.eta)))
+    fs[i,] <- cbind(-Gamma, (diag(num.xi) + Gamma %*%
+      beta1hat)) %*% (t(as.matrix(data[i,
+      seq_len(num.x)])) - rbind(beta0hat, matrix(0,
+      num.xi, num.eta)))
   }
 
   fs
