@@ -1,4 +1,4 @@
-import(stats)
+import(stats, graphics)
 
 importFrom(mvtnorm, dmvnorm, rmvnorm)
 importFrom(gaussquad, hermite.h.quadrature.rules)
