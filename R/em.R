@@ -1,6 +1,6 @@
 # em.R
 #
-# last mod: Jul/28/2015, NU
+# last mod: Jul/30/2015, NU
 
 # Performs EM-algorithm for different models of class 'singleClass', 'semm', and
 # 'nsemm'
@@ -10,6 +10,8 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
 
     stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
               class(model) == "nsemm")
+
+    if (anyNA(data)) stop("Data contains NAs. Please remove.")
 
     if (class(model) == "nsemm" & neg.hessian == TRUE) {
         neg.hessian = FALSE

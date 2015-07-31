@@ -40,7 +40,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     for (i in seq_len(num.xi)) {
         xi.ind[[i]] <- grep_ind(xi.s[i])
         if (max(xi.ind[[i]]) > num.x) {
-            stop("Number of x's assinged to xi exceeds x's specified. See ?specify_sem")
+            stop("Number of x's assinged to xi exceeds x's specified. See ?specify_sem.")
         }
     }
 
@@ -112,12 +112,32 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta, num.classes=1,
     # Omega
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
     if (interaction != "none"){
-        interaction.s <- unlist(strsplit(interaction, ","))
+
+      interaction.s <- unlist(strsplit(interaction, ","))
+      eta.logical <- matrix(nrow=num.eta, ncol=length(interaction.s))
+
+      for (i in seq_len(num.eta)){
+        eta.logical[i,] <- grepl(paste0("eta[",i,"]"), interaction.s)
+      }
+
+      which.eta <- apply(eta.logical, 2, which)
+
+      if (all((which.eta == 1))) {
         ind <- calc_interaction_matrix(interaction.s)
         Omega[ind] <- NA
+        # check if Omega has row echelon form
+        test_omega(Omega)
+
+      } else {
+        Omega <- array(0, dim=c(num.xi, num.xi, length(unique(which.eta))))
+        for (i in seq_len(num.eta)) {
+          eta.row <- which(eta.logical[i,])
+          ind <- calc_interaction_matrix(interaction.s[eta.row])
+          Omega[ind[,1],ind[,2],i] <- NA
+          test_omega(Omega[,,i])
+        }
+      }
     }
-    # check if Omega has row echelon form
-    test_omega(Omega)
 
     # make a list of the matrices for each class
     matrices <- list()
@@ -392,7 +412,7 @@ test_omega <- function(Omega){
     if (anyNA(Omega)){
 
         interactions <- Omega
-        diag(interactions) <- 0
+        #diag(interactions) <- 0
         ind <- which(is.na(interactions), arr.ind=TRUE)
         dim <- nrow(interactions)
         msg <- "Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details."
@@ -405,29 +425,14 @@ test_omega <- function(Omega){
                     stop(msg)
         }
 
-        #if (nrow(ind) == 1){
-        #    if (!is.na(interactions[1, dim]))
-        #        stop(msg)
-        # 
-        #} else {
-            if (max(ind[,1]) > 1){
-                for (i in 2:max(ind[,1])){
-                    if (min(which(is.na(interactions[i-1,]))) >=
-                    min(which(is.na(interactions[i,])))) {
-                        stop(msg)
-                    }
+        if (max(ind[,1]) > 1){
+            for (i in 2:max(ind[,1])){
+                if (min(which(is.na(interactions[i-1,]))) >=
+                min(which(is.na(interactions[i,])))) {
+                    stop(msg)
                 }
             }
-        #}
-
-        # test if quadratic effects are defined for xi's that are not
-        # involved in interactions
-        diag.o <- diag(Omega)
-        na.c <- colSums(interactions)
-        for (i in 2:dim){
-            if (!is.na(na.c[i]) & is.na(diag.o[i]))
-                stop("Quadratic effects defined for xi's which are not involved in any interactions.")
-            }
+        }
         invisible(NULL)
     } else {
         invisible(NULL)
@@ -499,15 +504,6 @@ get_model_class <- function(num.classes, interaction) {
     }
 }
 
-# get_model_class <- function(num.classes, interaction) {
-#     if (num.classes == 1 && interaction != "none") {
-#         model.class <- "singleClass"
-#     } else if (num.classes != 1 && interaction != "none") {
-#             model.class <- "nsemm"
-#     } else model.class <- "semm"
-# }
-
-
 # Obtains parameter names from a given model; used in specify_sem
 get_parnames <- function(model) {
 
@@ -523,10 +519,10 @@ get_parnames <- function(model) {
 # Fills upper.tri of a (filled) matrix which should be symmetric
 fill_symmetric <- function(mat) {
     for (i in seq_len(nrow(mat))) {
-                for (j in i:ncol(mat)) {
-                        mat[i,j] <- mat[j,i]
-                }
-            }
+        for (j in i:ncol(mat)) {
+            mat[i,j] <- mat[j,i]
+        }
+    }
     mat
 }
 
