@@ -118,12 +118,18 @@ mu_qml <- function(model, data) {
   muu.m  <- matrix(rep(mu.u, N), N, (ny-ne), byrow=T)
   mvy1.m <- matrix(rep(m$nu.y[1:ne], N), ne, N, byrow=T) 
   
+  tmp <- matrix(nrow=ne, ncol=N)
+  for (i in seq_len(N)) {
+    tmp[,i] <- ga2.b %*% vech((mt.m + L1 %*% t(x[i,] - mux.m)) %*% 
+      t(mt.m + L1 %*% t(x[i,] - mux.m)) + Sigma1)
+  }
+
   # Eq. 20
   mu.y1 <- 
     mvy1.m +
     ma.m +
     ga1.b %*% (mt.m + L1 %*% t(x - mux.m)) +
-    ga2.b %*% vech((mt.m + L1 %*% t(x - mux.m)) %*% t(mt.m + L1 %*% t(x - mux.m)) + Sigma1) +
+    tmp +
     # TODO This term is (2 x 1) and everything else (2 x 400). Why??
     L2 %*% t(u-muu.m)
     
@@ -144,7 +150,7 @@ sigma_qml <- function(model, data) {
   y <- data[, (model$info$num.x + 1):dim(data)[2]]
 
   ###########################
-  #HBneu: Anzahl y, eta => Anzahl ystar (s. Anmerung nach Gl. 17)
+  #HBneu: Anzahl y, eta => Anzahl ystar (s. Anmerkung nach Gl. 17)
   ny <- model$info$num.y
   ne <- model$info$num.eta
   ###########################
@@ -252,14 +258,16 @@ loglikelihood_qml <- function(parameters, model, data) {
   sigma.qml  <- sigma_qml(model = mod.filled, data=data)
   
   if (model$info$num.y > 1) {
-      # transformation of y
-      beta <- mod.filled$matrices$class1$Lambda.y[-1,] 
-      R <- cbind(-beta, diag(length(beta)))
-      u <- y %*% t(R)
+    # transformation of y
+    beta <- model$matrices$class1$Lambda.y[(model$info$num.eta + 1):model$info$num.y,] 
+    R <- cbind(-beta, diag(model$info$num.y-model$info$num.eta))
+    u <- y %*% t(R)
   } else {
-      u <- 0
-      # TODO: s.o.
+    u <- 0
+    # TODO: s.o.
   }
+
+  N <- nrow(data)
 
   # Eq 10: densities
   f2 <- dmvnorm(cbind(x, u), mean=mean.qml[[1]], sigma=sigma.qml[[1]])
@@ -268,12 +276,18 @@ loglikelihood_qml <- function(parameters, model, data) {
   ###########################
   # HBneu: Das ist noch falsch. sigma ist personenspezifisch, es muessen
   # also i=1:N angewaehlt werden.
-  f3 <- dmvnorm(y[,1:ne], mean=mean.qml[[2]], sigma=sigma.qml[[2]])
+  lls <- NULL
+  for (i in seq_len(N)) {
+    f3 <- dmvnorm(y[,1:model$info$num.eta], mean=mean.qml[[2]][,i],
+      sigma=sigma.qml[[2]][[i]])
+    lls <- c(lls, sum(log(f2*f3)))
+  }
+
   # TODO: muss das hier wirklich 1:ne heissen? Und nicht vielleicht ny?
   # Oder evtl. ne:ny?
   ###########################
   
-  res <- sum(log(f2*f3))
+  res <- sum(lls)
   
   return(-res)
 }
