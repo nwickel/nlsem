@@ -1,7 +1,7 @@
 # lms.R
 #
 # created: Sep/11/2014, NU
-# last mod: Feb/26/2015, NU
+# last mod: Aug/20/2015, NU
 
 #--------------- main functions ---------------
 
@@ -9,7 +9,7 @@
 # indicators (see Equations 16 and 18, 19 in Klein & Moosbrugger, 2000)
 mu_lms <- function(model, z) {
     
-    check_filled(model)
+    #check_filled(model)
 
     matrices <- model$matrices$class1
     k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
@@ -35,7 +35,7 @@ mu_lms <- function(model, z) {
 # indicators (see Equations 17 and 20-22 in Klein & Moosbrugger, 2000)
 sigma_lms <- function(model, z) {
 
-    check_filled(model)
+    #check_filled(model)
 
     matrices <- model$matrices$class1
     k     <- get_k(matrices$Omega)    # number of nonzero rows in Omega
@@ -65,11 +65,12 @@ sigma_lms <- function(model, z) {
 }
 
 # Expectation step of EM-algorithm (see Klein & Moosbrugger, 2000)
-estep_lms <- function(model, parameters, dat, m, ...) {
+estep_lms <- function(model, parameters, dat, m, indirect, mmi, ...) {
 
     stopifnot(count_free_parameters(model) == length(parameters))
 
-    mod.filled <- fill_model(model=model, parameters=parameters)
+    mod.filled <- fill_model(model=model, parameters=parameters,
+      indirect=indirect, mmi=mmi)
 
     k <- get_k(mod.filled$matrices$class1$Omega)
     if (k != 0){
@@ -97,9 +98,11 @@ estep_lms <- function(model, parameters, dat, m, ...) {
 }
 
 # log likelihood function which will be optimized in M-step (see below)
-loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
+loglikelihood_lms <- function(parameters, model, dat, P, m=16, indirect,
+                              mmi, ...) {
     
-    mod.filled <- fill_model(model=model, parameters=parameters)
+    mod.filled <- fill_model(model=model, parameters=parameters,
+      indirect=indirect, mmi=mmi)
 
     k <- get_k(mod.filled$matrices$class1$Omega)
     quad <- quadrature(m, k)
@@ -119,9 +122,9 @@ loglikelihood_lms <- function(parameters, model, dat, P, m=16, ...) {
 }
 
 # Maximization step of EM-algorithm (see Klein & Moosbrugger, 2000)
-mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
-                      optimizer=c("nlminb", "optim"), max.mstep,
-                      control=list(), ...) {
+mstep_lms <- function(parameters, model, dat, P, m, indirect, mmi,
+                      neg.hessian=FALSE, optimizer=c("nlminb", "optim"),
+                      max.mstep, control=list(), ...) {
 
     # optimizer
     optimizer <- match.arg(optimizer)
@@ -135,14 +138,11 @@ mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
         suppress_NaN_warnings(
             # See semm.R helper function
             est <- nlminb(start=parameters, objective=loglikelihood_lms, dat=dat,
-                          model=model, P=P, upper=model$info$bounds$upper,
-                          lower=model$info$bounds$lower,
-                          control=control, ...)
+                          model=model, P=P, indirect=indirect, mmi=mmi,
+                          upper=model$info$bounds$upper,
+                          lower=model$info$bounds$lower, control=control,
+                          ...)
         )
-        if (neg.hessian == TRUE){
-            est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
-                                        model=model, dat=dat, P=P)$Hessian
-        }
     } else {
 
         if (is.null(control$maxit)){
@@ -150,20 +150,20 @@ mstep_lms <- function(parameters, model, dat, P, m, neg.hessian=FALSE,
         } else warning("maxit is set for optim. max.mstep will be ignored.")
 
         est <- optim(par=parameters, fn=loglikelihood_lms, model=model, dat=dat,
-                     P=P, upper=model$info$bounds$upper,
+                     P=P, indirect=indirect, mmi=mmi,
+                     upper=model$info$bounds$upper,
                      lower=model$info$bounds$lower, method="L-BFGS-B",
                      control=control, ...)
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
-        if (neg.hessian == TRUE){
-            #est$hessian <- optimHess(est$par, fn=loglikelihood_lms, model=model,
-            #                         P=P, dat=dat)
-            ## --> gives too often a singular neg. Hessian
-            est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
-                                        model=model, dat=dat, P=P)$Hessian
-  
-        }
     }
+    if (neg.hessian == TRUE){
+    est$hessian <- fdHess(pars=est$par, fun=loglikelihood_lms,
+                          model=model, dat=dat, P=P,
+                          indirect=indirect, mmi=mmi)$Hessian
+  
+    }
+
 
     est
 }

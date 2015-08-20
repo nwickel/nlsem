@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Feb/06/2015, KN
+# last mod Aug/20/2015, NU
 
 #--------------- main functions ---------------
 
@@ -21,6 +21,8 @@ simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, .
     set.seed(seed)
 
     mod.filled <- fill_model(object, parameters)
+    # TODO This needs fixing since arguments indirect and mmi are not used
+    # here
 
     num.classes <- mod.filled$info$num.classes
     w <- mod.filled$info$w
@@ -52,6 +54,8 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
     set.seed(seed)
 
     mod.filled <- fill_model(object, parameters)
+    # TODO This needs fixing since arguments indirect and mmi are not used
+    # here
 
     num.classes <- mod.filled$info$num.classes
     w <- mod.filled$info$w
@@ -97,6 +101,8 @@ simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, paramet
     names(object$matrices$class1)[grep("Phi", names(object$matrices$class1))] <- "A"
 
     mod.filled <- fill_model(object, parameters)
+    # TODO This needs fixing since arguments indirect and mmi are not used
+    # here
 
     # simulate n data points from each mixture distribution
     dat.sim <- lapply(seq_along(w), function(i){
@@ -179,9 +185,9 @@ print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
   cat("\nEstimates:\n")
   printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
   cat("\nNumber of iterations:", x$iterations, "\nFinal loglikelihood:",
-    round(x$finallogLik, 3), "\n") 
+    round(x$finallogLik, 3)) 
   if (x$model == "semm" || x$model == "nsemm"){
-    cat("\nFinal weights:", round(x$class.weights, 3))
+    cat("\nFinal weights:", round(x$class.weights, 3), "\n\n")
   }
   if (x$print.likelihoods) {
     cat("\n", "\nLikelihoods:\n")

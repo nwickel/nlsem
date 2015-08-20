@@ -1,12 +1,13 @@
 # em.R
 #
-# last mod: Jul/30/2015, NU
+# last mod: Aug/20/2015, NU
 
 # Performs EM-algorithm for different models of class 'singleClass', 'semm', and
 # 'nsemm'
-em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
-               max.iter=100, m=16, optimizer=c("nlminb", "optim"),
-               max.mstep=1, max.singleClass=1, neg.hessian=TRUE, ...) {
+em <- function(model, data, start, indirect=FALSE, mmi=FALSE, qml=FALSE,
+               verbose=FALSE, convergence=1e-02, max.iter=100, m=16,
+               optimizer=c("nlminb", "optim"), max.mstep=1,
+               max.singleClass=1, neg.hessian=TRUE, ...) {
 
     stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
               class(model) == "nsemm")
@@ -15,7 +16,7 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
 
     if (class(model) == "nsemm" & neg.hessian == TRUE) {
         neg.hessian = FALSE
-        cat("Negative Hessian cannot be computed for model of class 'nsemm'. neg.hessian will be set to FALSE.")
+        warning("Negative Hessian cannot be computed for model of class 'nsemm'. neg.hessian will be set to FALSE.\n")
     }
 
     if (is.matrix(data)) {
@@ -26,20 +27,20 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
         stop("data need to be a matrix or a data frame.")
     }
 
-    if (!count_free_parameters(model) == length(start)){
-        stop("Number of starting parameters is not equal to number of free parameters in model.")
-    }
+    # if (!count_free_parameters(model) == length(start)){
+    #     stop("Number of starting parameters is not equal to number of free parameters in model.")
+    # }
 
     if (ncol(data) != (model$info$num.x + model$info$num.y)) {
         stop("Number of columns in data does not match number of x's and y's.")
     }
 
-    if (class(model) == "singleClass" || class(model) == "nsemm"){
-        n.na <- length(which(is.na(model$matrices$class1$Omega)))
-        if (any(start[-c(1:(length(start) - n.na))] == 0)){
-            stop("Starting parameters for Omega should not be 0.")
-        }
-    }
+    # if (class(model) == "singleClass" || class(model) == "nsemm"){
+    #     n.na <- length(which(is.na(model$matrices$class1$Omega)))
+    #     if (any(start[-c(1:(length(start) - n.na))] == 0)){
+    #         stop("Starting parameters for Omega should not be 0.")
+    #     }
+    # }
 
     if (anyNA(model$matrices$class1$Omega) && model$info$num.eta > 1){
         stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")
@@ -85,19 +86,23 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
            "singleClass" = {
                 names(model$matrices$class1)[grep("Phi", names(model$matrices$class1))] <- "A"
                 # rename Phi to A, since LMS algorithm estimates A
-                P <- estep_lms(model=model, parameters=par.old, dat=data, m=m, ...)
+                P <- estep_lms(model=model, parameters=par.old, dat=data,
+                               m=m, indirect=indirect, mmi=mmi, ...)
             },
            "semm" = {
-                P <- estep_semm(model=model, parameters=par.old, data=data)
+                P <- estep_semm(model=model, parameters=par.old, data=data,
+                                indirect=indirect, mmi=mmi)
                 model$info$w <- colSums(P) / nrow(data)
                 if (verbose == TRUE) {
                     cat("Class weights: ", round(model$info$w, digits=4), "\n")
                 }
             },
             "nsemm" = {
-                res <- estep_nsemm(model=model, parameters=par.old, data=data,
+                res <- estep_nsemm(model=model, parameters=par.old,
+                                   data=data, indirect=indirect, mmi=mmi,
                                    max.singleClass=max.singleClass, qml=qml,
                                    convergence=convergence, ...)
+                # TODO Check if QML needs indirect and mmi
                 P            <- res$P
                 model$info$w <- res$w.c
                 par.old      <- res$par.old
@@ -115,17 +120,19 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
         switch(class(model),
             "singleClass" = {
                 m.step <- mstep_lms(model=model, P=P, dat=data, parameters=par.old,
-                                m=m, optimizer=optimizer,
+                                m=m, indirect=indirect, mmi=mmi, optimizer=optimizer,
                                 max.mstep=max.mstep, ...)
             },
             "semm" = {
                 m.step <- mstep_semm(model=model, parameters=par.old, P=P,
-                                  data=data, optimizer=optimizer,
-                                  max.mstep=max.mstep, ...) },
+                                  data=data, indirect=indirect, mmi=mmi,
+                                  optimizer=optimizer, max.mstep=max.mstep,
+                                  ...) },
             "nsemm" = {
                 m.step <- mstep_nsemm(model=model, parameters=par.old, P=P,
-                                  data=data, optimizer=optimizer,
-                                  max.mstep=max.mstep, ...) }
+                                  data=data, indirect=indirect, mmi=mmi,
+                                  optimizer=optimizer, max.mstep=max.mstep,
+                                  ...) }
         )
 
         if(verbose == TRUE) {
@@ -168,9 +175,10 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
     switch(class(model),
        "singleClass" = {
             final <- mstep_lms(model=model, P=P, dat=data,
-                               parameters=par.new, neg.hessian=neg.hessian, m=m,
-                               optimizer=optimizer,
-                               max.mstep=max.mstep, ...)
+                               parameters=par.new, neg.hessian=neg.hessian,
+                               m=m, indirect=indirect, mmi=mmi,
+                               optimizer=optimizer, max.mstep=max.mstep,
+                               ...)
             names(final$par) <- model$info$par.names
             # Transform parameters back to Phi
             A <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
@@ -180,11 +188,13 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
         },
         "semm" = {
             final <- mstep_semm(model=model, parameters=par.old, P=P,
-                                 data=data, neg.hessian=neg.hessian,
-                                 optimizer=optimizer,
-                                 max.mstep=max.mstep, ...)
+                                 data=data, indirect=indirect, mmi=mmi,
+                                 neg.hessian=neg.hessian,
+                                 optimizer=optimizer, max.mstep=max.mstep,
+                                 ...)
             if (is.numeric(final$par)) {
                 par.names <- NULL
+                final$par <- rep(final$par, model$info$num.classes)
                 for (c in seq_len(model$info$num.classes)) {
                     par.names <- c(par.names,
                                    paste0("class", c, ".", model$info$par.names[[c]]))
@@ -198,11 +208,13 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
         },
         "nsemm" = {
             final <- mstep_nsemm(model=model, parameters=par.old, P=P,
-                                 data=data, neg.hessian=neg.hessian,
-                                 optimizer=optimizer,
-                                 max.mstep=max.mstep, ...)
+                                 data=data, indirect=indirect, mmi=mmi,
+                                 neg.hessian=neg.hessian,
+                                 optimizer=optimizer, max.mstep=max.mstep,
+                                 ...)
             if (is.numeric(final$par)) {
                 par.names <- NULL
+                final$par <- rep(final$par, model$info$num.classes)
                 for (c in seq_len(model$info$num.classes)) {
                     par.names <- c(par.names,
                                    paste0("class", c, ".", model$info$par.names[[c]]))

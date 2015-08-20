@@ -1,7 +1,7 @@
 # semm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Dec/12/2014, KN
+# last mod: Aug/20/2015, NU
 
 #--------------- main functions ---------------
 
@@ -10,7 +10,7 @@
 # The order is (x, y) as opposed to the paper.
 mu_semm <- function(matrices) {
 
-    check_filled(matrices)
+    #check_filled(matrices)
 
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% solve(matrices$Beta) %*%
             (matrices$alpha + matrices$Gamma %*% matrices$tau)
@@ -26,7 +26,7 @@ mu_semm <- function(matrices) {
 # sigma are switched.
 sigma_semm <- function(matrices) {
 
-    check_filled(matrices)
+    #check_filled(matrices)
 
     # Lambda.y * B^-1
     Ly.Binv <- matrices$Lambda.y %*% solve(matrices$Beta)
@@ -47,9 +47,10 @@ sigma_semm <- function(matrices) {
 }
 
 # Expectation step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-estep_semm <- function(model, parameters, data) {
+estep_semm <- function(model, parameters, data, indirect, mmi) {
 
-    model.filled <- fill_model(model=model, parameters=parameters)
+    model.filled <- fill_model(model=model, parameters=parameters,
+      indirect=indirect, mmi=mmi)
 
     P <- NULL
     for (c in seq_len(model$info$num.classes)) {
@@ -98,8 +99,10 @@ loglikelihood_semm <- function(parameters, matrices, data, p, w) {
 }
 
 # negative log likelihood function for maximization of all classes at once
-loglikelihood_semm_constraints <- function(parameters, model, data, P) {
-    model.filled <- fill_model(model, parameters)
+loglikelihood_semm_constraints <- function(parameters, model, data, P,
+                                           indirect, mmi) {
+    model.filled <- fill_model(model, parameters, indirect=indirect,
+      mmi=mmi)
     N <- nrow(data)
     res <- 0
 
@@ -120,15 +123,15 @@ loglikelihood_semm_constraints <- function(parameters, model, data, P) {
 
 
 # Maximization step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
-                        optimizer=c("nlminb", "optim"), constraints=FALSE,
+mstep_semm <- function(model, parameters, data, P, indirect=FALSE,
+                        mmi=FALSE, neg.hessian=FALSE,
+                        optimizer=c("nlminb", "optim"),
                         max.mstep, control=list(), ...) {
-    # --> TODO add constraints argument to doku, if it stays!
 
     optimizer <- match.arg(optimizer)
 
-    if (constraints == FALSE) {
-    ## maximizing each class seperately
+    if (indirect == FALSE & mmi == FALSE) {
+    ## maximizing each class separately
         num.classes <- model$info$num.classes
         class.pars <- get_class_parameters(model, parameters)
 
@@ -208,16 +211,11 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
             suppress_NaN_warnings(
                 est <- nlminb(start=parameters,
                               objective=loglikelihood_semm_constraints, data=data,
-                              model=model, P=P,
+                              model=model, P=P, indirect=indirect, mmi=mmi,
                               upper=unlist(model$info$bounds$upper),
                               lower=unlist(model$info$bounds$lower),
                               control=control, ...)
             )
-            if (neg.hessian == TRUE){
-                est$hessian <- fdHess(pars=est$par,
-                                      fun=loglikelihood_semm_constraints,
-                                      model=model, data=data, P=P)$Hessian
-            }
         } else {
             if (is.null(control$maxit)){
                 control$maxit <- max.mstep
@@ -225,20 +223,18 @@ mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
                 warning("maxit is set for optim. max.mstep will be ignored.")
             }
             est <- optim(par=parameters, fn=loglikelihood_semm_constraints,
-                         model=model, data=data, P=P,
-                         upper=unlist(model$info$bounds$upper),
+                         model=model, data=data, P=P, indirect=indirect,
+                         mmi=mmi, upper=unlist(model$info$bounds$upper),
                          lower=unlist(model$info$bounds$lower),
                          method="L-BFGS-B", control=control, ...)
             # fit est to nlminb output
             names(est) <- gsub("value", "objective", names(est))
-            if (neg.hessian == TRUE) {
-                est$hessian <- fdHess(pars=est$par,
-                                      fun=loglikelihood_semm_constraints,
-                                      model=model, data=data, P=P)$Hessian
-                #est$hessian <- optimHess(est$par,
-                #                         fn=loglikelihood_semm_constraints,
-                #                         model=model, P=P, data=data)
-            }
+        }
+        if (neg.hessian == TRUE) {
+            est$hessian <- fdHess(pars=est$par,
+                                  fun=loglikelihood_semm_constraints,
+                                  model=model, data=data, P=P,
+                                  indirect=indirect, mmi=mmi)$Hessian
         }
         est
     }

@@ -1,12 +1,13 @@
 # nsemm.R
 #
 # created: Nov/14/2014, KN
-# last mod: Feb/04/2015, NU
+# last mod: Aug/20/2015, NU
 
 #--------------- main functions ---------------
 
-estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
-                        convergence, logger=FALSE, ...) {
+estep_nsemm <- function(model, parameters, data, indirect, mmi,
+                        max.singleClass, qml, convergence, verbose=FALSE,
+                        ...) {
 
     num.classes <- model$info$num.classes
 
@@ -22,8 +23,8 @@ estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
             # em for lms
             suppressWarnings(
             est <- em(model=lms.model, data=data, start=class.parameters[[c]],
-                      logger=logger, neg.hessian=FALSE,
-                      max.iter=max.singleClass,
+                      indirect=indirect, mmi=mmi, verbose=verbose,
+                      neg.hessian=FALSE, max.iter=max.singleClass,
                       convergence=convergence, ...)
             )
             # suppress warnings since they are non-informative in this
@@ -32,7 +33,8 @@ estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
             par.new <- c(par.new, est$coefficients)
         } else {
             est <- mstep_qml(model=lms.model, data=data, parameters=class.parameters[[c]],
-                             neg.hessian=FALSE, max.iter=max.singleClass, ...)
+                             neg.hessian=FALSE, max.iter=max.singleClass,
+                             ...)
 
             par.new <- c(par.new, est$par)
         }
@@ -40,19 +42,21 @@ estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
 
     # e-step for semm
     # Note that Omega and A are not estimated
-    P <- estep_semm(model=model, parameters=par.new, data=data)
+    P <- estep_semm(model=model, parameters=par.new, data=data,
+      indirect=indirect, mmi=mmi)
     w.c <- colSums(P) / nrow(data)
 
     res <- list(P=P, w.c=w.c, par.old=par.new)
     res
 }
 
-mstep_nsemm <- function(model, parameters, P, data, optimizer, max.mstep,
-                        control=list(), ...) {
+mstep_nsemm <- function(model, parameters, P, data, indirect, mmi,
+                        optimizer, max.mstep, control=list(), ...) {
 
     est <- mstep_semm(model=model, parameters=parameters, P=P,
-                                data=data, optimizer=optimizer,
-                                max.mstep=max.mstep, control=control, ...)
+                                data=data, indirect=indirect, mmi=mmi,
+                                optimizer=optimizer, max.mstep=max.mstep,
+                                control=control, ...)
 
     est
 }

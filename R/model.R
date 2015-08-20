@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Nov/25/2014, NU
+# last mod Aug/20/2015, NU
 
 #--------------- main functions ---------------
 
@@ -308,46 +308,84 @@ count_free_parameters <- function(model) {
 
 # Fill a model created with specify_sem with parameters given as a vector;
 # mostly needed to simulate data from a prespecified model; NOT exported
-fill_model <- function(model, parameters) {
+fill_model <- function(model, parameters, indirect=FALSE, mmi=FALSE) {
 
-    stopifnot(class(model) == "singleClass" || class(model) == "semm"
-              || class(model) == "nsemm")
+  if (indirect == TRUE & mmi == TRUE) {
+      stop("Can either set all parameters to be identical (indirect=TRUE) or only measurement model parameters (mmi=TRUE), not both.")
+  }
+
+  stopifnot(class(model) == "singleClass" || class(model) == "semm"
+            || class(model) == "nsemm")
+
+  matrices <- model$matrices
+
+  if (indirect) {
+
+    stopifnot(count_free_parameters(model) == length(parameters)*model$info$num.classes)
+
+    for (i in seq_along(matrices$class1)) {
+      matrix.i <- matrices$class1[[i]]
+      # number of NA's in matrix
+      num.na <- length(matrix.i[is.na(matrix.i)])
+        if (num.na > 0) {
+          matrix.i[is.na(matrix.i)] <- parameters[1:num.na]
+          parameters <- parameters[-(1:num.na)]
+          for (class in names(matrices)) {
+            matrices[[class]][[i]] <- matrix.i
+          }
+        }
+    }
+    # fill symmetric matrices
+    for (class in names(matrices)) { 
+      tryCatch({matrices[[class]]$Phi <-
+        fill_symmetric(matrices[[class]]$Phi)}, error=function(e) e,
+        warning=function(w) w)
+      tryCatch({matrices[[class]]$Psi <-
+        fill_symmetric(matrices[[class]]$Psi)}, error=function(e) e,
+        warning=function(w) w)
+    }
+
+
+  } else if (mmi) {
+
+    stop("mmi is not implemented, yet.")
+
+
+  } else {
 
     stopifnot(count_free_parameters(model) == length(parameters))
 
-    matrices <- model$matrices
-
     for (c in seq_len(model$info$num.classes)) {
-        if (class(model) == "singleClass") {
-            par.names <- model$info$par.names
-        } else {
-            par.names <- model$info$par.names[[c]]
-        }
-        matrices.c <- matrices[[c]] # to avoid multiple [[]]
+      if (class(model) == "singleClass") {
+        par.names <- model$info$par.names
+      } else {
+        par.names <- model$info$par.names[[c]]
+      }
+      matrices.c <- matrices[[c]] # to avoid multiple [[]]
 
-        for (j in seq_along(matrices.c)) {
-            matrix.j <- matrices.c[[j]]
-            # number of NA's in matrix
-            num.na <- length(matrix.j[is.na(matrix.j)])
-            if (num.na > 0) {
-                matrix.j[is.na(matrix.j)] <- parameters[1:num.na]
-                parameters <- parameters[-(1:num.na)]
-                matrices.c[[j]] <- matrix.j
-            }
+      for (j in seq_along(matrices.c)) {
+        matrix.j <- matrices.c[[j]]
+        # number of NA's in matrix
+        num.na <- length(matrix.j[is.na(matrix.j)])
+        if (num.na > 0) {
+          matrix.j[is.na(matrix.j)] <- parameters[1:num.na]
+          parameters <- parameters[-(1:num.na)]
+          matrices.c[[j]] <- matrix.j
         }
-        # make 'symmetric' matrices symmetric
-        tryCatch({ matrices.c$Psi <- fill_symmetric(matrices.c$Psi) },
-                                       error=function(e) e,
-                                       warning=function(w) w)
-        tryCatch({ matrices.c$Phi <- fill_symmetric(matrices.c$Phi) },
-                                       error=function(e) e,
-                                       warning=function(w) w)
-        # catching error if there is no Phi (like in "internal" LMS)
-        matrices[[c]] <- matrices.c
+      }
+      # make 'symmetric' matrices symmetric
+      tryCatch({ matrices.c$Psi <- fill_symmetric(matrices.c$Psi) },
+        error=function(e) e, warning=function(w) w)
+      tryCatch({ matrices.c$Phi <- fill_symmetric(matrices.c$Phi) },
+        error=function(e) e, warning=function(w) w)
+      # catching error if there is no Phi (like in "internal" LMS)
+      matrices[[c]] <- matrices.c
     }
-    out <- list(matrices=matrices, info=model$info)
-    class(out) <- class(model)
-    out
+
+  }
+  out <- list(matrices=matrices, info=model$info)
+  class(out) <- class(model)
+  out
 }
 
 #--------------- helper functions ---------------
@@ -358,6 +396,8 @@ fill_model <- function(model, parameters) {
 check_filled <- function(x) {
     if (anyNA(unlist(x))) stop("Model is not filled.")
 }
+# TODO What's going on with this function? Why does it not work with
+# indirect=TRUE??
 
 # Grep indices for Lambda matrices from input that defines which indicators
 # are asociated with which latent variable
