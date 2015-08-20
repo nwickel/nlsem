@@ -347,20 +347,60 @@ fill_model <- function(model, parameters, indirect=FALSE, mmi=FALSE) {
 
 
   } else if (mmi) {
+    # TODO This needs more testing!
 
-    stop("mmi is not implemented, yet.")
+    if (class(model) == "singleClass") stop("Setting mmi not sensible for model of class 'singleClass'.")
+    #stop("mmi is not implemented, yet.")
 
+    for (i in seq_along(matrices$class1)) {
+      matrix.i <- matrices$class1[[i]]
+      # number of NA's in matrix
+      num.na <- length(matrix.i[is.na(matrix.i)])
+        if (num.na > 0) {
+          matrix.i[is.na(matrix.i)] <- parameters[1:num.na]
+          parameters <- parameters[-(1:num.na)]
+          for (class in names(matrices)) {
+            matrices[[class]][[i]] <- matrix.i
+          }
+        }
+    }
+    # fill symmetric matrices
+    for (class in names(matrices)) {
+      tryCatch({matrices[[class]]$Phi <-
+        fill_symmetric(matrices[[class]]$Phi)}, error=function(e) e,
+        warning=function(w) w)
+      tryCatch({matrices[[class]]$Psi <-
+        fill_symmetric(matrices[[class]]$Psi)}, error=function(e) e,
+        warning=function(w) w)
+    }
+    # Fill in structural parameters for other classes
+    for (class in names(matrices)[-1]){
+      # Gamma
+      num.g <- sum(matrices[[class]]$Gamma != 0)
+      matrices[[class]]$Gamma[matrices[[class]]$Gamma != 0] <- parameters[1:num.g]
+      parameters <- parameters[-(1:num.g)]
+      # Beta
+      num.b <- sum(matrices[[class]]$Beta != 0 & matrices[[class]]$Beta != 1)
+      matrices[[class]]$Beta[matrices[[class]]$Beta != 0 & matrices[[class]]$Beta != 1]  <- parameters[1:num.b]
+      parameters <- parameters[-(1:num.b)]
+      # Omega
+      if (class(model) == "nsemm") {
+        num.o <- sum(matrices[[class]]$Omega != 0)
+        matrices[[class]]$Omega[matrices[[class]]$Omega != 0] <- parameters[1:num.o]
+        parameters <- parameters[-(1:num.o)]
+      }
+    }
 
   } else {
 
     stopifnot(count_free_parameters(model) == length(parameters))
 
     for (c in seq_len(model$info$num.classes)) {
-      if (class(model) == "singleClass") {
-        par.names <- model$info$par.names
-      } else {
-        par.names <- model$info$par.names[[c]]
-      }
+      # if (class(model) == "singleClass") {
+      #   par.names <- model$info$par.names
+      # } else {
+      #   par.names <- model$info$par.names[[c]]
+      # }
       matrices.c <- matrices[[c]] # to avoid multiple [[]]
 
       for (j in seq_along(matrices.c)) {
