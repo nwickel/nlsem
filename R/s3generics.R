@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Aug/20/2015, NU
+# last mod Aug/25/2015, NU
 
 #--------------- main functions ---------------
 
@@ -185,7 +185,7 @@ print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
   cat("\nEstimates:\n")
   printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
   cat("\nNumber of iterations:", x$iterations, "\nFinal loglikelihood:",
-    round(x$finallogLik, 3)) 
+    round(x$finallogLik, 3), "\n") 
   if (x$model == "semm" || x$model == "nsemm"){
     cat("\nFinal weights:", round(x$class.weights, 3), "\n\n")
   }

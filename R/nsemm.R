@@ -1,11 +1,11 @@
 # nsemm.R
 #
 # created: Nov/14/2014, KN
-# last mod: Aug/20/2015, NU
+# last mod: Aug/25/2015, NU
 
 #--------------- main functions ---------------
 
-estep_nsemm <- function(model, parameters, data, indirect, mmi,
+estep_nsemm <- function(model, parameters, data, constraints,
                         max.singleClass, qml, convergence, verbose=FALSE,
                         ...) {
 
@@ -23,7 +23,7 @@ estep_nsemm <- function(model, parameters, data, indirect, mmi,
             # em for lms
             suppressWarnings(
             est <- em(model=lms.model, data=data, start=class.parameters[[c]],
-                      indirect=indirect, mmi=mmi, verbose=verbose,
+                      constraints=constraints, verbose=verbose,
                       neg.hessian=FALSE, max.iter=max.singleClass,
                       convergence=convergence, ...)
             )
@@ -50,11 +50,11 @@ estep_nsemm <- function(model, parameters, data, indirect, mmi,
     res
 }
 
-mstep_nsemm <- function(model, parameters, P, data, indirect, mmi,
+mstep_nsemm <- function(model, parameters, P, data, constraints,
                         optimizer, max.mstep, control=list(), ...) {
 
     est <- mstep_semm(model=model, parameters=parameters, P=P,
-                                data=data, indirect=indirect, mmi=mmi,
+                                data=data, constraints=constraints,
                                 optimizer=optimizer, max.mstep=max.mstep,
                                 control=control, ...)
 

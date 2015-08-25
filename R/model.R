@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Aug/20/2015, NU
+# last mod Aug/25/2015, NU
 
 #--------------- main functions ---------------
 
@@ -299,10 +299,58 @@ create_sem <- function(dat){
 
 # Count free parameters of a model created with specify_sem (i.e. NAs in
 # the model are counted); exported function
-count_free_parameters <- function(model) {
-  res <- 0
-  for (c in seq_len(model$info$num.classes))
-      res <- res + sum(unlist(lapply(model$matrices[[c]], is.na)))
+count_free_parameters <- function(model, constraints=c("indirect",
+                                  "direct1", "direct2")) {
+
+  if (class(model) == "singleClass") constraints <- "direct1"
+  # So I do not need to change LMS and QML code.
+
+  constraints <- match.arg(constraints)
+  switch(EXPR = constraints,
+
+    indirect = {
+
+      res <- sum(unlist(lapply(model$matrices$class1, is.na)))
+      parnames <- c("Phi", "tau")
+      num.c <- 0
+      for (class in names(model$matrices[-1])) {
+        for (parname in parnames) {
+          num.c <- num.c +
+            sum(unlist(lapply(model$matrices[[class]][[parname]], is.na)))
+        }
+      }
+      res <- res + num.c
+    },
+
+    direct1 = {
+
+      res <- 0
+      for (class in names(model$matrices))
+        res <- res + sum(unlist(lapply(model$matrices[[class]], is.na)))
+
+    },
+
+    direct2 = {
+
+      res <- sum(unlist(lapply(model$matrices$class1, is.na)))
+     
+      if (class(model) == "semm") {
+        parnames <- c("Gamma", "Beta", "Psi", "Phi", "tau")
+      } else {
+        parnames <- c("Gamma", "Beta", "Psi", "Phi", "tau", "Omega")
+      }
+
+      num.c <- 0
+      for (class in names(model$matrices[-1])) {
+        for (parname in parnames) {
+          num.c <- num.c +
+            sum(unlist(lapply(model$matrices[[class]][[parname]], is.na)))
+        }
+      }
+      res <- res + num.c
+    }
+  )     # end of switch
+
   res
 }
 
@@ -315,6 +363,7 @@ fill_model <- function(model, parameters, constraints = c("indirect",
             || class(model) == "nsemm")
 
   if (class(model) == "singleClass") constraints <- "direct1"
+  # So I do not need to change LMS and QML code.
 
   matrices <- model$matrices
 
@@ -322,6 +371,7 @@ fill_model <- function(model, parameters, constraints = c("indirect",
   switch(EXPR = constraints,
 
     indirect = {
+      stopifnot(count_free_parameters(model, constraints=constraints) == length(parameters))
 
       parnames <- c("Phi", "tau")
       ind.list <- list()
@@ -354,13 +404,10 @@ fill_model <- function(model, parameters, constraints = c("indirect",
           parameters <- parameters[-(1:num)]
         }
       }
-      if(length(parameters) != 0) {
-        stop("More parameters given than needed. Parameter vector should have length of all free parameters. For indirect approach this must be all parameters for class 1 + number of tau's and Phi's for every other class.")
-      }
     },
 
     direct1 = {
-      stopifnot(count_free_parameters(model) == length(parameters))
+      stopifnot(count_free_parameters(model, constraints=constraints) == length(parameters))
 
       for (class in names(matrices)) {
         for (i in seq_along(matrices[[class]])) {
@@ -378,6 +425,8 @@ fill_model <- function(model, parameters, constraints = c("indirect",
     },
 
     direct2 = {
+
+      stopifnot(count_free_parameters(model, constraints=constraints) == length(parameters))
 
       if (class(model) == "semm") {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "tau")
@@ -420,9 +469,6 @@ fill_model <- function(model, parameters, constraints = c("indirect",
           matrices[[class]][["Omega"]][ind] <- parameters[1:num]
           parameters <- parameters[-(1:num)]
         }
-      }
-      if(length(parameters) != 0) {
-        stop("More parameters given than needed. Parameter vector should have length of all free parameters of class 1 + number of structural parameters for other classes (Gamma, Beta, Psi, Phi, tau, and maybe Omega).")
       }
     }
   )     # end of switch
@@ -624,7 +670,7 @@ fill_symmetric <- function(mat) {
 diag_ind <- function(num) diag(matrix(seq_len(num^2), num))
 
 # Set bounds for parameters: variances > 0
-bounds <- function(model) {
+bounds <- function(model, constraints) {
 
     # variances to (0, Inf)
     if (class(model) == "singleClass") {
