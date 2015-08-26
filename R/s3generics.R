@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Aug/25/2015, NU
+# last mod Aug/26/2015, NU
 
 #--------------- main functions ---------------
 
@@ -16,170 +16,165 @@ as.data.frame.singleClass <- as.data.frame.semm <- as.data.frame.nsemm <- functi
     data
 }
 
-simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
+simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, m=16,
+                           parameters, ...) {
 
-    set.seed(seed)
+  set.seed(seed)
 
-    mod.filled <- fill_model(object, parameters)
-    # TODO This needs fixing since arguments indirect and mmi are not used
-    # here
+  mod.filled <- fill_model(model=object, parameters=parameters)
 
-    num.classes <- mod.filled$info$num.classes
-    w <- mod.filled$info$w
+  num.classes <- mod.filled$info$num.classes
+  w <- mod.filled$info$w
 
-    # simulate n data points for each mixture as lms
-    dat.sim <- lapply(seq_len(num.classes), function(c) {
-                      simulate(lms_ify(object, c),
-                               nsim=nsim, seed=seed, n=n, m=m,
-                               parameters=get_class_parameters(object, parameters)[[c]],
-                               ...)
+  # simulate n data points for each mixture as lms
+  dat.sim <- lapply(seq_len(num.classes), function(c) {
+                    simulate(lms_ify(object, c),
+                             nsim=nsim, seed=seed, n=n, m=m,
+                             parameters=get_class_parameters(object,
+                             parameters)[[c]], ...)
 
-    })
+  })
 
-    # see simulate.singleClass for explanation
-    border <- cumsum(w)
-    prob <- runif(n)
+  # see simulate.singleClass for explanation
+  border <- cumsum(w)
+  prob <- runif(n)
 
-    dat <- NULL
-    for (i in seq_len(n)) {
-        ind <- sum(prob[i] > border) + 1
-        dat <- rbind(dat, dat.sim[[ind]][i,])
-    }
+  dat <- NULL
+  for (i in seq_len(n)) {
+    ind <- sum(prob[i] > border) + 1
+    dat <- rbind(dat, dat.sim[[ind]][i,])
+  }
 
-    dat
+  dat
 }
 
 simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
-    set.seed(seed)
+  set.seed(seed)
 
-    mod.filled <- fill_model(object, parameters)
-    # TODO This needs fixing since arguments indirect and mmi are not used
-    # here
+  mod.filled <- fill_model(model=object, parameters=parameters)
 
-    num.classes <- mod.filled$info$num.classes
-    w <- mod.filled$info$w
+  num.classes <- mod.filled$info$num.classes
+  w <- mod.filled$info$w
 
-    # simulate n data points from each mixture distribution
-    dat.sim <- lapply(1:num.classes, function(c) {
-                      rmvnorm(n,
-                              mean=mu_semm(matrices=mod.filled$matrices[[c]]),
-                              sigma=sigma_semm(matrices=mod.filled$matrices[[c]]))
-                              })
+  # simulate n data points from each mixture distribution
+  dat.sim <- lapply(1:num.classes, function(c) {
+                    rmvnorm(n,
+                            mean=mu_semm(matrices=mod.filled$matrices[[c]]),
+                            sigma=sigma_semm(matrices=mod.filled$matrices[[c]]))
+                            })
 
-    # see simulate.singleClass for explanation
+  # see simulate.singleClass for explanation
+  border <- cumsum(w)
+  prob <- runif(n)
+
+  dat <- NULL
+  for (i in seq_len(n)){
+    ind <- sum(prob[i] > border) + 1
+    dat <- rbind(dat, dat.sim[[ind]][i,])
+  }
+
+  dat
+}
+
+simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
+
+  # set seed
+  set.seed(seed)
+
+  # Gauss-Hermite quadrature
+  k <- get_k(object$matrices$class1$Omega)
+  if (k != 0){
+      quad <- quadrature(m=m, k=k)
+      V <- quad$n
+      w <- quad$w
+  } else {
+      V <- 0
+      w <- 1
+      # do not need mixtures, if I do not have interactions
+  }
+
+  parameters <- convert_parameters_singleClass(object, parameters)
+  names(object$matrices$class1)[grep("Phi", names(object$matrices$class1))] <- "A"
+
+  mod.filled <- fill_model(model=object, parameters=parameters)
+
+  # simulate n data points from each mixture distribution
+  dat.sim <- lapply(seq_along(w), function(i){
+                      rmvnorm(n, 
+                      mean=mu_lms(model=mod.filled, z=V[i,]),
+                      sigma=sigma_lms(model=mod.filled, z=V[i,]))
+                      })
+  dat <- dat.sim
+
+  # decide which data points from each mixture should be included in
+  # simulated data set: weights give intervall borders between 0 and 1;
+  # we draw random numbers from a uniform distribution and check in what
+  # intervall they lie: the ith element from that distribution will be
+  # taken and put into the data frame
+  if (k != 0){
     border <- cumsum(w)
     prob <- runif(n)
 
     dat <- NULL
     for (i in seq_len(n)){
-        ind <- sum(prob[i] > border) + 1
-        dat <- rbind(dat, dat.sim[[ind]][i,])
+      ind <- sum(prob[i] > border) + 1
+      dat <- rbind(dat, dat.sim[[ind]][i,])
     }
-
-    dat
-}
-
-simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
-
-    # set seed
-    set.seed(seed)
-
-    # Gauss-Hermite quadrature
-    k <- get_k(object$matrices$class1$Omega)
-    if (k != 0){
-        quad <- quadrature(m=m, k=k)
-        V <- quad$n
-        w <- quad$w
-    } else {
-        V <- 0
-        w <- 1
-        # do not need mixtures, if I do not have interactions
-    }
-
-    parameters <- convert_parameters_singleClass(object, parameters)
-    names(object$matrices$class1)[grep("Phi", names(object$matrices$class1))] <- "A"
-
-    mod.filled <- fill_model(object, parameters)
-    # TODO This needs fixing since arguments indirect and mmi are not used
-    # here
-
-    # simulate n data points from each mixture distribution
-    dat.sim <- lapply(seq_along(w), function(i){
-                           rmvnorm(n, 
-                           mean=mu_lms(model=mod.filled, z=V[i,]),
-                           sigma=sigma_lms(model=mod.filled, z=V[i,]))
-                           })
-    dat <- dat.sim
-
-    # decide which data points from each mixture should be included in
-    # simulated data set: weights give intervall borders between 0 and 1;
-    # we draw random numbers from a uniform distribution and check in what
-    # intervall they lie: the ith element from that distribution will be
-    # taken and put into the data frame
-    if (k != 0){
-        border <- cumsum(w)
-        prob <- runif(n)
-
-        dat <- NULL
-        for (i in seq_len(n)){
-            ind <- sum(prob[i] > border) + 1
-            dat <- rbind(dat, dat.sim[[ind]][i,])
-        }
-    }
-    dat
+  }
+  dat
 }
 
 summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
 
-    # estimates
-    est <- object$coefficients
+  # estimates
+  est <- object$coefficients
 
-    # standard errors
-    if (is.numeric(est)) {
-        s.error <- calc_standard_error(object$neg.hessian)
-        tvalue <- est / s.error
-        pvalue <- 2 * pnorm(-abs(tvalue))
-        est.table <- cbind(est, s.error, tvalue, pvalue)
-        dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
-    } else {
-        est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
-          s.error <- calc_standard_error(object$neg.hessian[[c]])
-          tvalue <- est[[c]] / s.error
-          pvalue <- 2 * pnorm(-abs(tvalue))
-          est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
-          dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
-            c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
-          est.table
-        }))
-    }
+  # standard errors
+  if (is.numeric(est)) {
+    s.error <- calc_standard_error(object$neg.hessian)
+    tvalue <- est / s.error
+    pvalue <- 2 * pnorm(-abs(tvalue))
+    est.table <- cbind(est, s.error, tvalue, pvalue)
+    dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+  } else {
+    est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
+      s.error <- calc_standard_error(object$neg.hessian[[c]])
+      tvalue <- est[[c]] / s.error
+      pvalue <- 2 * pnorm(-abs(tvalue))
+      est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
+      dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
+        c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+      est.table
+    }))
+  }
 
-    # loglikelihoods
-    iterations   <- length(object$loglikelihoods) 
-    abs.change   <- c(0, diff(object$loglikelihoods))
-    rel.change   <- rel_change(object$loglikelihoods)
-    logLik.table <- cbind(object$loglikelihoods, abs.change, rel.change)
-    dimnames(logLik.table) <- list(1:iterations, c("loglikelihood", "difference", "relative change"))
+  # loglikelihoods
+  iterations   <- length(object$loglikelihoods) 
+  abs.change   <- c(0, diff(object$loglikelihoods))
+  rel.change   <- rel_change(object$loglikelihoods)
+  logLik.table <- cbind(object$loglikelihoods, abs.change, rel.change)
+  dimnames(logLik.table) <- list(1:iterations, c("loglikelihood", "difference", "relative change"))
 
-    ans <- list(model=object$model.class,
-                estimates=est.table,
-                iterations=iterations,
-                finallogLik=object$objective,
-                logLikelihoods=logLik.table)
+  ans <- list(model=object$model.class,
+              estimates=est.table,
+              iterations=iterations,
+              finallogLik=object$objective,
+              logLikelihoods=logLik.table)
 
-    if (object$model.class == "semm" || object$model.class == "nsemm") {
-        ans$class.weights <- object$info$w
-    }
+  if (object$model.class == "semm" || object$model.class == "nsemm") {
+    ans$class.weights <- object$info$w
+  }
 
-    ans$print.likelihoods <- print.likelihoods
+  ans$print.likelihoods <- print.likelihoods
 
-    class(ans) <- "summary.emEst"
+  class(ans) <- "summary.emEst"
 
-    ans
+  ans
 }
 
 print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
-                               cs.ind=2:3, ...) {
+                                cs.ind=2:3, ...) {
     
   cat("\nSummary for model of class", x$model, "\n")
   cat("\nEstimates:\n")

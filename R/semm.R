@@ -1,7 +1,7 @@
 # semm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Aug/25/2015, NU
+# last mod: Aug/26/2015, NU
 
 #--------------- main functions ---------------
 
@@ -47,26 +47,25 @@ sigma_semm <- function(matrices) {
 }
 
 # Expectation step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-estep_semm <- function(model, parameters, data, constraints) {
+estep_semm <- function(model, parameters, data) {
 
-    model.filled <- fill_model(model=model, parameters=parameters,
-      constraints = constraints)
+  model.filled <- fill_model(model=model, parameters=parameters)
 
-    P <- NULL
-    for (c in seq_len(model$info$num.classes)) {
-        # class weight
-        w.c <- model$info$w[c]
+  P <- NULL
+  for (c in seq_len(model$info$num.classes)) {
+    # class weight
+    w.c <- model$info$w[c]
 
-        p.ij <- w.c * dmvnorm(data, mean=mu_semm(model.filled$matrices[[c]]),
-                              sigma=sigma_semm(model.filled$matrices[[c]]))
-        if (sum(p.ij) == 0) stop("Posterior probability could not be calculated properly. Choose different starting parameters.")
-        P <- cbind(P, p.ij, deparse.level=0)
-    }
-    P <- P / rowSums(P)
-    P
+    p.ij <- w.c * dmvnorm(data, mean=mu_semm(model.filled$matrices[[c]]),
+                          sigma=sigma_semm(model.filled$matrices[[c]]))
+    if (sum(p.ij) == 0) stop("Posterior probability could not be calculated properly. Choose different starting parameters.")
+    P <- cbind(P, p.ij, deparse.level=0)
+  }
+  P <- P / rowSums(P)
+  P
 }
 
-# negative log likelihood function which will be optimized in M-step (see below)
+# Negative log likelihood function which will be optimized in M-step (see below)
 loglikelihood_semm <- function(parameters, matrices, data, p, w) {
     # fill matrices
     for (i in seq_along(matrices)) {
@@ -98,11 +97,9 @@ loglikelihood_semm <- function(parameters, matrices, data, p, w) {
     res
 }
 
-# negative log likelihood function for maximization of all classes at once
-loglikelihood_semm_constraints <- function(parameters, model, data, P,
-                                           constraints) {
-    model.filled <- fill_model(model=model, parameters=parameters,
-      constraints=constraints)
+# Negative log likelihood function for maximization of all classes at once
+loglikelihood_semm_constraints <- function(parameters, model, data, P) {
+    model.filled <- fill_model(model=model, parameters=parameters)
     N <- nrow(data)
     res <- 0
 
@@ -123,139 +120,134 @@ loglikelihood_semm_constraints <- function(parameters, model, data, P,
 
 
 # Maximization step of the EM-algorithm (see Jedidi, Jagpal & DeSarbo, 1997)
-mstep_semm <- function(model, parameters, data, P, constraints, neg.hessian=FALSE,
-                        optimizer=c("nlminb", "optim"),
-                        max.mstep, control=list(), ...) {
+mstep_semm <- function(model, parameters, data, P, neg.hessian=FALSE,
+                       optimizer=c("nlminb", "optim"),
+                       max.mstep, control=list(), ...) {
 
-    optimizer <- match.arg(optimizer)
+  optimizer <- match.arg(optimizer)
 
-    if (constraints == "direct1") {
-    ## maximizing each class separately
-        num.classes <- model$info$num.classes
-        class.pars <- get_class_parameters(model, parameters)
+  if (model$info$constraints == "direct1") {
+    # Maximizing each class separately
+    num.classes <- model$info$num.classes
+    class.pars <- get_class_parameters(model, parameters)
 
-        est <- lapply(seq_len(num.classes), function(c) {
-                if (optimizer == "nlminb") {
-                    if (is.null(control$iter.max)) {
-                        control$iter.max <- max.mstep
-                    } else {
-                        warning("iter.max is set for nlminb. max.mstep will be ignored.")
-                    }
-                    suppress_NaN_warnings(
-                        res <- nlminb(start=class.pars[[c]],
-                                      objective=loglikelihood_semm,
-                                      data=data, matrices=model$matrices[[c]],
-                                      p=P[,c], w=model$info$w[[c]],
-                                      upper=model$info$bounds$upper[[c]],
-                                      lower=model$info$bounds$lower[[c]],
-                                      control=control, ...)
-                    )
-                } else {
-                    if (is.null(control$maxit)){
-                        control$maxit <- max.mstep
-                    } else {
-                        warning("maxit is set for optim. max.mstep will be ignored.")
-                    }
-                    res <- optim(par=class.pars[[c]],
-                                   fn=loglikelihood_semm, data=data,
-                                   matrices=model$matrices[[c]],
-                                   p=P[,c], w=model$info$w[[c]],
-                                   upper=model$info$bounds$upper[[c]],
-                                   lower=model$info$bounds$lower[[c]],
-                                   method="L-BFGS-B", control=control, ...)
-                }
-        })
-        if (optimizer == "optim") {
-            for (c in seq_len(num.classes)) {
-                names(est[[c]]) <- gsub("value", "objective", names(est[[c]]))
-            }
-        }
-        res <- list(objective=0)
-        for (c in seq_len(num.classes)) {
-            res$par[[c]] <- est[[c]]$par
-            res$objective <- res$objective + est[[c]]$objective
-            res$convergence[[c]] <- est[[c]]$convergence
-            res$iterations <- est[[c]]$iterations
-        }
-        names(res$par) <- paste0("class", seq_len(num.classes))
-
-        if (neg.hessian == TRUE) {
-            for (c in seq_len(num.classes)) {
-                #if (optimizer == "nlminb") {
-                    res$hessian[[c]] <- fdHess(pars=est[[c]]$par,
-                                               fun=loglikelihood_semm,
-                                               matrices=model$matrices[[c]],
-                                               data=data, p=P[,c],
-                                               w=model$info$w[[c]])$Hessian
-                #} else {
-                #    res$hessian[[c]] <- optimHess(par=est[[c]]$par,
-                #                                fn=loglikelihood_semm,
-                #                                matrices=model$matrices[[c]],
-                #                                data=data, p=P[,c],
-                #                                w=model$info$w[c])
-                #}
-            }
-        names(res$hessian) <- paste0("class", seq_len(num.classes))
-        }
-        res
-
-    } else {
-    # Maximization of all classes together
-        if (optimizer == "nlminb") {
-            if (is.null(control$iter.max)) {
+    est <- lapply(seq_len(num.classes), function(c) {
+            if (optimizer == "nlminb") {
+              if (is.null(control$iter.max)) {
                 control$iter.max <- max.mstep
-            } else {
+              } else {
                 warning("iter.max is set for nlminb. max.mstep will be ignored.")
-            }
-            suppress_NaN_warnings(
-                est <- nlminb(start=parameters,
-                              objective=loglikelihood_semm_constraints, data=data,
-                              model=model, P=P, constraints=constraints,
-                              upper=unlist(model$info$bounds$upper),
-                              lower=unlist(model$info$bounds$lower),
+              }
+              suppress_NaN_warnings(
+                res <- nlminb(start=class.pars[[c]],
+                              objective=loglikelihood_semm,
+                              data=data, matrices=model$matrices[[c]],
+                              p=P[,c], w=model$info$w[[c]],
+                              upper=model$info$bounds$upper[[c]],
+                              lower=model$info$bounds$lower[[c]],
                               control=control, ...)
-            )
-        } else {
-            if (is.null(control$maxit)){
-                control$maxit <- max.mstep
+              )
             } else {
+              if (is.null(control$maxit)){
+                control$maxit <- max.mstep
+              } else {
                 warning("maxit is set for optim. max.mstep will be ignored.")
+              }
+              res <- optim(par=class.pars[[c]],
+                           fn=loglikelihood_semm, data=data,
+                           matrices=model$matrices[[c]],
+                           p=P[,c], w=model$info$w[[c]],
+                           upper=model$info$bounds$upper[[c]],
+                           lower=model$info$bounds$lower[[c]],
+                           method="L-BFGS-B", control=control, ...)
             }
-            est <- optim(par=parameters, fn=loglikelihood_semm_constraints,
-                         model=model, data=data, P=P,
-                         constraints=constraints,
-                         upper=unlist(model$info$bounds$upper),
-                         lower=unlist(model$info$bounds$lower),
-                         method="L-BFGS-B", control=control, ...)
-            # fit est to nlminb output
-            names(est) <- gsub("value", "objective", names(est))
-        }
-        if (neg.hessian == TRUE) {
-            est$hessian <- fdHess(pars=est$par,
-                                  fun=loglikelihood_semm_constraints,
-                                  model=model, data=data, P=P,
-                                  constraints=constraints)$Hessian
-        }
-        est
+    })
+    if (optimizer == "optim") {
+      for (c in seq_len(num.classes)) {
+        names(est[[c]]) <- gsub("value", "objective", names(est[[c]]))
+      }
     }
+    res <- list(objective=0)
+    for (c in seq_len(num.classes)) {
+      res$par[[c]] <- est[[c]]$par
+      res$objective <- res$objective + est[[c]]$objective
+      res$convergence[[c]] <- est[[c]]$convergence
+      res$iterations <- est[[c]]$iterations
+    }
+    names(res$par) <- paste0("class", seq_len(num.classes))
+
+    if (neg.hessian == TRUE) {
+      for (c in seq_len(num.classes)) {
+        res$hessian[[c]] <- fdHess(pars=est[[c]]$par,
+                                   fun=loglikelihood_semm,
+                                   matrices=model$matrices[[c]],
+                                   data=data, p=P[,c],
+                                   w=model$info$w[[c]])$Hessian
+      }
+    names(res$hessian) <- paste0("class", seq_len(num.classes))
+    }
+    res
+
+  } else {
+    # Maximization of all classes together
+    if (optimizer == "nlminb") {
+      if (is.null(control$iter.max)) {
+        control$iter.max <- max.mstep
+      } else {
+        warning("iter.max is set for nlminb. max.mstep will be ignored.")
+      }
+      suppress_NaN_warnings(
+        est <- nlminb(start=parameters,
+                      objective=loglikelihood_semm_constraints, data=data,
+                      model=model, P=P,
+                      upper=unlist(model$info$bounds$upper),
+                      lower=unlist(model$info$bounds$lower),
+                      control=control, ...)
+      )
+    } else {
+      if (is.null(control$maxit)){
+        control$maxit <- max.mstep
+      } else {
+        warning("maxit is set for optim. max.mstep will be ignored.")
+      }
+      est <- optim(par=parameters, fn=loglikelihood_semm_constraints,
+                   model=model, data=data, P=P,
+                   upper=unlist(model$info$bounds$upper),
+                   lower=unlist(model$info$bounds$lower),
+                   method="L-BFGS-B", control=control, ...)
+      # fit est to nlminb output
+      names(est) <- gsub("value", "objective", names(est))
+    }
+    if (neg.hessian == TRUE) {
+      est$hessian <- fdHess(pars=est$par,
+                            fun=loglikelihood_semm_constraints,
+                            model=model, data=data, P=P)$Hessian
+    }
+    est
+  }
 }
 
 #--------------- helper functions ---------------
 
-# make a list of class specific parameter vectors
+# Make a list of class specific parameter vectors
 get_class_parameters <- function(model, parameters) {
-    class.pars <- list()
-    for (c in seq_len(model$info$num.classes)) {
-        class.pars[[c]] <- parameters[1:length(model$info$par.names[[c]])]
-        parameters <- parameters[(length(model$info$par.names[[c]]) + 1):length(parameters)]
-    }
-    class.pars
+
+  mod.filled <- fill_model(model=model, parameters=parameters)
+
+  dat.filled <- as.data.frame(mod.filled)
+  dat <- as.data.frame(model)
+
+  class.pars <- list()
+  for (class in names(model$matrices)) {
+    class.pars[[class]] <- dat.filled[is.na(dat[, class]), class]
+  }
+  class.pars
 }
 
-# suppress all warnings that contain 'NaN'
+# Suppress all warnings that contain 'NaN'
 suppress_NaN_warnings <- function(expr) {
-    withCallingHandlers(expr, warning=function(w) {
-                        if (grepl("NaN", conditionMessage(w)))
-                            invokeRestart("muffleWarning")
-    })
+  withCallingHandlers(expr, warning=function(w) {
+                      if (grepl("NaN", conditionMessage(w)))
+                        invokeRestart("muffleWarning")
+  })
 }
