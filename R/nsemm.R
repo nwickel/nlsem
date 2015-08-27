@@ -1,7 +1,7 @@
 # nsemm.R
 #
 # created: Nov/14/2014, KN
-# last mod: Aug/26/2015, NU
+# last mod: Aug/27/2015, NU
 
 #--------------- main functions ---------------
 
@@ -35,8 +35,8 @@ estep_nsemm <- function(model, parameters, data, max.singleClass, qml,
       est <- mstep_qml(model=lms.model, data=data, parameters=class.parameters[[c]],
                        neg.hessian=FALSE, max.iter=max.singleClass, ...)
 
-      par.new <- c(par.new, est$par)
-      # TODO Needs adjustment like above for parameter names of class != 1.
+      pars <- est$par[model$info$par.names[[c]]]
+      par.new <- c(par.new, pars)
     }
   }
 

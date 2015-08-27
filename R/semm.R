@@ -1,7 +1,7 @@
 # semm.R
 #
 # created: Okt/20/2014, KN
-# last mod: Aug/26/2015, NU
+# last mod: Aug/27/2015, NU
 
 #--------------- main functions ---------------
 
@@ -243,6 +243,19 @@ get_class_parameters <- function(model, parameters) {
   }
   class.pars
 }
+
+# Make a list of class specific parameter names
+get_class_parnames <- function(model) {
+
+  dat <- as.data.frame(model)
+
+  class.names <- list()
+  for (class in names(model$matrices)) {
+    class.names[[class]] <- as.character(dat$label[is.na(dat[, class])])
+  }
+  class.names
+}
+
 
 # Suppress all warnings that contain 'NaN'
 suppress_NaN_warnings <- function(expr) {

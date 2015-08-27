@@ -1,12 +1,13 @@
 # em.R
 #
-# last mod: Aug/26/2015, NU
+# last mod: Aug/27/2015, NU
 
 # Performs EM-algorithm for different models of class 'singleClass',
 # 'semm', and 'nsemm'
-em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
-             max.iter=100, m=16, optimizer=c("nlminb", "optim"),
-             max.mstep=1, max.singleClass=1, neg.hessian=TRUE, ...) {
+em <- function(model, data, start, qml=FALSE, verbose=FALSE,
+               convergence=1e-02, max.iter=100, m=16, optimizer=c("nlminb",
+               "optim"), max.mstep=1, max.singleClass=1, neg.hessian=TRUE,
+               ...) {
 
   stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
             class(model) == "nsemm")
@@ -173,27 +174,29 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
                          parameters=par.new, neg.hessian=neg.hessian,
                          m=m, optimizer=optimizer,
                          max.mstep=max.mstep, ...)
-      names(final$par) <- model$info$par.names
+      coefficients <- final$par
+      names(coefficients) <- model$info$par.names
       # Transform parameters back to Phi
       A <- matrix(0, nrow=model$info$num.xi, ncol=model$info$num.xi)
-      A[lower.tri(A, diag=TRUE)] <- final$par[grep("Phi", names(final$par))]
+      A[lower.tri(A, diag=TRUE)] <- coefficients[grep("Phi",
+        names(coefficients))]
       Phi <- A %*% t(A)
-      final$par[grep("Phi", names(final$par))] <- Phi[lower.tri(Phi, diag=TRUE)]
+      coefficients[grep("Phi", names(coefficients))] <- Phi[lower.tri(Phi, diag=TRUE)]
     },
     "semm" = {
       final <- mstep_semm(model=model, parameters=par.old, P=P,
                            data=data, neg.hessian=neg.hessian,
                            optimizer=optimizer, max.mstep=max.mstep, ...)
       if (is.numeric(final$par)) {
-        par.names <- NULL
-        for (c in seq_len(model$info$num.classes)) {
-          par.names <- c(par.names,
-                         paste0("class", c, ".", model$info$par.names[[c]]))
+        coefficients <- get_class_parameters(model, final$par)
+        for (class in names(model$matrices)) {
+          names(coefficients[[class]]) <-
+          get_class_parnames(model)[[class]]
         }
-        names(final$par) <- par.names
       } else {
-        for (c in seq_len(model$info$num.classes)) {
-          names(final$par[[c]]) <- model$info$par.names[[c]]
+        coefficients <- final$par
+        for (class in names(model$matrices)) {
+          names(coefficients[[class]]) <- model$info$par.names[[class]]
         }
       }
     },
@@ -202,16 +205,15 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
                            data=data, neg.hessian=neg.hessian,
                            optimizer=optimizer, max.mstep=max.mstep, ...)
       if (is.numeric(final$par)) {
-        par.names <- NULL
-        final$par <- rep(final$par, model$info$num.classes)
-        for (c in seq_len(model$info$num.classes)) {
-          par.names <- c(par.names,
-                         paste0("class", c, ".", model$info$par.names[[c]]))
+        coefficients <- get_class_parameters(model, final$par)
+        for (class in names(model$matrices)) {
+          names(coefficients[[class]]) <-
+          get_class_parnames(model)[[class]]
         }
-        names(final$par) <- par.names
       } else {
-        for (c in seq_len(model$info$num.classes)) {
-          names(final$par[[c]]) <- model$info$par.names[[c]]
+        coefficients <- final$par
+        for (class in names(model$matrices)) {
+          names(coefficients[[class]]) <- model$info$par.names[[class]]
         }
       }
       # -> TODO check if par is not already named!
@@ -223,21 +225,17 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE, convergence=1e-02,
     em_convergence <- "no"
   } else {em_convergence <- "yes"}
 
-  info   <- model$info[c("num.xi","num.eta","num.x","num.y","xi","eta","num.classes")]
+  info <- model$info[c("num.xi", "num.eta", "num.x", "num.y",
+    "constraints", "num.classes")]
   info$n <- nrow(data)
 
-  out <- list(model.class=class(model), coefficients=final$par,
-              objective=-final$objective,
-              em.convergence=em_convergence,
-              neg.hessian=final$hessian,
-              loglikelihoods=-ll.ret,
-              info=info)
+  out <- list(model.class=class(model), coefficients=coefficients,
+              objective=-final$objective, em.convergence=em_convergence,
+              neg.hessian=final$hessian, loglikelihoods=-ll.ret, info=info)
 
   # attach w for semm and nsemm
-  if (class(model) == "semm" || class(model) == "nsemm") {
-    out$info <- model$info[c("num.xi", "num.eta", "num.x", "num.y",
-                             "xi", "eta", "num.classes", "w")] 
-    out$info$n <- nrow(data) }
+  if (class(model) == "semm" || class(model) == "nsemm") out$info$w <-
+    model$info$w
 
   class(out) <- "emEst"
   out

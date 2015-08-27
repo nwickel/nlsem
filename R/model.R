@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Aug/26/2015, NU
+# last mod Aug/27/2015, NU
 
 #--------------- main functions ---------------
 
@@ -654,10 +654,17 @@ get_parnames <- function(model, constraints=c("indirect", "direct1",
   par.names[["class1"]] <- names(lst[lst])
   if (class(model) == "nsemm" || class(model) == "semm") {
     for (class in names(model$matrices)[-1]) {
-      ind.parnames <- unlist(lapply(parnames, FUN=function(x) grep(x,
-        names(coef(est)))))
-      par.names[[class]] <- names(lst[lst])[ind.parnames]
+      if (constraints != "direct1") {
+        ind.parnames <- unlist(lapply(parnames, FUN=function(x) grep(x,
+          par.names$class1)))
+        par.names[[class]] <- names(lst[lst])[ind.parnames]
+      } else {
+        lst <- unlist(lapply(model$matrices[[class]], is.na))
+        par.names[[class]] <- names(lst[lst])
+      }
     }
+  } else {
+    par.names <- par.names$class1
   }
   par.names
 }
@@ -678,30 +685,41 @@ diag_ind <- function(num) diag(matrix(seq_len(num^2), num))
 # Set bounds for parameters to (0, Inf)
 bounds <- function(model, constraints=c("indirect", "direct1", "direct2")) {
 
-  lower.class <- list()
-  upper.class <- list()
+  if (model$info$num.x > 1){
+      t.d <- paste0("Theta.d", diag_ind(model$info$num.x))
+  } else t.d <- "Theta.d"
+  if (model$info$num.y > 1){
+      t.e <- paste0("Theta.e", diag_ind(model$info$num.y))
+  } else t.e <- "Theta.e"
+  if (model$info$num.eta > 1){
+      psi <- paste0("Psi", diag_ind(model$info$num.eta))
+  } else psi <- "Psi"
+  if (model$info$num.xi > 1){
+      phi <- paste0("Phi", diag_ind(model$info$num.eta))
+  } else phi <- "Phi"
 
-  for (class in names(model$matrices)) {
+  if (class(model) == "singleClass") {
 
-    lower.class[[class]] <- rep(-Inf, length(model$info$par.names[[class]]))
-    upper.class[[class]] <- rep(Inf, length(model$info$par.names[[class]]))
+    lower <- rep(-Inf, count_free_parameters(model))
+    upper <- rep(Inf, count_free_parameters(model))
 
-    if (model$info$num.x > 1){
-        t.d <- paste0("Theta.d", diag_ind(model$info$num.x))
-    } else t.d <- "Theta.d"
-    if (model$info$num.y > 1){
-        t.e <- paste0("Theta.e", diag_ind(model$info$num.y))
-    } else t.e <- "Theta.e"
-    if (model$info$num.eta > 1){
-        psi <- paste0("Psi", diag_ind(model$info$num.eta))
-    } else psi <- "Psi"
-    if (model$info$num.xi > 1){
-        phi <- paste0("Phi", diag_ind(model$info$num.eta))
-    } else phi <- "Phi"
+    lower[model$info$par.names %in% c(t.d, t.e, psi, phi)] <- 0
+    out <- list(upper=upper, lower=lower)
 
-    lower.class[[class]][model$info$par.names[[class]] %in% c(t.d, t.e, psi, phi)] <- 0
+  } else if (class(model) == "semm" || class(model) == "nsemm") {
+
+    lower.class <- list()
+    upper.class <- list()
+
+    for (class in names(model$matrices)) {
+
+      lower.class[[class]] <- rep(-Inf, length(model$info$par.names[[class]]))
+      upper.class[[class]] <- rep(Inf, length(model$info$par.names[[class]]))
+
+      lower.class[[class]][model$info$par.names[[class]] %in% c(t.d, t.e, psi, phi)] <- 0
+    }
+    out <- list(upper=upper.class, lower=lower.class)
   }
-  out <- list(upper=upper.class, lower=lower.class)
   out
 }
 

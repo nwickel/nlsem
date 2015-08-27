@@ -22,6 +22,7 @@ qml <- function(model, data, start, max.iter=150,
     neg.hessian=neg.hessian, optimizer=optimizer,
     max.iter=max.iter, ...)
   )
+  # TODO Should these warnings really be supressed?
 
   names(est$par) <- model$info$par.names
 
@@ -106,12 +107,16 @@ mu_qml <- function(model, data) {
   # invertierbar ist?
   alpha.b <- B %*% m$alpha
   ga1.b   <- B %*% m$Gamma
-  Gamma2 <- t(apply(m$Omega, 3, vech))
+  if (is.matrix(m$Omega)) {
+    Gamma2 <- t(vech(m$Omega))
+  } else {
+    Gamma2 <- t(apply(m$Omega, 3, vech))
+  }
   ga2.b   <- B %*% Gamma2 # das ist das neue omega
   
   N <- nrow(data)
 
-  #?bernommen+erweitert von meinem qml mit Mittelwerten
+  #Uebernommen + erweitert von meinem qml mit Mittelwerten
   mt.m   <- matrix(rep(m$tau, N), model$info$num.xi, N, byrow=F)
   ma.m   <- matrix(rep(alpha.b, N), ne, N, byrow=T)
   mux.m  <- matrix(rep(mu.x, N), N, model$info$num.x, byrow=T)
@@ -226,7 +231,11 @@ sigma_qml <- function(model, data) {
   ###########################
   #HBneu
   ga1.b   <- B %*% m$Gamma
-  Gamma2 <- t(apply(m$Omega, 3, vech))
+  if (is.matrix(m$Omega)) {
+    Gamma2 <- t(vech(m$Omega))
+  } else {
+    Gamma2 <- t(apply(m$Omega, 3, vech))
+  }
   ga2.b   <- B %*% Gamma2       # das ist das neue omega
   
   # HB: Vorschlag: vech verwenden, dann wird es eine normale Matrix und keine Liste.
@@ -278,7 +287,7 @@ loglikelihood_qml <- function(parameters, model, data) {
   # also i=1:N angewaehlt werden.
   lls <- NULL
   for (i in seq_len(N)) {
-    f3 <- dmvnorm(y[,1:model$info$num.eta], mean=mean.qml[[2]][,i],
+    f3 <- dmvnorm(as.matrix(y[,1:model$info$num.eta]), mean=mean.qml[[2]][,i],
       sigma=sigma.qml[[2]][[i]])
     lls <- c(lls, sum(log(f2*f3)))
   }

@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Aug/26/2015, NU
+# last mod Aug/27/2015, NU
 
 #--------------- main functions ---------------
 
@@ -77,7 +77,7 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
   dat
 }
 
-simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, parameters, ...) {
+simulate.singleClass <- function(object, parameters, n=400, m=16, nsim=1, seed=NULL, ...) {
 
   # set seed
   set.seed(seed)
@@ -105,7 +105,7 @@ simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16, paramet
                       mean=mu_lms(model=mod.filled, z=V[i,]),
                       sigma=sigma_lms(model=mod.filled, z=V[i,]))
                       })
-  dat <- dat.sim
+  dat <- dat.sim[[1]]
 
   # decide which data points from each mixture should be included in
   # simulated data set: weights give intervall borders between 0 and 1;
@@ -138,7 +138,7 @@ summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
     est.table <- cbind(est, s.error, tvalue, pvalue)
     dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
   } else {
-    est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
+      est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
       s.error <- calc_standard_error(object$neg.hessian[[c]])
       tvalue <- est[[c]] / s.error
       pvalue <- 2 * pnorm(-abs(tvalue))
