@@ -125,6 +125,68 @@ simulate.singleClass <- function(object, parameters, n=400, m=16, nsim=1, seed=N
   dat
 }
 
+print.singleClass <- print.semm <- print.nsemm <- function(x) {
+  cat("Model of class", class(x), "\n\n")
+
+  cat("Number of latent endogenous variables:", x$info$num.eta, "(with", x$info$num.y, "indicators)\n")
+  cat("Number of latent exogenous variables:", x$info$num.xi, "(with", x$info$num.x, "indicators)\n")
+  if (class(x) != "semm") {
+    cat()
+  }
+  if (class(x) != "singleClass") {
+    cat("Number of latent classes:", x$info$num.classes, "\n\n")
+    constraints <- x$info$constraints
+    switch(EXPR = constraints,
+      indirect = {
+        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat("Parameters of all classes will be set to equal except for taus and Phi.\n\n")
+      },
+      direct1 = {
+        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat("All parameters of all classes will be estimated separately.\n\n")
+      },
+      direct2 = {
+        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat("Parameters of measurement model will be equal for all classes.\n\n")
+
+      }
+    )     # end switch
+
+  }
+
+}
+
+print.emEst <- function(x, digits=3, ...) {
+  cat("Fitted model of class", x$model.class, "with", x$info$num.xi +
+    x$info$num.eta, "latent variables and", x$info$num.x + x$info$num.y,
+    "indicators.\n\n")
+
+  if (x$model.class != "singleClass") {
+    constraints <- x$info$constraints
+    switch(EXPR = constraints,
+      indirect = {
+        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat("Parameters of all classes equal except for taus and Phi.\n\n")
+      },
+      direct1 = {
+        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat("All parameters of all classes different.\n\n")
+      },
+      direct2 = {
+        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat("Parameters of measurement model equal for all classes.\n\n")
+
+      }
+    )     # end switch
+
+    cat("Class weights:", round(x$info$w, digits=digits), "\n\n")
+  }
+  cat("Estimated parameters:\n")
+  print(round(as.data.frame(x$coef), digits=digits))
+
+
+}
+
 summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
 
   # estimates
@@ -182,7 +244,7 @@ print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
   cat("\nNumber of iterations:", x$iterations, "\nFinal loglikelihood:",
     round(x$finallogLik, 3), "\n") 
   if (x$model == "semm" || x$model == "nsemm"){
-    cat("\nFinal weights:", round(x$class.weights, 3), "\n\n")
+    cat("\nClass weights:", round(x$class.weights, digits), "\n\n")
   }
   if (x$print.likelihoods) {
     cat("\n", "\nLikelihoods:\n")
