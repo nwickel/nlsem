@@ -9,10 +9,10 @@
 # possible objects classes are 'singleClass', 'semm', 'nsemm'; exported function
 specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
                         constraints=c("indirect", "direct1", "direct2"), num.classes=1,
-                        interaction="none", relation.lat="default"){
+                        rel.lat="default", interaction="none"){
 
   # check arguments
-  if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi) 
+  if (!is.numeric(num.x) || !is.numeric(num.y) || !is.numeric(num.xi)
       || !is.numeric(num.eta) || !is.numeric(num.classes)) {
     stop("Number of variables or classes must be numeric.")
   } else if (num.x < num.xi || num.y < num.eta) {
@@ -68,12 +68,12 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
     Lambda.y[eta.ind[[i]], i] <- c(1, rep(NA, length(eta.ind[[i]]) - 1))
   }
   # Gamma and Beta
-  if (relation.lat == "default"){
+  if (rel.lat == "default"){
     Gamma <- matrix(nrow=num.eta, ncol=num.xi)
     Beta  <- diag(num.eta)
   }
   else {
-    GB    <- rel_lat(relation.lat, num.eta=num.eta, num.xi=num.xi)
+    GB    <- rel_lat(rel.lat, num.eta=num.eta, num.xi=num.xi)
     Gamma <- tryCatch({ GB[[grep("G", names(GB))]] },
                         error=function(e) matrix(nrow=num.eta, ncol=num.xi) )
     Beta  <- tryCatch({ GB[[grep("B", names(GB))]] },
@@ -195,10 +195,10 @@ create_sem <- function(dat, constraints=c("indirect", "direct1", "direct2")){
   Omega    <- as.character(dat$label[grep("Omega", dat$label)])
 
   # number of latent and indicator variables and classes
-  num.x      <- length(nu.x)
-  num.y      <- length(nu.y)
-  num.xi     <- length(tau)
-  num.eta    <- length(alpha)
+  num.x       <- length(nu.x)
+  num.y       <- length(nu.y)
+  num.xi      <- length(tau)
+  num.eta     <- length(alpha)
   num.classes <- ncol(dat) - 1
 
   # create matrices
@@ -309,7 +309,7 @@ count_free_parameters <- function(model) {
     direct2 = {
 
       res <- sum(unlist(lapply(model$matrices$class1, is.na)))
-     
+
       if (class(model) == "semm") {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau")
       } else {
@@ -504,7 +504,7 @@ calc_interaction_matrix <- function(x){
 # Ensures that interaction effects are in the correct order when passed to
 # Omega
 sort_interaction_effects <- function(rows, cols){
-    
+
   for (i in seq_along(rows)){
     if (rows[i] > cols[i]){
       rows_i <- rows[i]
@@ -519,7 +519,7 @@ sort_interaction_effects <- function(rows, cols){
 # Tests if input for Omega is in the correct format; Omega needs to be in
 # row echelon form; returns nothing if Omega has the correct form
 test_omega <- function(Omega){
-    
+
   if (anyNA(Omega)){
 
     interactions <- Omega
@@ -551,8 +551,8 @@ test_omega <- function(Omega){
 }
 
 # Creates Beta and Gamma matrices according to the input obtained by
-# relation.lat; matrices define relationships for latent variables except
-# for interaction effects
+# rel.lat; matrices define relationships for latent variables except for
+# interaction effects
 rel_lat <- function(x, num.eta, num.xi){
 
   error.msg <- "Latent variables misspecified. Must be of the form 'eta1~xi1' or 'eta2~eta1'. See ?specify_sem for details."
@@ -565,7 +565,7 @@ rel_lat <- function(x, num.eta, num.xi){
       G <- matrix(NA, nrow=num.eta, ncol=num.xi)
   } else {
     G <- matrix(0, nrow=num.eta, ncol=num.xi)
-  
+
     for (i in which.xi){
       xi.s <- unlist(strsplit(x.s[i], "~"))
       if (length(xi.s) < 2) stop(error.msg)
@@ -581,7 +581,7 @@ rel_lat <- function(x, num.eta, num.xi){
       )
     }
   }
-  
+
   B <- diag(1, num.eta)
   for (i in which.eta){
     eta.s <- unlist(strsplit(x.s[i], "~"))

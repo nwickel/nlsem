@@ -130,28 +130,68 @@ print.singleClass <- print.semm <- print.nsemm <- function(x) {
 
   cat("Number of latent endogenous variables:", x$info$num.eta, "(with", x$info$num.y, "indicators)\n")
   cat("Number of latent exogenous variables:", x$info$num.xi, "(with", x$info$num.x, "indicators)\n")
-  if (class(x) != "semm") {
-    cat()
-  }
   if (class(x) != "singleClass") {
-    cat("Number of latent classes:", x$info$num.classes, "\n\n")
+    cat("Number of latent classes:", x$info$num.classes, "\n")
+  }
+  cat("\nStructural model:\n")
+  for (class in names(x$matrices)) {
+    cat("------------------------------------------------------------\n")
+    if (length(names(x$matrices)) > 1) {
+      cat(paste0("Specifications for ", class, ":"), "\n")
+    }
+    # rel.lat
+    rel.lat <- get_rel.lat(x$matrices[[class]][["Gamma"]],
+      x$matrices[[class]][["Beta"]])
+    for (r in rel.lat[[1]]) {
+      cat(r, "\n")
+    }
+    for (r in rel.lat[[2]]) {
+      cat(r, "\n")
+    }
+    # interaction
+    if (class(x) != "semm") {
+      interaction <- get_interaction(x$matrices[[class]][["Omega"]])
+      for (i in interaction) {
+        cat(i, "\n")
+      }
+    }
+  }
+  cat("------------------------------------------------------------\n")
+
+  cat("\nMeasurement model:\n")
+  for (class in names(x$matrices)) {
+    cat("------------------------------------------------------------\n")
+    if (length(names(x$matrices)) > 1) {
+      cat(paste0("Specifications for ", class, ":"), "\n")
+    }
+    xi <- get_xi(x$matrices[[class]][["Lambda.x"]])
+    for (i in xi) {
+      cat(i, "\n")
+    }
+    eta <- get_eta(x$matrices[[class]][["Lambda.y"]])
+    for (e in eta) {
+      cat(e, "\n")
+    }
+  }
+  cat("------------------------------------------------------------\n")
+
+  if (class(x) != "singleClass") {
     constraints <- x$info$constraints
     switch(EXPR = constraints,
       indirect = {
-        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat(paste0("\nModel constraints set to ", constraints, ":\n"))
         cat("Parameters of all classes will be set to equal except for taus and Phi.\n\n")
       },
       direct1 = {
-        cat(paste0("Model constraints set to ", constraints, ":\n"))
+        cat(paste0("\nModel constraints set to ", constraints, ":\n"))
         cat("All parameters of all classes will be estimated separately.\n\n")
       },
       direct2 = {
-        cat(paste0("Model constraints set to ", constraints, ":\n"))
-        cat("Parameters of measurement model will be equal for all classes.\n\n")
+        cat(paste0("\nModel constraints set to ", constraints, ":\n"))
+        cat("Parameters of measurement model will be equal for all classes.\n")
 
       }
     )     # end switch
-
   }
 
 }
@@ -449,3 +489,86 @@ calc_standard_error <- function(neg.hessian) {
                 if (any(is.nan(s.error))) warning("Standard errors for some coefficients could not be computed.") 
     s.error
 }
+
+# Extracting information from matrices to print them in model summary:
+# print.singleClass/semm/nsemm
+get_xi <- function(Lambda.x) {
+
+  ind <- list()
+  for (i in seq_len(ncol(Lambda.x))) {
+    ind[[i]] <- seq_len(nrow(Lambda.x))[-which(Lambda.x[,i] == 0)]
+    if (length(ind[[i]]) == 0) {
+      ind[[i]] <- 1
+    }
+  }
+  xs <- sapply(ind, function(x) paste0("x", x, collapse=" + "))
+  res <- paste(paste0("xi", seq_len(ncol(Lambda.x)), " ="), xs)
+  res
+
+}
+
+get_eta <- function(Lambda.y) {
+
+  ind <- list()
+  for (i in seq_len(ncol(Lambda.y))) {
+    ind[[i]] <- seq_len(nrow(Lambda.y))[-which(Lambda.y[,i] == 0)]
+    if (length(ind[[i]]) == 0) {
+      ind[[i]] <- 1
+    }
+  }
+  xs <- sapply(ind, function(x) paste0("y", x, collapse=" + "))
+  res <- paste(paste0("eta", seq_len(ncol(Lambda.y)), " ="), xs)
+  res
+
+
+}
+
+get_rel.lat <- function(Gamma, Beta) {
+
+  # eta and xi
+  ind <- which(is.na(Gamma), arr.ind=T)
+  g <- NULL
+    if (nrow(ind) > 0) {
+    ind.fill <- matrix(c(paste0("eta", ind[,"row"]), paste0("xi",
+      ind[,"col"])), nrow=dim(ind)[1], ncol=dim(ind)[2])
+    for (i in unique(ind.fill[,1])) {
+      g <- c(g, paste(i, "=", paste(ind.fill[ind.fill[,1] == i, 2],
+        collapse=" + ")))
+    }
+  }
+
+  # eta and eta
+  ind <- which(is.na(Beta), arr.ind=T)
+  b <- NULL
+  if (nrow(ind) > 0) {
+    ind.fill <- matrix(c(paste0("eta", ind[,"row"]), paste0("eta",
+      ind[,"col"])), nrow=dim(ind)[1], ncol=dim(ind)[2])
+    for (i in unique(ind.fill[,1])) {
+      b <- c(b, paste(i, "=", paste(ind.fill[ind.fill[,1] == i, 2],
+        collapse=" + ")))
+    }
+  }
+  list(g, b)
+}
+
+get_interaction <- function(Omega) {
+
+  ind <- which(is.na(Omega), arr.ind=T)
+  if (is.matrix(Omega)) {
+    ind.fill <- matrix(c(paste0("xi", ind[,"row"]), paste0("xi",
+      ind[,"col"])), nrow=dim(ind)[1], ncol=2)
+    int <- apply(ind.fill, 1, function(x) paste(x, collapse=":"))
+    o <- paste("eta1 =", paste(int, collapse=" + "))
+  } else {
+    ind.fill <- matrix(c(paste0("xi", ind[,"dim1"]), paste0("xi",
+      ind[,"dim2"])), nrow=dim(ind)[1], ncol=2)
+    int <- apply(ind.fill, 1, function(x) paste(x, collapse=":"))
+    o <- NULL
+    for (i in unique(ind[, "dim3"])) {
+      o <- c(o, paste0("eta", i, " = ", paste(int[ind[, "dim3"] == i],
+        collapse=" + ")))
+    }
+  }
+  o
+}
+
