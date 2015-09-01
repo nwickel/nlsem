@@ -2,7 +2,7 @@
 #
 # created: Feb/04/2015, NU
 # poluted: Jul/22/2015, HB
-# last mod: Jul/31/2015, NU
+# last mod: Sep/01/2015, NU
 
 #--------------- main functions ---------------
 
@@ -37,7 +37,7 @@ qml <- function(model, data, start, max.iter=150,
     neg.hessian=est$hessian,
     iterations=est$iterations,
     info=model$info[c("num.xi", "num.eta", "num.x", "num.y",
-    "xi", "eta", "num.classes")])
+      "num.classes")])
 
   class(out) <- "qmlEst"
   out
@@ -51,22 +51,16 @@ mu_qml <- function(model, data) {
   x <- data[, 1:model$info$num.x]
   y <- data[, (model$info$num.x + 1):dim(data)[2]]
   
-  ###########################
-  #HBneu: Anzahl y, eta => Anzahl ystar (s. Anmerung nach Gl. 17)
   ny <- model$info$num.y
   ne <- model$info$num.eta
-  ###########################
   
   
   if (model$info$num.y > 1) {
-      # transformation of y
-    ###########################
-    #HBneu
-    #s.Eq 7
+    # transformation of y
+    # cf. Eq 7
     beta <- m$Lambda.y[(ne+1):ny,] 
     R <- cbind(-beta, diag(ny-ne))
     u <- y %*% t(R)
-    ###########################
   } else {
     u <- 0
   # TODO: What happens to beta and R in this case??
@@ -79,28 +73,20 @@ mu_qml <- function(model, data) {
 
   L1 <- m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*% 
         m$Phi %*% t(m$Lambda.x) + m$Theta.d)
-  ###########################
-  #HBneu
-  #s.Eq 24
+  # cf. Eq 24
   L2 <- -m$Theta.e[(1:ne),(1:ne)] %*% t(beta) %*% solve(R %*% m$Theta.e %*% t(R))
-  ###########################
   
   # m.x is unconditional
   # m.u mean vector for R %*% epsilon (0)
   # Eq 14: but mu.x <- 0, i.e., without means for xi
   mu.x  <- m$nu.x + m$Lambda.x %*% m$tau 
   
-  ###########################
-  #HBneu
   mu.u  <- as.matrix(rep(0, (ny-ne)))
-  ###########################
   
 
   # m.y1 is conditional given x and u
   # Eq 12 
-  ###########################
-  #HBneu
-  # Beta muss transformiert werden:
+  # Beta must be transformed since it is defined for SEMM approach
   Beta <- m$Beta - diag(model$info$num.eta)
   B <- solve(diag(ne) - Beta)
   # TODO: Was passiert hier generell wenn diese Differenz nicht
@@ -112,11 +98,10 @@ mu_qml <- function(model, data) {
   } else {
     Gamma2 <- t(apply(m$Omega, 3, vech))
   }
-  ga2.b   <- B %*% Gamma2 # das ist das neue omega
+  ga2.b   <- B %*% Gamma2       # contains interaction and quadratic effects
   
   N <- nrow(data)
 
-  #Uebernommen + erweitert von meinem qml mit Mittelwerten
   mt.m   <- matrix(rep(m$tau, N), model$info$num.xi, N, byrow=F)
   ma.m   <- matrix(rep(alpha.b, N), ne, N, byrow=T)
   mux.m  <- matrix(rep(mu.x, N), N, model$info$num.x, byrow=T)
@@ -135,10 +120,8 @@ mu_qml <- function(model, data) {
     ma.m +
     ga1.b %*% (mt.m + L1 %*% t(x - mux.m)) +
     tmp +
-    # TODO This term is (2 x 1) and everything else (2 x 400). Why??
     L2 %*% t(u-muu.m)
     
-  ###########################
   mu.xu <- c(mu.x, mu.u)    # mean for f2
   mu <- list(mu.xu, mu.y1)  
 
@@ -154,21 +137,15 @@ sigma_qml <- function(model, data) {
   x <- data[, 1:model$info$num.x]
   y <- data[, (model$info$num.x + 1):dim(data)[2]]
 
-  ###########################
-  #HBneu: Anzahl y, eta => Anzahl ystar (s. Anmerkung nach Gl. 17)
   ny <- model$info$num.y
   ne <- model$info$num.eta
-  ###########################
   
   if (model$info$num.y > 1) {
     # transformation of y
-    ###########################
-    #HBneu
-    #s.Eq 7
+    # cf. Eq 7
     beta <- m$Lambda.y[(ne + 1):ny,] 
     R <- cbind(-beta, diag(ny-ne))
     u <- y %*% t(R)
-    ###########################
   } else {
       u <- 0
       # TODO: s.o
@@ -179,8 +156,7 @@ sigma_qml <- function(model, data) {
     m$Phi %*% t(m$Lambda.x) + m$Theta.d) %*% m$Lambda.x %*% m$Phi 
   L1 <- m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*% m$Phi %*%
     t(m$Lambda.x) + m$Theta.d)
-  ###########################
-  #HBneu
+
   # s. Eq 17,33 
   Beta <- m$Beta - diag(model$info$num.eta)
   B <- solve(diag(ne) - Beta)
@@ -193,9 +169,8 @@ sigma_qml <- function(model, data) {
   # s. Eq 24
   L2 <- -m$Theta.e[(1:ne),(1:ne)] %*% t(beta) %*% solve(R %*% m$Theta.e %*% t(R))
   
-  # s. Eq 42 (Gleichungsnummer kontrollieren/korrigieren)
-  # man erhaelt eine Kovarianzmatrix pro Person (i in 1:N)
-  # hier muss man noch besser programmieren
+  # cf. Eq 42
+  # one covariance matrix per person (i in 1:N)
       
   mu.x  <- m$nu.x + m$Lambda.x %*% m$tau 
   N <- nrow(data)
@@ -205,9 +180,6 @@ sigma_qml <- function(model, data) {
     a <- m$tau + L1 %*% (x[i,] - mu.x)
     Sigma3[[i]] <- sigma.xi(a, Sigma1)
   }
-  
-  #@NU: Du wirst sigma.xi ganz besonders schoen finden.
-  ###########################
   
   # Eq 14
   # Cov(x), Cov(u)
@@ -228,18 +200,15 @@ sigma_qml <- function(model, data) {
   #             Sigma3
   # --> original equation from paper: faulty!
   
-  ###########################
-  #HBneu
   ga1.b   <- B %*% m$Gamma
   if (is.matrix(m$Omega)) {
     Gamma2 <- t(vech(m$Omega))
   } else {
     Gamma2 <- t(apply(m$Omega, 3, vech))
   }
-  ga2.b   <- B %*% Gamma2       # das ist das neue omega
+  ga2.b   <- B %*% Gamma2       # contains interaction and quadratic effects
   
-  # HB: Vorschlag: vech verwenden, dann wird es eine normale Matrix und keine Liste.
-  sigma.y1 <- list()  # TODO more efficient version? In vector verwandeln
+  sigma.y1 <- list()  # TODO more efficient version? Transform to vector?
   for(i in 1:N){
     sigma.y1[[i]] <- 
       ga1.b %*% Sigma1 %*% t(ga1.b) +
@@ -248,7 +217,6 @@ sigma_qml <- function(model, data) {
       ga2.b %*% Sigma3[[i]] %*% t(ga2.b)
       
   }
-  ###########################
   
   sigma.xy <- list(sigma.xu, sigma.y1)
 
@@ -268,7 +236,7 @@ loglikelihood_qml <- function(parameters, model, data) {
   
   if (model$info$num.y > 1) {
     # transformation of y
-    beta <- model$matrices$class1$Lambda.y[(model$info$num.eta + 1):model$info$num.y,] 
+    beta <- mod.filled$matrices$class1$Lambda.y[(model$info$num.eta + 1):model$info$num.y,] 
     R <- cbind(-beta, diag(model$info$num.y-model$info$num.eta))
     u <- y %*% t(R)
   } else {
@@ -279,22 +247,16 @@ loglikelihood_qml <- function(parameters, model, data) {
   N <- nrow(data)
 
   # Eq 10: densities
-  f2 <- dmvnorm(cbind(x, u), mean=mean.qml[[1]], sigma=sigma.qml[[1]])
+  f2 <- dmvnorm(cbind(x, u), mean=mean.qml[[1]], sigma=sigma.qml[[1]],
+    log=TRUE)
   # original implementation: produces NaN when sds are negative
   
-  ###########################
-  # HBneu: Das ist noch falsch. sigma ist personenspezifisch, es muessen
-  # also i=1:N angewaehlt werden.
   lls <- NULL
   for (i in seq_len(N)) {
     f3 <- dmvnorm(as.matrix(y[,1:model$info$num.eta]), mean=mean.qml[[2]][,i],
-      sigma=sigma.qml[[2]][[i]])
-    lls <- c(lls, sum(log(f2*f3)))
+      sigma=sigma.qml[[2]][[i]], log=TRUE)
+    lls <- c(lls, sum(f2 + f3))
   }
-
-  # TODO: muss das hier wirklich 1:ne heissen? Und nicht vielleicht ny?
-  # Oder evtl. ne:ny?
-  ###########################
   
   res <- sum(lls)
   
@@ -318,12 +280,7 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                   data=data, model=model,
                   upper=model$info$bounds$upper,
                   lower=model$info$bounds$lower, control=control, ...)
-
-    if (neg.hessian == TRUE){
-        est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
-                                    model=model, data=data)$Hessian
     }
-
   } else {
 
     if (is.null(control$maxit)){
@@ -336,15 +293,13 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                  control=control, ...) 
     # fit est to nlminb output
     names(est) <- gsub("value", "objective", names(est))
-    #names(est) <- gsub("counts", "iterations", names(est))
-
-    if (neg.hessian == TRUE){
-        est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
-                                    model=model, data=data)$Hessian
-
-    }
+    names(est) <- gsub("counts", "iterations", names(est))
   }
 
+  if (neg.hessian == TRUE){
+      est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
+                            model=model, data=data)$Hessian
+  }
   est
 }
 
@@ -369,7 +324,6 @@ var.z <- function(Omega, Sigma1){
     }
   }
   varz <- varz - sum(diag(Omega %*% Sigma1))^2
-
   varz
 }
 
@@ -395,13 +349,13 @@ sigma.xi <- function(a,sigma){
           sigmazz[p,q] <- sigma[i,k]*sigma[j,l]+sigma[i,l]*sigma[j,k]
           
           asigmaz[p,q] <- 
-            a[i]*a[k]*sigma[j,l]+
-            a[i]*a[l]*sigma[j,k]+
-            a[j]*a[k]*sigma[i,l]+
+            a[i]*a[k]*sigma[j,l] +
+            a[i]*a[l]*sigma[j,k] +
+            a[j]*a[k]*sigma[i,l] +
             a[j]*a[l]*sigma[i,k]
           
           q <- q+1
-          if(q>dimzz){p <- p+1
+          if(q>dimzz){p <- p + 1
                       q <- 1}
           
         }
@@ -409,10 +363,8 @@ sigma.xi <- function(a,sigma){
     }
   }
   
-  
-  sigma.xixi <- asigmaz+sigmazz
-  
-  return(sigma.xixi)
+  sigma.xixi <- asigmaz + sigmazz
+  sigma.xixi
   
 }
 
