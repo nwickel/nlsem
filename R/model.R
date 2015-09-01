@@ -111,9 +111,9 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
       eta.logical[i,] <- grepl(paste0("eta[",i,"]"), interaction.s)
     }
 
-    which.eta <- apply(eta.logical, 2, which)
+    which.eta <- apply(eta.logical, 1, which)
 
-    if (all(which.eta == 1)) {
+    if (length(which.eta) == 1) {
       ind <- calc_interaction_matrix(interaction.s)
       Omega[ind] <- NA
       # check if Omega has row echelon form
@@ -124,7 +124,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
       for (i in seq_len(num.eta)) {
         eta.row <- which(eta.logical[i,])
         ind <- calc_interaction_matrix(interaction.s[eta.row])
-        Omega[ind[,1],ind[,2],i] <- NA
+        Omega[,,i][ind] <- NA
         test_omega(Omega[,,i])
       }
     }
@@ -527,6 +527,9 @@ test_omega <- function(Omega){
     ind <- which(is.na(interactions), arr.ind=TRUE)
     dim <- nrow(interactions)
     msg <- "Interactions are not well-defined. Please change order of xi's. See ?specify_sem for details."
+    # TODO This error message does not make sense for # eta > 1. Maybe get
+    # rid of test_omega all together? It's more a debugging tool than
+    # anything else anyway.
 
     # test if any rows are 0 in between interaction effects
     na.r <- rowSums(interactions)

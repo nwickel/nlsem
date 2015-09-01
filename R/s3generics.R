@@ -293,6 +293,15 @@ print.summary.emEst <- function(x, digits=max(3, getOption("digits") - 3),
 
 }
 
+print.qmlEst <- function(x, digits=3, ...) {
+  cat("Fitted model of class", x$model.class, "with", x$info$num.xi +
+    x$info$num.eta, "latent variables and", x$info$num.x + x$info$num.y,
+    "indicators.\n\n")
+
+  cat("Estimated parameters:\n")
+  print(round(as.data.frame(x$coef), digits=digits))
+}
+
 summary.qmlEst <- function(object, ...) {
 
     # estimates
@@ -322,10 +331,6 @@ summary.qmlEst <- function(object, ...) {
                 estimates=est.table,
                 iterations=object$iterations,
                 finallogLik=object$objective)
-
-    if (object$model.class == "semm" || object$model.class == "nsemm") {
-        ans$class.weights <- object$info$w
-    }
 
     class(ans) <- "summary.qmlEst"
 

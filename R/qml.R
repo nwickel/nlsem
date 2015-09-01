@@ -280,7 +280,6 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                   data=data, model=model,
                   upper=model$info$bounds$upper,
                   lower=model$info$bounds$lower, control=control, ...)
-    }
   } else {
 
     if (is.null(control$maxit)){
