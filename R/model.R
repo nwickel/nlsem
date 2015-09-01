@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Aug/27/2015, NU
+# last mod Sep/01/2015, NU
 
 #--------------- main functions ---------------
 
@@ -113,14 +113,14 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
 
     which.eta <- apply(eta.logical, 2, which)
 
-    if (all((which.eta == 1))) {
+    if (all(which.eta == 1)) {
       ind <- calc_interaction_matrix(interaction.s)
       Omega[ind] <- NA
       # check if Omega has row echelon form
       test_omega(Omega)
 
     } else {
-      Omega <- array(0, dim=c(num.xi, num.xi, length(unique(which.eta))))
+      Omega <- array(0, dim=c(num.xi, num.xi, num.eta))
       for (i in seq_len(num.eta)) {
         eta.row <- which(eta.logical[i,])
         ind <- calc_interaction_matrix(interaction.s[eta.row])
