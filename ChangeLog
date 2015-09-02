@@ -1,3 +1,14 @@
+Changes in 0.5
+
+  * qml(): Can now handle more than one eta
+  * specify_sem(): Visible user changes: arguments interc.lat and
+    interc.obs were removed; new argument constraints which lets user
+    specify indirect and direct approach for SEMM and NSEMM; interactions
+    need to be specified as eta1~xi1:xi2 now
+  * New methods: print method for objects specified by specify_sem() of class
+    singleClass, semm, and nsemm; print method for object of class emEst
+    and qmlEst
+
 Changes in 0.4
 
   * New function: get_factor_scores(), calculate Bartlett factor scores
