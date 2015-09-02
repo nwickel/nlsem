@@ -79,6 +79,10 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
 
 simulate.singleClass <- function(object, parameters, n=400, m=16, nsim=1, seed=NULL, ...) {
 
+  if (object$info$num.eta > 1) {
+    stop("Cannot simulate data for a model with more than one eta, yet.")
+  }
+
   # set seed
   set.seed(seed)
 
