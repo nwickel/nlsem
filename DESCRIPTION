@@ -15,8 +15,9 @@ Authors@R: c(person("Nora", "Umbach",
                     role="ctb"),
             person("Bernhard", "Schmitz",
                     role="ctb"))
-Depends: R (>= 3.1.0), gaussquad, mvtnorm, nlme
+Depends: R (>= 3.1.0), gaussquad, mvtnorm
+Imports: nlme
 Suggests: lavaan
 Description: Estimation of structural equation models with nonlinear effects
-    and underlying nonnormal distributions.
+  and underlying nonnormal distributions.
 License: GPL (>= 2)

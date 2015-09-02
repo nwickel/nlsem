@@ -5,14 +5,14 @@ importFrom(gaussquad, hermite.h.quadrature.rules)
 importFrom(nlme, fdHess)
 
 export(
-    specify_sem, 
-    count_free_parameters,
-    create_sem,
-    fill_model,
-    get_factor_scores,
-    em,
-    qml
-    )
+  specify_sem, 
+  count_free_parameters,
+  create_sem,
+  fill_model,
+  get_factor_scores,
+  em,
+  qml
+)
 
 S3method(simulate, singleClass)
 S3method(simulate, semm)
