@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Aug/27/2015, NU
+# last mod Sep/02/2015, NU
 
 #--------------- main functions ---------------
 
@@ -13,6 +13,7 @@ as.data.frame.singleClass <- as.data.frame.semm <- as.data.frame.nsemm <- functi
         names(temp) <- paste0("class", c)
         data <- cbind(data, temp)
     }
+    attr(data, "constraints") <- x$info$constraints
     data
 }
 
@@ -48,7 +49,8 @@ simulate.nsemm <- function(object, nsim=1, seed=NULL, n=400, m=16,
   dat
 }
 
-simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
+simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters,
+                          ...) {
 
   set.seed(seed)
 
@@ -77,7 +79,8 @@ simulate.semm <- function(object, nsim=1, seed=NULL, n=400, parameters, ...) {
   dat
 }
 
-simulate.singleClass <- function(object, parameters, n=400, m=16, nsim=1, seed=NULL, ...) {
+simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16,
+                                 parameters, ...) {
 
   if (object$info$num.eta > 1) {
     stop("Cannot simulate data for a model with more than one eta, yet.")
@@ -562,21 +565,27 @@ get_rel.lat <- function(Gamma, Beta) {
 
 get_interaction <- function(Omega) {
 
-  ind <- which(is.na(Omega), arr.ind=T)
-  if (is.matrix(Omega)) {
-    ind.fill <- matrix(c(paste0("xi", ind[,"row"]), paste0("xi",
-      ind[,"col"])), nrow=dim(ind)[1], ncol=2)
-    int <- apply(ind.fill, 1, function(x) paste(x, collapse=":"))
-    o <- paste("eta1 =", paste(int, collapse=" + "))
-  } else {
-    ind.fill <- matrix(c(paste0("xi", ind[,"dim1"]), paste0("xi",
-      ind[,"dim2"])), nrow=dim(ind)[1], ncol=2)
-    int <- apply(ind.fill, 1, function(x) paste(x, collapse=":"))
-    o <- NULL
-    for (i in unique(ind[, "dim3"])) {
-      o <- c(o, paste0("eta", i, " = ", paste(int[ind[, "dim3"] == i],
-        collapse=" + ")))
+  if (anyNA(Omega)) {
+    if (is.matrix(Omega) || (length(dim(Omega)) == 3 & dim(Omega)[3] == 1)) {
+      Omega <- matrix(Omega, nrow(Omega))
+      ind <- which(is.na(Omega), arr.ind=T)
+      ind.fill <- matrix(c(paste0("xi", ind[,"row"]), paste0("xi",
+        ind[,"col"])), nrow=dim(ind)[1], ncol=2)
+      int <- apply(ind.fill, 1, function(x) paste(x, collapse=":"))
+      o <- paste("eta1 =", paste(int, collapse=" + "))
+    } else {
+      ind <- which(is.na(Omega), arr.ind=T)
+      ind.fill <- matrix(c(paste0("xi", ind[,"dim1"]), paste0("xi",
+        ind[,"dim2"])), nrow=dim(ind)[1], ncol=2)
+      int <- apply(ind.fill, 1, function(x) paste(x, collapse=":"))
+      o <- NULL
+      for (i in unique(ind[, "dim3"])) {
+        o <- c(o, paste0("eta", i, " = ", paste(int[ind[, "dim3"] == i],
+          collapse=" + ")))
+      }
     }
+  } else {
+  o <- NULL
   }
   o
 }

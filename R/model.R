@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Sep/01/2015, NU
+# last mod Sep/02/2015, NU
 
 #--------------- main functions ---------------
 
@@ -157,6 +157,8 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
   # class weights w
   w <- matrix(1/num.classes, nrow=num.classes, ncol=1)
 
+  constraints <- match.arg(constraints)
+
   # create model with matrices and info
   model <- list(matrices=matrices, info=list(num.xi=num.xi, num.eta=num.eta,
                                              num.x=num.x, num.y=num.y,
@@ -176,7 +178,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
 # Create model matrices from a dataframe with columns label (for parameter
 # labels) and class 1 to class n; only needed when user wants to have full
 # control over constraints, etc.; exported function
-create_sem <- function(dat, constraints=c("indirect", "direct1", "direct2")){
+create_sem <- function(dat){
 
   stopifnot(is.data.frame(dat))
 
@@ -253,7 +255,7 @@ create_sem <- function(dat, constraints=c("indirect", "direct1", "direct2")){
 
   w <- matrix(1/num.classes, nrow=num.classes, ncol=1)
 
-  constraints <- match.arg(constraints)
+  constraints <- attr(dat, "constraints")
 
   info <- list(num.xi=num.xi, num.eta=num.eta, num.x=num.x, num.y=num.y,
                constraints=constraints, num.classes=num.classes,
@@ -615,6 +617,7 @@ get_model_class <- function(num.classes, interaction) {
       model.class <- "nsemm"
     } else model.class <- "semm"
   }
+  model.class
 }
 
 # Obtains parameter names from a given model; used in specify_sem

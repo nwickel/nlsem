@@ -2,7 +2,7 @@
 #
 # created: Feb/04/2015, NU
 # poluted: Jul/22/2015, HB
-# last mod: Sep/01/2015, NU
+# last mod: Sep/02/2015, NU
 
 #--------------- main functions ---------------
 
@@ -114,7 +114,7 @@ mu_qml <- function(model, data) {
       t(mt.m + L1 %*% t(x[i,] - mux.m)) + Sigma1)
   }
 
-  # Eq. 20
+  # Eq 20
   mu.y1 <- 
     mvy1.m +
     ma.m +
@@ -157,7 +157,7 @@ sigma_qml <- function(model, data) {
   L1 <- m$Phi %*% t(m$Lambda.x) %*% solve(m$Lambda.x %*% m$Phi %*%
     t(m$Lambda.x) + m$Theta.d)
 
-  # s. Eq 17,33 
+  # s. Eqs 17, 33 
   Beta <- m$Beta - diag(model$info$num.eta)
   B <- solve(diag(ne) - Beta)
   psi.b  <- B %*% m$Psi %*% t(B)
@@ -250,8 +250,8 @@ loglikelihood_qml <- function(parameters, model, data) {
   f2 <- dmvnorm(cbind(x, u), mean=mean.qml[[1]], sigma=sigma.qml[[1]],
     log=TRUE)
   # original implementation: produces NaN when sds are negative
-  
-  lls <- NULL
+
+  lls <- NULL
   for (i in seq_len(N)) {
     f3 <- dmvnorm(as.matrix(y[,1:model$info$num.eta]), mean=mean.qml[[2]][,i],
       sigma=sigma.qml[[2]][[i]], log=TRUE)
@@ -260,7 +260,7 @@ loglikelihood_qml <- function(parameters, model, data) {
   
   res <- sum(lls)
   
-  return(-res)
+  -res
 }
 
 mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
@@ -345,7 +345,7 @@ sigma.xi <- function(a,sigma){
     for(j in i:dimz){
       for(k in 1:dimz){
         for(l in k:dimz){
-          sigmazz[p,q] <- sigma[i,k]*sigma[j,l]+sigma[i,l]*sigma[j,k]
+          sigmazz[p,q] <- sigma[i,k]*sigma[j,l] + sigma[i,l]*sigma[j,k]
           
           asigmaz[p,q] <- 
             a[i]*a[k]*sigma[j,l] +
@@ -354,7 +354,7 @@ sigma.xi <- function(a,sigma){
             a[j]*a[l]*sigma[i,k]
           
           q <- q+1
-          if(q>dimzz){p <- p + 1
+          if(q > dimzz){p <- p + 1
                       q <- 1}
           
         }

@@ -22,7 +22,7 @@
 \examples{
 # specify model
 model <- specify_sem(num.x = 11, num.y = 4, num.xi = 2, num.eta = 1, 
-  xi = "x1-x5,x6-x11", eta = "y1-y4", interaction = "xi1:xi2")
+  xi = "x1-x5,x6-x11", eta = "y1-y4", interaction = "eta1~xi1:xi2")
 
 data("jordan")
 
