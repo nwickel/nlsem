@@ -42,9 +42,9 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
   #     }
   # }
 
-  # if (anyNA(model$matrices$class1$Omega) && model$info$num.eta > 1){
-  #   stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")
-  # }
+  if (anyNA(model$matrices$class1$Omega) && model$info$num.eta > 1){
+    stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")
+  }
 
   if(verbose == TRUE) {
     cat("-----------------------------------\n")
