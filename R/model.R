@@ -1,7 +1,7 @@
 # model.R
 #
 # created Sep/23/2014, NU
-# last mod Sep/02/2015, NU
+# last mod Sep/04/2015, NU
 
 #--------------- main functions ---------------
 
@@ -20,11 +20,17 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
   }
   stopifnot(num.x > 0, num.y >= 0, num.xi > 0, num.eta >= 0, num.classes > 0)
 
-  # check if only defined xi's are in the interaction
+  # check if only defined xi's are in the interaction and eta is in there
+  # for num.eta > 1
   if (interaction != "none") {
     interact.matrix <- calc_interaction_matrix(unlist(strsplit(interaction, ",")))
     if (max(interact.matrix) > num.xi) {
       stop("Interaction effects contain more xi's than defined.")
+    }
+    if (num.eta > 1) {
+      if (!grepl("eta", interaction)) {
+        stop("For more than one eta, specification for interaction must be something like eta1~xi1:xi2.")
+      }
     }
   }
 
@@ -113,7 +119,7 @@ specify_sem <- function(num.x, num.y, num.xi, num.eta, xi, eta,
 
     which.eta <- apply(eta.logical, 1, which)
 
-    if (length(which.eta) == 1) {
+    if (nrow(eta.logical) == 1) {
       ind <- calc_interaction_matrix(interaction.s)
       Omega[ind] <- NA
       # check if Omega has row echelon form

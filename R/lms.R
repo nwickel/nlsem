@@ -10,6 +10,7 @@
 mu_lms <- function(model, z) {
     
     #check_filled(model)
+    # TODO: Remove?
 
     matrices <- model$matrices$class1
     k    <- get_k(matrices$Omega)     # number of nonzero rows in Omega
