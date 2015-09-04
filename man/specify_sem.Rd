@@ -61,16 +61,16 @@
   indicators for \code{xi1} and \code{x3, x4} are indicators for
   \code{xi2}. And accordingly for the endogenous variables \code{eta}.
 
-  Interactions between latent exogenous variables are defined by
-  \code{interaction='eta1~xi1:xi2,eta1~xi1:xi1'}. It is important to note, that
-  interactions must always start with \code{xi1} and build from there. A
-  definition like \code{interaction='eta1~xi1:xi2,eta1~xi2:xi3'} is not feasible and
-  must be changed to\cr
-  \code{interaction='eta1~xi1:xi2,eta1~xi1:xi3'} (by simple
-  switching \code{xi1} and \code{xi2} in one's definitions).
-  \code{interaction} fills the \eqn{\bf \Omega}{Omega} matrix (see above)
-  and must always be a triangular matrix where the lower triangle is
-  filled with 0's (see Klein & Moosbrugger, 2000, for details).
+  Interactions between latent exogenous variables are defined by\cr
+  \code{interaction='eta1~xi1:xi2,eta1~xi1:xi1'}. It is important to note,
+  that interactions must always start with \code{xi1} and build from there.
+  A definition like \code{interaction='eta1~xi1:xi2,eta1~xi2:xi3'} is not
+  feasible and must be changed to
+  \code{interaction='eta1~xi1:xi2,eta1~xi1:xi3'} (by simple switching
+  \code{xi1} and \code{xi2} in one's definitions). \code{interaction} fills
+  the \eqn{\bf \Omega}{Omega} matrix (see above) and must always be a
+  triangular matrix where the lower triangle is filled with 0's (see Klein
+  & Moosbrugger, 2000, for details).
 
   \code{rel.lat} defines which latent variables influence each
   other. It must be defined like\cr
@@ -113,7 +113,7 @@
   latent interaction effects with the LMS method. \emph{Psychometrika, 65},
   457--474.
 
-  Klein, A. &, Muthén, B. O. (2007). Quasi-Maximum Likelihood Estimation of
+  Klein, A. &, Muthen, B. O. (2007). Quasi-Maximum Likelihood Estimation of
   Structural Equation Models With Multiple Interaction and Quadratic
   Effects. \emph{Multivariate Behavior Research, 42}, 647--673.
 }
