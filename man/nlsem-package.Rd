@@ -12,11 +12,12 @@ nonnormal distributions.
 This is a package for estimating nonlinear structural equation mixture
 models using an expectation-maximization (EM) algorithm. Three different
 approaches are implemented. Firstly, the Latent Moderated Structural
-Equations (LMS) approach (Klein & Moosbrugger, 2000), which allows for
-two-way interaction and quadratic terms in the structural model. Due to the
+Equations (LMS) approach (Klein & Moosbrugger, 2000) and the Quasi-Maximum
+Likelihood (QML) approach (Klein & Muthén, 2007), which allow for two-way
+interaction and quadratic terms in the structural model. Due to the
 nonlinearity, the latent criterion variables cannot be assumed to be
 normally distributed. Therefore, the latent criterins's distribution is
-approximated with a mixture of normal distributions. Secondly, the
+approximated with a mixture of normal distributions in LMS. Secondly, the
 Structural Equation finite Mixture Model (STEMM or SEMM) approach (Jedidi,
 Jagpal & DeSarbo, 1997), which uses mixtures to model latent classes. In
 this way it can deal with heterogeneity in the sample or nonlinearity and

@@ -35,7 +35,7 @@
   for typical structural equation models with the notation used by
   \code{specify_sem} (in matrix notation):
 
-  Structural model for LMS (nonlinear SEM) and NSEMM (nonlinear SEM
+  Structural model for LMS, QML (nonlinear SEM), and NSEMM (nonlinear SEM
   with latent classes):
   \deqn{\boldsymbol{\eta} = \boldsymbol{\alpha} + \boldsymbol{\Gamma}
         \boldsymbol{\xi} + \boldsymbol{\xi}' \boldsymbol{\Omega}
@@ -112,6 +112,10 @@
   Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
   latent interaction effects with the LMS method. \emph{Psychometrika, 65},
   457--474.
+
+  Klein, A. &, Muthén, B. O. (2007). Quasi-Maximum Likelihood Estimation of
+  Structural Equation Models With Multiple Interaction and Quadratic
+  Effects. \emph{Multivariate Behavior Research, 42}, 647--673.
 }
 \seealso{\code{\link{create_sem}}}
 \examples{
