@@ -10,7 +10,7 @@ nonnormal distributions.
 }
 \details{
 This is a package for estimating nonlinear structural equation mixture
-models using an expectation-maximization (EM) algorithm. Three different
+models using an expectation-maximization (EM) algorithm. Four different
 approaches are implemented. Firstly, the Latent Moderated Structural
 Equations (LMS) approach (Klein & Moosbrugger, 2000) and the Quasi-Maximum
 Likelihood (QML) approach (Klein & Muthen, 2007), which allow for two-way
@@ -47,9 +47,9 @@ estimated using \code{\link{em}}.
 }
 \section{Future Features}{
 \itemize{
-  \item NSEMM and LMS for more than one latent endogenous variable.
+  \item NSEMM, LMS and QML for more than one latent endogenous variable.
   \item Parameter standardization.
 }
 }
-\keyword{ package }
+\keyword{package}
 
