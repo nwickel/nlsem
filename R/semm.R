@@ -11,6 +11,7 @@
 mu_semm <- function(matrices) {
 
     #check_filled(matrices)
+    # TODO: Remove?
 
     mu.y <- matrices$nu.y + matrices$Lambda.y %*% solve(matrices$Beta) %*%
             (matrices$alpha + matrices$Gamma %*% matrices$tau)

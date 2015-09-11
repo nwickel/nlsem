@@ -216,7 +216,6 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
           names(coefficients[[class]]) <- model$info$par.names[[class]]
         }
       }
-      # -> TODO check if par is not already named!
     }
   )
 
