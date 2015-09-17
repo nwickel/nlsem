@@ -125,8 +125,8 @@ obtain_parameters <- function(object, constraints=c("indirect", "direct1",
       pars <- list()
       pars[["class1"]] <- coef(object)$class1
       for (class in names(coef(object))[-1]) {
-        Phi <- coef(object)[[class]][grep("Phi", names(pars.class1))]
-        tau <- coef(object)[[class]][grep("tau", names(pars.class1))]
+        Phi <- coef(object)[[class]][grep("Phi", names(pars[["class1"]]))]
+        tau <- coef(object)[[class]][grep("tau", names(pars[["class1"]]))]
         pars[[class]] <- c(Phi, tau)
       }
 
@@ -142,7 +142,7 @@ obtain_parameters <- function(object, constraints=c("indirect", "direct1",
 
       pars <- list()
       pars[["class1"]] <- coef(object)$class1
-      if (class(model) == "semm") {
+      if (class(object$model.class) == "semm") {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau")
       } else {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau", "Omega")
@@ -151,7 +151,7 @@ obtain_parameters <- function(object, constraints=c("indirect", "direct1",
         par.c <- NULL
         for (parname in parnames) {
           par.c <- c(par.c, coef(object)[[class]][grep(parname,
-            names(pars.class1))])
+            names(pars[["class1"]]))])
         }
         pars[[class]] <- c(par.c)
       }

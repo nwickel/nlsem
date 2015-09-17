@@ -1,3 +1,9 @@
+Changes in 0.5.1
+
+  * Bug fix: Fixed function get_factor_scores() so it works with new
+    argument constraints in specify_sem()
+  * New methods: Exported new print methods
+
 Changes in 0.5
 
   * specify_sem(): Visible user changes: arguments interc.lat and
@@ -8,7 +14,7 @@ Changes in 0.5
     singleClass, semm, and nsemm; print method for object of class emEst
     and qmlEst
 
-Changes in 0.4
+Changes in 0.4.1
 
   * New function: get_factor_scores(), calculate Bartlett factor scores
     from parameter estimates

@@ -1,7 +1,7 @@
 # s3generics.R
 #
 # created Nov/03/2014, KN
-# last mod Sep/02/2015, NU
+# last mod Sep/17/2015, NU
 
 #--------------- main functions ---------------
 
@@ -132,7 +132,7 @@ simulate.singleClass <- function(object, nsim=1, seed=NULL, n=400, m=16,
   dat
 }
 
-print.singleClass <- print.semm <- print.nsemm <- function(x) {
+print.singleClass <- print.semm <- print.nsemm <- function(x, ...) {
   cat("Model of class", class(x), "\n\n")
 
   cat("Number of latent endogenous variables:", x$info$num.eta, "(with", x$info$num.y, "indicators)\n")
