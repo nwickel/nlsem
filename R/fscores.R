@@ -1,7 +1,11 @@
 # fscores.R
 #
 # created: Jun/19/2015, NU
-# last mod: Jul/28/2015, NU
+# last mod: Sep/17/2015, NU
+
+#--------------- main functions ---------------
+
+# Obtain factor scores from fitted model; exported
 
 get_factor_scores <- function(object, model, data) {
 
@@ -32,7 +36,11 @@ get_factor_scores <- function(object, model, data) {
       num.xi=object$info$num.xi, num.eta=object$info$num.eta,
       ind=ind, data=data))
 
-    P <- estep_semm(model=model, parameters=unlist(pars), data=data)
+    pars.estep <- unlist(obtain_parameters(object, constraints=object$info$constraints))
+    P <- estep_semm(model=model, parameters=pars.estep, data=data)
+    # TODO: This needs to be adjusted for indirect (and direct2) approach,
+    # since these are too many parameters... Maybe write function
+    # obtain_parameters()?
 
     ws <- NULL
     for (i in seq_len(object$info$num.classes)) {
@@ -52,7 +60,7 @@ get_factor_scores <- function(object, model, data) {
 
 
 # Calculate Bartlett factor scores from parameter estimates of structural
-# equation model
+# equation model; NOT exported
 fscores <- function(parameters, num.x, num.y, num.xi, num.eta, ind, data) {
 
   pars <- parameters
@@ -81,35 +89,75 @@ fscores <- function(parameters, num.x, num.y, num.xi, num.eta, ind, data) {
 
   beta0 <- pars[paste0("nu.x", unlist(lapply(ind, function(x)x[-1])))]
   
-  beta0hat <- matrix(0, nrow=num.x-num.xi,
-    ncol=num.eta)
-  # TODO is num.eta correct here?
+  beta0hat <- matrix(0, nrow=num.x-num.xi, ncol=num.eta)
   
   for (i in seq_len(ncol(beta0hat))) {
     beta0hat[ind0[[i]], i] <- beta0[ind0[[i]]]
   }
 
-  b1.mod1 <- cbind(matrix(0, nrow=num.xi,
-    ncol=num.x-num.xi), diag(num.xi))
+  b1.mod1 <- cbind(matrix(0, nrow=num.xi, ncol=num.x-num.xi), diag(num.xi))
 
-  b1.mod2 <- rbind(diag(num.x-num.xi),
-    -1*t(beta1hat))
+  b1.mod2 <- rbind(diag(num.x-num.xi), -1*t(beta1hat))
   
-  # eq(6)
   Gamma <- b1.mod1 %*% psihat %*% b1.mod2 %*% solve(t(b1.mod2) %*% psihat %*%
            (b1.mod2))
   
   n <- nrow(data)
-  # eq(5)
+
   fs <- matrix(0, nrow=n, ncol=num.xi)
   for(i in 1:n){
-    fs[i,] <- cbind(-Gamma, (diag(num.xi) + Gamma %*%
-      beta1hat)) %*% (t(as.matrix(data[i,
-      seq_len(num.x)])) - rbind(beta0hat, matrix(0,
+    fs[i,] <- cbind(-Gamma, (diag(num.xi) + Gamma %*% beta1hat)) %*%
+      (as.matrix(data[i, seq_len(num.x)]) - rbind(beta0hat, matrix(0,
       num.xi, num.eta)))
   }
-
   fs
 }
 
+#--------------- helper functions ---------------
+
+obtain_parameters <- function(object, constraints=c("indirect", "direct1",
+                              "direct2")) {
+
+  constraints <- match.arg(constraints)
+  switch(EXPR = constraints,
+    indirect = {
+
+      pars <- list()
+      pars[["class1"]] <- coef(object)$class1
+      for (class in names(coef(object))[-1]) {
+        Phi <- coef(object)[[class]][grep("Phi", names(pars.class1))]
+        tau <- coef(object)[[class]][grep("tau", names(pars.class1))]
+        pars[[class]] <- c(Phi, tau)
+      }
+
+    },
+
+    direct1 = {
+    
+      pars <- coef(object)
+
+    },
+
+    direct2 = {
+
+      pars <- list()
+      pars[["class1"]] <- coef(object)$class1
+      if (class(model) == "semm") {
+        parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau")
+      } else {
+        parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau", "Omega")
+      }
+      for (class in names(coef(object))[-1]) {
+        par.c <- NULL
+        for (parname in parnames) {
+          par.c <- c(par.c, coef(object)[[class]][grep(parname,
+            names(pars.class1))])
+        }
+        pars[[class]] <- c(par.c)
+      }
+
+    }
+  )     # end switch
+  pars
+}
 
