@@ -6,7 +6,7 @@ Changes in 0.5.1
 
 Changes in 0.5
 
-  * specify_sem(): Visible user changes: arguments interc.lat and
+  * specify_sem(): User visible changes: arguments interc.lat and
     interc.obs were removed; new argument constraints which lets user
     specify indirect and direct approach for SEMM and NSEMM; interactions
     need to be specified as eta1~xi1:xi2 now
