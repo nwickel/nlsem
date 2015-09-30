@@ -9,7 +9,7 @@
 \usage{
   em(model, data, start, qml = FALSE, verbose = FALSE, convergence = 1e-02,
      max.iter = 100, m = 16, optimizer = c("nlminb", "optim"),
-     max.mstep = 1, max.singleClass=1, neg.hessian = TRUE, ...) }
+     max.mstep = 1, max.singleClass = 1, neg.hessian = TRUE, ...) }
 \arguments{
   \item{model}{a specified structural equation model of class
   \code{singleClass}, \code{semm}, or \code{nsemm}.}
