@@ -191,7 +191,7 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
         coefficients <- get_class_parameters(model, final$par)
         for (class in names(model$matrices)) {
           names(coefficients[[class]]) <-
-          get_class_parnames(model)[[class]]
+            get_class_parnames(model)[[class]]
         }
       } else {
         coefficients <- final$par
@@ -208,7 +208,7 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
         coefficients <- get_class_parameters(model, final$par)
         for (class in names(model$matrices)) {
           names(coefficients[[class]]) <-
-          get_class_parnames(model)[[class]]
+            get_class_parnames(model)[[class]]
         }
       } else {
         coefficients <- final$par
