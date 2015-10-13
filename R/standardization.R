@@ -62,8 +62,6 @@ phi_mix <- function(object) {
   names.pars.all <- c(paste0("Gamma", seq_len(object$info$num.xi)),
     paste0("Omega", ind.omega))
 
-  rownames(out) <- names.pars.all
-
   if (object$model.class == "singleClass") {
     pars <- list(class1 = coef(object))
   } else {
@@ -76,7 +74,16 @@ phi_mix <- function(object) {
     names.pars <- c(names.l, names.nl)
   }
 
-  out <- out[rownames(out) %in% names.pars,rownames(out) %in% names.pars]
+  if (is.list(out)) {
+    for (class in names(out)) {
+      rownames(out[[class]]) <- names.pars.all
+      out[[class]] <- out[[class]][rownames(out[[class]]) %in% names.pars,
+        rownames(out[[class]]) %in% names.pars]
+    }
+  } else {
+    rownames(out) <- names.pars.all
+    out <- out[rownames(out) %in% names.pars, rownames(out) %in% names.pars]
+  }
   out
 }
 
@@ -105,6 +112,8 @@ standardize <- function(object) {
 
       phi00 <- var_eta(parameters=gamma, phi=phi, psi=pars[[class]][grep("Psi",
         names(pars[[class]]))])
+      # TODO: Does var_eta need and abs()? It can become negative,
+      # otherwise. Or what else is wrong here?
 
       Omega <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
       Omega[lower.tri(Omega, diag=TRUE)] <- nl
