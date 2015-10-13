@@ -245,13 +245,8 @@ get_class_parameters <- function(model, parameters) {
   class.pars
 }
 
-# # reverse of function above -- needed so standard errors can be estimated
-# # with neg. Hessian obtained by em()
-# get_estimated_paramters <- function(object, parameters) {
-# 
-# 
-# }
-# TODO: Remove
+# Obtain two neg. Hessians for several classes for indirect and direct2
+# approach
 get_hessian <- function(object) {
   if (object$info$constraints == "direct2") {
     names.class1 <- names(object$coefficients$class1)
