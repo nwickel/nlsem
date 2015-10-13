@@ -245,6 +245,62 @@ get_class_parameters <- function(model, parameters) {
   class.pars
 }
 
+# # reverse of function above -- needed so standard errors can be estimated
+# # with neg. Hessian obtained by em()
+# get_estimated_paramters <- function(object, parameters) {
+# 
+# 
+# }
+# TODO: Remove
+get_hessian <- function(object) {
+  if (object$info$constraints == "direct2") {
+    names.class1 <- names(object$coefficients$class1)
+    for (class in names(object$coef)[-1]) {
+      names.class <- names(coef(object)[[class]])
+      par.names <- c(paste0("class1.",names.class1), 
+        paste0(class,".",names.class[grep("Gamma", names.class)]))
+      # Is there a Beta?
+      if (object$info$num.eta > 1) {
+      par.names <- c(par.names, paste0(class,".",names.class[grep("Beta",
+        names.class)]))
+      }
+      par.names <- c(par.names, paste0(class,".",names.class[grep("Psi", names.class)]),
+        paste0(class,".",names.class[grep("Phi", names.class)]),
+        paste0(class,".",names.class[grep("alpha", names.class)]),
+        paste0(class,".",names.class[grep("tau", names.class)]))
+      # Is there an Omega?
+      if (object$model.class == "nsemm") {
+        par.names <- c(par.names, paste0(class,".",names.class[grep("Omega", names.class)]))
+      }
+    }
+  } else {
+    names.class1 <- names(object$coefficients$class1)
+    for (class in names(object$coef)[-1]) {
+      names.class <- names(coef(object)[[class]])
+      par.names <- c(paste0("class1.",names.class1),
+        paste0(class,".",names.class[grep("Phi", names.class)]),
+        paste0(class,".",names.class[grep("tau", names.class)]))
+    }
+  }
+  dimnames(object$neg.hessian) <- list(par.names, par.names)
+  hessian.l <- list()
+  for (class in names(object$coef)) {
+    hessian.l[[class]] <- object$neg.hessian[grep("class1",
+      rownames(object$neg.hessian)), grep("class1",
+      colnames(object$neg.hessian))] 
+    dimnames(hessian.l[[class]]) <- list(names(object$coefficients$class1),
+      names(object$coefficients$class1))
+  }
+  for (class in names(hessian.l)[-1]) {
+    par.names.c <- par.names[grep(class, par.names)]
+    hessian.l[[class]][gsub(paste0("^",class,".(.*)$"), "\\1",
+    par.names.c), gsub(paste0("^",class,".(.*)$"), "\\1", par.names.c)] <-
+      object$neg.hessian[grep(class, rownames(object$neg.hessian)),
+      grep(class, colnames(object$neg.hessian))]
+  }
+  hessian.l
+}
+
 # Make a list of class specific parameter names
 get_class_parnames <- function(model) {
 
@@ -256,7 +312,6 @@ get_class_parnames <- function(model) {
   }
   class.names
 }
-
 
 # Suppress all warnings that contain 'NaN'
 suppress_NaN_warnings <- function(expr) {

@@ -247,8 +247,13 @@ summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
     est.table <- cbind(est, s.error, tvalue, pvalue)
     dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
   } else {
-      est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
-      s.error <- calc_standard_error(object$neg.hessian[[c]])
+    if (object$info$constraints == "direct1") {
+      neg.hessian <- object$neg.hessian
+    } else {
+      neg.hessian <- get_hessian(object)
+    }
+    est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
+      s.error <- calc_standard_error(neg.hessian[[c]])
       tvalue <- est[[c]] / s.error
       pvalue <- 2 * pnorm(-abs(tvalue))
       est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
@@ -486,20 +491,20 @@ rel_change <- function(x) {
 }
 
 calc_standard_error <- function(neg.hessian) {
-    s.error <- tryCatch({
-                    sqrt(diag(solve(neg.hessian)))
-                }, error=function(e) {
-                    NA
-                }, warning=function(w) {
-                     if (grepl("NaN", conditionMessage(w))) {
-                       suppressWarnings(sqrt(diag(solve(neg.hessian))))
-                    } else{
-                       sqrt(diag(solve(neg.hessian)))
-                    }
-                })
-                if (all(is.na(s.error))) warning("Standard errors could not be computed, because negative Hessian was either not available or singular.")
-                if (any(is.nan(s.error))) warning("Standard errors for some coefficients could not be computed.") 
-    s.error
+  s.error <- tryCatch({
+      sqrt(diag(solve(neg.hessian)))
+    }, error=function(e) {
+      NA
+    }, warning=function(w) {
+       if (grepl("NaN", conditionMessage(w))) {
+         suppressWarnings(sqrt(diag(solve(neg.hessian))))
+      } else{
+         sqrt(diag(solve(neg.hessian)))
+      }
+    })
+    if (all(is.na(s.error))) warning("Standard errors could not be computed, because negative Hessian was either not available or singular.")
+    if (any(is.nan(s.error))) warning("Standard errors for some coefficients could not be computed.") 
+  s.error
 }
 
 # Extracting information from matrices to print them in model summary:
