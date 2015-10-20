@@ -245,7 +245,7 @@ summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
     tvalue <- est / s.error
     pvalue <- 2 * pnorm(-abs(tvalue))
     est.table <- cbind(est, s.error, tvalue, pvalue)
-    dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+    dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "z value", "Pr(>|z|)"))
   } else {
     if (object$info$constraints == "direct1") {
       neg.hessian <- object$neg.hessian
@@ -258,7 +258,7 @@ summary.emEst <- function(object, print.likelihoods = FALSE, ...) {
       pvalue <- 2 * pnorm(-abs(tvalue))
       est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
       dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
-        c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+        c("Estimate", "Std. Error", "z value", "Pr(>|z|)"))
       est.table
     }))
   }
@@ -324,7 +324,7 @@ summary.qmlEst <- function(object, ...) {
   tvalue <- est / s.error
   pvalue <- 2 * pnorm(-abs(tvalue))
   est.table <- cbind(est, s.error, tvalue, pvalue)
-  dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
+  dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "z value", "Pr(>|z|)"))
 
   ans <- list(model=object$model.class,
               estimates=est.table,
