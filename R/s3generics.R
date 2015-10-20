@@ -316,160 +316,146 @@ print.qmlEst <- function(x, digits=3, ...) {
 
 summary.qmlEst <- function(object, ...) {
 
-    # estimates
-    est <- object$coefficients
+  # estimates
+  est <- object$coefficients
 
-    # standard errors
-    if (is.numeric(est)) {
-        s.error <- calc_standard_error(object$neg.hessian)
-        tvalue <- est / s.error
-        pvalue <- 2 * pnorm(-abs(tvalue))
-        est.table <- cbind(est, s.error, tvalue, pvalue)
-        dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
-    } else {
-        est.table <- Reduce('rbind', lapply(seq_along(est), function(c) {
-                            s.error <- calc_standard_error(object$neg.hessian[[c]])
-                            tvalue <- est[[c]] / s.error
-                            pvalue <- 2 * pnorm(-abs(tvalue))
-                            est.table <- cbind(est[[c]], s.error, tvalue, pvalue)
-                            dimnames(est.table)  <- list(paste0("class", c, ".", names(est[[c]])),
-                                                         c("Estimate", "Std. Error",
-                                                           "t value", "Pr(>|z|)"))
-                            est.table
-                           }))
-    }
+  # standard errors
+  s.error <- calc_standard_error(object$neg.hessian)
+  tvalue <- est / s.error
+  pvalue <- 2 * pnorm(-abs(tvalue))
+  est.table <- cbind(est, s.error, tvalue, pvalue)
+  dimnames(est.table)  <- list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|z|)"))
 
-    ans <- list(model=object$model.class,
-                estimates=est.table,
-                iterations=object$iterations,
-                finallogLik=object$objective)
+  ans <- list(model=object$model.class,
+              estimates=est.table,
+              iterations=object$iterations,
+              finallogLik=object$objective)
 
-    class(ans) <- "summary.qmlEst"
+  class(ans) <- "summary.qmlEst"
 
-    ans
+  ans
 }
 
 print.summary.qmlEst <- function(x, digits=max(3, getOption("digits") - 3),
-                               cs.ind=2:3, ...) {
+                                 cs.ind=2:3, ...) {
     
-    cat("\nSummary for model of class", x$model, "estimated with QML\n")
-    cat("\nEstimates:\n")
-    printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
-    cat("\nNumber of iterations:", x$iterations,
-        "\nFinal loglikelihood:", round(x$finallogLik, 3), "\n") 
+  cat("\nSummary for model of class", x$model, "estimated with QML\n")
+  cat("\nEstimates:\n")
+  printCoefmat(x$estimates, digits=digits, cs.ind=cs.ind, ...)
+  cat("\nNumber of iterations:", x$iterations,
+      "\nFinal loglikelihood:", round(x$finallogLik, 3), "\n") 
 }
 
 logLik.emEst <- logLik.qmlEst <- function(object, ...){
-    if(length(list(...)))
-        warning("extra arguments discarded")
+  if(length(list(...)))
+      warning("extra arguments discarded")
 
-    out <- object$objective
-    attr(out, "df") <- length(unlist(object$coef))
-    class(out) <- "logLik"
-    out
+  out <- object$objective
+  attr(out, "df") <- length(unlist(object$coef))
+  class(out) <- "logLik"
+  out
 }
 
 anova.emEst <- anova.qmlEst <- function(object, ..., test=c("Chisq", "none")) {
-    # Adapted from anova.polr by Brian Ripley
-    
-    test <- match.arg(test)
-    dots <- list(...)
-    if (length(dots) == 0)
-        stop('anova is not implemented for a single "emEst" object')
+  # Adapted from anova.polr by Brian Ripley
+  
+  test <- match.arg(test)
+  dots <- list(...)
+  if (length(dots) == 0)
+      stop('anova is not implemented for a single "emEst" object')
 
-    mlist <- list(object, ...)
-    if (any(!sapply(mlist, function(x) x$model.class == "singleClass"))) {
-        stop('Likelihood Ratio Test only meaningful for models of class "singleClass".')
-    }
+  mlist <- list(object, ...)
+  if (any(!sapply(mlist, function(x) x$model.class == "singleClass"))) {
+      stop('Likelihood Ratio Test only meaningful for models of class "singleClass".')
+  }
 
-    nlist <- sapply(mlist, function(x) x$info$n)
-    if (!all(nlist == object$info$n)) {
-        stop("SEM have not all been fitted to the same data set.")
-    }
+  nlist <- sapply(mlist, function(x) x$info$n)
+  if (!all(nlist == object$info$n)) {
+      stop("SEM have not all been fitted to the same data set.")
+  }
 
-    names(mlist) <- c(deparse(substitute(object)),
-                as.character(substitute(...[]))[2:length(mlist)])
-    if (any(!sapply(mlist, inherits, "emEst")))
-        stop('not all objects are of class "emEst"')
-    nt <- length(mlist)
+  names(mlist) <- c(deparse(substitute(object)),
+              as.character(substitute(...[]))[2:length(mlist)])
+  if (any(!sapply(mlist, inherits, "emEst")))
+      stop('not all objects are of class "emEst"')
+  nt <- length(mlist)
 
-    dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
+  dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
 
-    s <- order(dflist)
-    mlist <- mlist[s]
-    dflist <- dflist[s]
+  s <- order(dflist)
+  mlist <- mlist[s]
+  dflist <- dflist[s]
 
-    lls <- sapply(mlist, function(x) -2*x$objective)
-    tss <- c("", paste(1:(nt - 1), 2:nt, sep = " vs "))
-    df <- c(NA, diff(dflist))
-    x2 <- c(NA, -diff(lls))
-    pr <- c(NA, 1 - pchisq(x2[-1], df[-1]))
-    out <- data.frame(Model=names(mlist), Resid.df=dflist, Deviance=lls,
-                      Test=tss, Df=df, LRtest=x2, Prob=pr)
-    names(out) <- c("Model", "Numb. coef", "-2logLik", "Test",
-                    "   Df", "LR stat.", "Pr(>Chi)")
-    rownames(out) <- 1:nt
-    if (test == "none") out <- out[, 1:6]
-    class(out) <- c("Anova", "data.frame")
-    attr(out, "heading") <- "Chi Square test statistic for (nonlinear) SEM\n"
-    out
+  lls <- sapply(mlist, function(x) -2*x$objective)
+  tss <- c("", paste(1:(nt - 1), 2:nt, sep = " vs "))
+  df <- c(NA, diff(dflist))
+  x2 <- c(NA, -diff(lls))
+  pr <- c(NA, 1 - pchisq(x2[-1], df[-1]))
+  out <- data.frame(Model=names(mlist), Resid.df=dflist, Deviance=lls,
+                    Test=tss, Df=df, LRtest=x2, Prob=pr)
+  names(out) <- c("Model", "Numb. coef", "-2logLik", "Test",
+                  "   Df", "LR stat.", "Pr(>Chi)")
+  rownames(out) <- 1:nt
+  if (test == "none") out <- out[, 1:6]
+  class(out) <- c("Anova", "data.frame")
+  attr(out, "heading") <- "Chi Square test statistic for (nonlinear) SEM\n"
+  out
 }
 
 AIC.emEst <- AIC.qmlEst <- function(object, ..., k=2) {
 
-    dots <- list(...)
-    if (length(dots) == 0){
-        out <- as.numeric(-2*logLik(object) + k*length(object$coef))
-    } else {
-        mlist <- list(object, ...)
-        names(mlist) <- c(deparse(substitute(object)),
-                          as.character(substitute(...[]))[2:length(mlist)])
-        nt <- length(mlist)
+  dots <- list(...)
+  if (length(dots) == 0){
+      out <- as.numeric(-2*logLik(object) + k*length(object$coef))
+  } else {
+    mlist <- list(object, ...)
+    names(mlist) <- c(deparse(substitute(object)),
+                      as.character(substitute(...[]))[2:length(mlist)])
+    nt <- length(mlist)
 
-        dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
+    dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
 
-        aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(unlist(x$coef)))
-        s <- order(aic, decreasing=TRUE)
-        aic <- aic[s]
-        dflist <- dflist[s]
-        out <- data.frame(df=dflist, AIC=aic)
-        rownames(out) <- names(mlist)
-    }
-    out
+    aic <- sapply(mlist, function(x) -2*logLik(x) + k*length(unlist(x$coef)))
+    s <- order(aic, decreasing=TRUE)
+    aic <- aic[s]
+    dflist <- dflist[s]
+    out <- data.frame(df=dflist, AIC=aic)
+    rownames(out) <- names(mlist)
+  }
+  out
 }
 
 BIC.emEst <- BIC.qmlEst <- function(object, ...) {
 
-    dots <- list(...)
-    if (length(dots) == 0){
-        out <- as.numeric(-2*logLik(object) +
-               log(object$info$n)*length(unlist(object$coef)))
-    } else {
-        mlist <- list(object, ...)
-        names(mlist) <- c(deparse(substitute(object)),
-                          as.character(substitute(...[]))[2:length(mlist)])
-        nt <- length(mlist)
+  dots <- list(...)
+  if (length(dots) == 0){
+      out <- as.numeric(-2*logLik(object) +
+             log(object$info$n)*length(unlist(object$coef)))
+  } else {
+    mlist <- list(object, ...)
+    names(mlist) <- c(deparse(substitute(object)),
+                      as.character(substitute(...[]))[2:length(mlist)])
+    nt <- length(mlist)
 
-        dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
+    dflist <- sapply(mlist, function(x) length(unlist(x$coef)))
 
-        bic <- sapply(mlist, function(x) -2*logLik(x) + log(object$info$n)*length(unlist(x$coef)))
-        s <- order(bic, decreasing=TRUE)
-        bic <- bic[s]
-        dflist <- dflist[s]
-        out <- data.frame(df=dflist, BIC=bic)
-        rownames(out) <- names(mlist)
-    }
-    out
+    bic <- sapply(mlist, function(x) -2*logLik(x) + log(object$info$n)*length(unlist(x$coef)))
+    s <- order(bic, decreasing=TRUE)
+    bic <- bic[s]
+    dflist <- dflist[s]
+    out <- data.frame(df=dflist, BIC=bic)
+    rownames(out) <- names(mlist)
+  }
+  out
 }
 
 plot.emEst <- function(x, y, ...) {
 
-    plot(x$loglikelihoods, type="l", xlab="Number of iterations", 
-         ylab="log likelihood", axes=F, ...)
-    axis(1, at=1:length(x$loglikelihoods))
-    axis(2)
-    box()
-
+  plot(x$loglikelihoods, type="l", xlab="Number of iterations", 
+       ylab="log likelihood", axes=F, ...)
+  axis(1, at=1:length(x$loglikelihoods))
+  axis(2)
+  box()
 }
 
 #--------------- helper functions ---------------
@@ -478,16 +464,15 @@ plot.emEst <- function(x, y, ...) {
 # maximum absolute value
 rel_change <- function(x) {
     
-    if (length(x) == 1) {
-        rel.change <- 0
-    } else {
-        rel.change <- numeric(length(x))
-        for (i in 2:length(rel.change)){
-
-            rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
-        }
+  if (length(x) == 1) {
+      rel.change <- 0
+  } else {
+    rel.change <- numeric(length(x))
+    for (i in 2:length(rel.change)){
+      rel.change[i] <- abs(x[i-1]-x[i])/max(abs(x[i-1]), abs(x[i]))
     }
-    rel.change
+  }
+  rel.change
 }
 
 calc_standard_error <- function(neg.hessian) {
