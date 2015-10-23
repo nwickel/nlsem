@@ -15,18 +15,18 @@
 \format{
   A data frame of fifteen variables and 6,038 observations:
   \describe{
-    \item{x1}{indicator for academic self-concept in science, item ST37Q06: I
-    can easily understand new ideas in <school science>.}
-    \item{x2}{indicator for enjoyment of science, item ST16Q01: I generally
+    \item{x1}{indicator for enjoyment of science, item ST16Q01: I generally
     have fun when I am learning <broad science> topics.}
-    \item{x3}{indicator for enjoyment of science, item ST16Q02: I like reading
+    \item{x2}{indicator for enjoyment of science, item ST16Q02: I like reading
     about <broad science>.}
-    \item{x4}{indicator for enjoyment of science, item ST16Q03: I am happy
+    \item{x3}{indicator for enjoyment of science, item ST16Q03: I am happy
     doing <broad science> problems.}
-    \item{x5}{indicator for enjoyment of science, item ST16Q04: I enjoy
+    \item{x4}{indicator for enjoyment of science, item ST16Q04: I enjoy
     acquiring new knowledge in <broad science>.}
-    \item{x6}{indicator for enjoyment of science, item ST16Q05: I am
+    \item{x5}{indicator for enjoyment of science, item ST16Q05: I am
     interested in learning about <broad science>.}
+    \item{x6}{indicator for academic self-concept in science, item ST37Q06: I
+    can easily understand new ideas in <school science>.}
     \item{x7}{indicator for academic self-concept in science, item ST37Q01:
     Learning advanced <school science> topics would be easy for me.}
     \item{x8}{indicator for academic self-concept in science, item ST37Q02:
