@@ -1,7 +1,7 @@
 # qml.R
 #
 # created: Feb/04/2015, NU
-# last mod: Feb/11/2015, NU
+# last mod: Oct/26/2015, NU
 
 #--------------- main functions ---------------
 
@@ -223,6 +223,7 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
                       data=data, model=model,
                       upper=model$info$bounds$upper,
                       lower=model$info$bounds$lower, control=control, ...)
+        names(est$par) <- model$info$par.names
 
         if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
@@ -242,6 +243,7 @@ mstep_qml <- function(model, parameters, data, neg.hessian=FALSE,
         # fit est to nlminb output
         names(est) <- gsub("value", "objective", names(est))
         #names(est) <- gsub("counts", "iterations", names(est))
+        names(est$par) <- model$info$par.names
 
         if (neg.hessian == TRUE){
             est$hessian <- fdHess(pars=est$par, fun=loglikelihood_qml,
