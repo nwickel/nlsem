@@ -9,7 +9,6 @@ export(
   count_free_parameters,
   create_sem,
   fill_model,
-  get_factor_scores,
   em,
   qml
 )
