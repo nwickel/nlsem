@@ -15,10 +15,15 @@ phi_mix <- function(object) {
     phi <- matrix(nrow=n + nl, ncol=n + nl)
 
     phi[seq_len(n), seq_len(n)] <- second_moments_group(object, "class1")
+    # TODO: This must be wrong! This needs to be phi1, phi2, phi4!!!
+
     phi[(n+1):nrow(phi), seq_len(n)] <- cov_xyz(object)
+
     phi[seq_len(n), (n+1):nrow(phi)] <- t(phi[(n+1):nrow(phi), seq_len(n)])
+
     tmp <- matrix(nrow=nl, ncol=nl)
     tmp[lower.tri(tmp, diag=T)] <- cov_xy(object)
+
     phi[(n+1):nrow(phi), (n+1):nrow(phi)] <- fill_symmetric(tmp)
 
     out <- phi
@@ -115,9 +120,12 @@ standardize <- function(object) {
       # TODO: Does var_eta need and abs()? It can become negative,
       # otherwise. Or what else is wrong here?
 
-      Omega <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
-      Omega[lower.tri(Omega, diag=TRUE)] <- nl
-      Omega <- fill_symmetric(Omega)
+      Omega <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
+      if (sum(upper.tri(Omega, diag=TRUE)) == length(nl)) {
+        Omega[upper.tri(Omega, diag=TRUE)] <- nl
+      } else {
+        Omega[upper.tri(Omega, diag=FALSE)] <- nl
+      }
 
       Omega2 <- Omega
       diag(Omega2) <- 2*diag(Omega)
@@ -137,8 +145,13 @@ standardize <- function(object) {
           gamma.nl[i,j] <- Omega[i,j] * sqrt(phi.l[i,i]*phi[j,j] / phi00)
         }
       }
+      if (sum(upper.tri(Omega, diag=TRUE)) == length(nl)) {
+        gamma.nl <- gamma.nl[upper.tri(gamma.nl, diag=TRUE)]
+      } else {
+        gamma.nl <- gamma.nl[upper.tri(gamma.nl, diag=FALSE)]
+      }
 
-      gamma.all <- c(gamma.l, gamma.nl[upper.tri(gamma.nl, diag=TRUE)])
+      gamma.all <- c(gamma.l, gamma.nl)
       names(gamma.all) <- names(gamma)
       gamma.dot[[class]] <- gamma.all
 
@@ -159,9 +172,14 @@ standardize <- function(object) {
     phi00 <- var_eta(parameters=gamma, phi=phi, psi=pars[grep("Psi",
       names(pars))])
 
-    Omega <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
-    Omega[lower.tri(Omega, diag=TRUE)] <- nl
-    Omega <- fill_symmetric(Omega)
+    Omega <- matrix(0, nrow=object$info$num.xi, ncol=object$info$num.xi)
+    if (sum(upper.tri(Omega, diag=TRUE)) == length(nl)) {
+      Omega[upper.tri(Omega, diag=TRUE)] <- nl
+    } else {
+      Omega[upper.tri(Omega, diag=FALSE)] <- nl
+    }
+    # Omega <- fill_symmetric(Omega)
+    # TODO: Why would I need to fill Omega??
 
     Omega2 <- Omega
     diag(Omega2) <- 2*diag(Omega)
@@ -181,8 +199,13 @@ standardize <- function(object) {
         gamma.nl[i,j] <- Omega[i,j] * sqrt(phi.l[i,i]*phi[j,j] / phi00)
       }
     }
+    if (sum(upper.tri(Omega, diag=TRUE)) == length(nl)) {
+      gamma.nl <- gamma.nl[upper.tri(gamma.nl, diag=TRUE)]
+    } else {
+      gamma.nl <- gamma.nl[upper.tri(gamma.nl, diag=FALSE)]
+    }
 
-    gamma.dot <- c(gamma.l, gamma.nl[upper.tri(gamma.nl, diag=TRUE)])
+    gamma.dot <- c(gamma.l, gamma.nl)
     names(gamma.dot) <- names(gamma)
 
   }
@@ -239,7 +262,7 @@ second_moments_group <- function(object, class="class1") {
 
   mu.i <- mu_group(object, class)
   nu.ij <- nu_group(object, class)
-  
+
   mu.ij <- matrix(nrow=object$info$num.xi, ncol=object$info$num.xi)
   for (i in seq_len(object$info$num.xi)) {
     for (j in seq_len(object$info$num.xi)) {
@@ -577,7 +600,6 @@ cov_xyz <- function(object) {
 }
 
 # Eq. 39: variance of eta
-
 var_eta <- function(parameters, phi, psi) {
 
   phi_00 <- t(parameters) %*% phi %*% parameters + psi
