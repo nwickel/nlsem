@@ -9,6 +9,8 @@
 
 get_factor_scores <- function(object, model, data) {
 
+  # TODO: Add as.matrix() for data!
+
   if (all(class(object) != "emEst", class(object) != "qmlEst")) {
     stop("object is not of class 'emEst' or 'qmlEst'.")
   }
@@ -41,12 +43,19 @@ get_factor_scores <- function(object, model, data) {
     # TODO: This needs to be adjusted for indirect (and direct2) approach,
     # since these are too many parameters... Maybe write function
     # obtain_parameters()?
+    #---------------------------------------------------------------------------
+    # TODO: Can this TODO be deleted??
+    #---------------------------------------------------------------------------
+
 
     ws <- NULL
     for (i in seq_len(object$info$num.classes)) {
       ws[[i]] <- fs.l[[i]] * P
     }
     fs <- Reduce("+", ws)
+    # TODO: What am I doing here for several classes? Why am I adding this
+    # up? That doesn't make sense (at least not on Friday afternoon...)
+    fs <- fs.l
 
   } else {
     fs <- fscores(parameters=pars, num.x=object$info$num.x,
