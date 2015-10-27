@@ -1,3 +1,11 @@
+Changes in 0.6
+
+  * Bug fix: Adjusted mstep_qml so it works with new constraints option and
+    can now be used within NSEMM again
+  * Bug fix: Fixed computation of standard errors for summary function for
+    indirect and direct2 approach
+  * jordan: Added information for indicators for jordan data set
+
 Changes in 0.5.1
 
   * Bug fix: Fixed function get_factor_scores() so it works with new
