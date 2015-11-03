@@ -25,18 +25,18 @@
     acquiring new knowledge in <broad science>.}
     \item{x5}{indicator for enjoyment of science, item ST16Q05: I am
     interested in learning about <broad science>.}
-    \item{x6}{indicator for academic self-concept in science, item ST37Q06: I
+    \item{x6}{indicator for academic self-concept in science, item ST37Q01: I
     can easily understand new ideas in <school science>.}
-    \item{x7}{indicator for academic self-concept in science, item ST37Q01:
+    \item{x7}{indicator for academic self-concept in science, item ST37Q02:
     Learning advanced <school science> topics would be easy for me.}
-    \item{x8}{indicator for academic self-concept in science, item ST37Q02:
+    \item{x8}{indicator for academic self-concept in science, item ST37Q03:
     I can usually give good answers to <test questions> on <school
     science> topics.}
-    \item{x9}{indicator for academic self-concept in science, item ST37Q03:
+    \item{x9}{indicator for academic self-concept in science, item ST37Q04:
     I learn <school science> topics quickly.}
-    \item{x10}{indicator for academic self-concept in science, item ST37Q04:
+    \item{x10}{indicator for academic self-concept in science, item ST37Q05:
     <School science> topics are easy for me.} 
-    \item{x11}{indicator for academic self-concept in science, item ST37Q05:
+    \item{x11}{indicator for academic self-concept in science, item ST37Q06:
     When I am being taught <school science>, I can understand the concepts very
     well.}
     \item{y1}{indicator for career aspirations in science, item ST29Q01: I
