@@ -44,6 +44,10 @@ estimated using \code{\link{em}}.
   Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
   latent interaction effects with the LMS method. \emph{Psychometrika, 65},
   457--474.
+
+  Klein, A. &, Muthen, B. O. (2007). Quasi-Maximum Likelihood Estimation
+  of Structural Equation Models With Multiple Interaction and Quadratic
+  Effects \emph{Multivariate Behavioral Research, 42}, 647--673.
 }
 \section{Future Features}{
 \itemize{
