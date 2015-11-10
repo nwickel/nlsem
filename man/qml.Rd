@@ -53,7 +53,7 @@
 }
 \seealso{\code{\link{specify_sem}}}
 \examples{
-# specify model of class LMS
+# specify model of class singleClass
 sc <- specify_sem(num.x=4, num.y=2, num.xi=2, num.eta=1, xi="x1-x2,x3-x4",
                   eta="y1-y2", interaction="eta1~xi1:xi2") 
 
@@ -75,6 +75,7 @@ pars.orig <- c(0.6, 0.7,                 # Lx
 dat <- simulate(sc, parameters=pars.orig, seed=81)
 
 # fit model
+set.seed(1609)
 start <- runif(count_free_parameters(sc))
 \dontrun{
 qml1 <- qml(sc, dat, start)

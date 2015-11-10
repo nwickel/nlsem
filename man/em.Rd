@@ -91,8 +91,8 @@ dat <- as.matrix(PoliticalDemocracy[ ,c(9:11,1:8)])
 
 # specify model of class SEMM
 model <- specify_sem(num.x = 3, num.y = 8, num.xi = 1, num.eta = 2, 
-  xi = "x1-x3", eta = "y1-y4,y5-y8", rel.lat =
-  "eta1~xi1,eta2~xi1,eta2~eta1", num.classes = 2)
+  xi = "x1-x3", eta = "y1-y4,y5-y8", rel.lat = "eta1~xi1,eta2~xi1,eta2~eta1",
+  num.classes = 2, constraints = "direct1")
 
 # fit model
 set.seed(911)
@@ -106,7 +106,7 @@ plot(res)
 ###### Example for LMS ######
 # specify model
 model <- specify_sem(num.x = 11, num.y = 4, num.xi = 2, num.eta = 1,
-  xi = "x1-x5,x6-x11", eta = "y1-y4", interaction = "eta~xi1:xi2")
+  xi = "x1-x5,x6-x11", eta = "y1-y4", interaction = "eta1~xi1:xi2")
 
 data("jordan")
 
