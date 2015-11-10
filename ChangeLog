@@ -5,6 +5,7 @@ Changes in 0.6
   * Bug fix: Fixed computation of standard errors for summary function for
     indirect and direct2 approach
   * jordan: Added information for indicators for jordan data set
+  * Removed: get_factor_scores() for now.
 
 Changes in 0.5.1
 
