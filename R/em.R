@@ -35,12 +35,12 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
     stop("Number of columns in data does not match number of x's and y's.")
   }
 
-  # if (class(model) == "singleClass" || class(model) == "nsemm"){
-  #     n.na <- length(which(is.na(model$matrices$class1$Omega)))
-  #     if (any(start[-c(1:(length(start) - n.na))] == 0)){
-  #         stop("Starting parameters for Omega should not be 0.")
-  #     }
-  # }
+  if (class(model) == "singleClass" || class(model) == "nsemm"){
+      n.na <- length(which(is.na(model$matrices$class1$Omega)))
+      if (any(start[-c(1:(length(start) - n.na))] == 0)){
+          stop("Starting parameters for Omega should not be 0.")
+      }
+  }
 
   if (anyNA(model$matrices$class1$Omega) && model$info$num.eta > 1){
     stop("Model with interaction effects and num.eta > 1 cannot be fitted (yet).")

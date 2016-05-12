@@ -104,7 +104,6 @@ plot(res)
 }
 
 ###### Example for LMS ######
-# specify model
 model <- specify_sem(num.x = 11, num.y = 4, num.xi = 2, num.eta = 1,
   xi = "x1-x5,x6-x11", eta = "y1-y4", interaction = "eta1~xi1:xi2")
 
@@ -116,5 +115,23 @@ start <- runif(count_free_parameters(model))
 res <- em(model, jordan, start, convergence=1, verbose=TRUE)
 summary(res)
 plot(res)
+}
+
+###### Example using lavaan syntax ######
+lav.model <- '
+  eta =~ y1 + y2 + y3 + y4
+  xi1 =~ x1 + x2 + x3 + x4 + x5
+  xi2 =~ x6 + x7 + x8 + x9 + x10 + x11
+
+  eta ~ xi1 + xi2 + xi1:xi2 + xi1:xi1'
+
+model <- lav2nlsem(lav.model)
+
+data("jordan")
+
+set.seed(1118)
+start <- runif(count_free_parameters(model))
+\dontrun{
+res <- em(model, jordan, start, convergence=1, verbose=TRUE)
 }
 }
