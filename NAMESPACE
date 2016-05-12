@@ -3,11 +3,13 @@ import(stats, graphics)
 importFrom(mvtnorm, dmvnorm, rmvnorm)
 importFrom(gaussquad, hermite.h.quadrature.rules)
 importFrom(nlme, fdHess)
+importFrom(lavaan, lavaanify, lavNames, lavMatrixRepresentation)
 
 export(
   specify_sem, 
   count_free_parameters,
   create_sem,
+  lav2nlsem,
   fill_model,
   em,
   qml

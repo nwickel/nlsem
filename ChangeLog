@@ -1,3 +1,10 @@
+Changes in 0.7
+
+  * New feature: Models can be specified using lavaan-syntax now.
+  * Bug fix: Print method for models created with specify_sem() showed
+    wrong number of indicators for eta.
+  * anova.emEst: now works with stats::print.anova()
+
 Changes in 0.6
 
   * Bug fix: Adjusted mstep_qml so it works with new constraints option and
