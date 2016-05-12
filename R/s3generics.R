@@ -357,7 +357,7 @@ logLik.emEst <- logLik.qmlEst <- function(object, ...){
 }
 
 anova.emEst <- anova.qmlEst <- function(object, ..., test=c("Chisq", "none")) {
-  # Adapted from anova.polr by Brian Ripley
+  ## Adapted form MASS::anova.polr and stats::anova.glmlist
   
   test <- match.arg(test)
   dots <- list(...)
@@ -384,20 +384,19 @@ anova.emEst <- anova.qmlEst <- function(object, ..., test=c("Chisq", "none")) {
 
   s <- order(dflist)
   mlist <- mlist[s]
-  dflist <- dflist[s]
+  dfs <- dflist[s]
 
   lls <- sapply(mlist, function(x) -2*x$objective)
-  tss <- c("", paste(1:(nt - 1), 2:nt, sep = " vs "))
-  df <- c(NA, diff(dflist))
-  x2 <- c(NA, -diff(lls))
-  pr <- c(NA, 1 - pchisq(x2[-1], df[-1]))
-  out <- data.frame(Model=names(mlist), Resid.df=dflist, Deviance=lls,
-                    Test=tss, Df=df, LRtest=x2, Prob=pr)
-  names(out) <- c("Model", "Numb. coef", "-2logLik", "Test",
-                  "   Df", "LR stat.", "Pr(>Chi)")
+  df <- c(NA, diff(dfs))
+  x2 <- c(NA, diff(lls))
+  pr <- c(NA, pchisq(x2[-1], df[-1], lower.tail = FALSE))
+  out <- data.frame(Resid.df = dfs, Deviance = lls, Df = df, Chisq = x2,
+                    Prob = pr)
+  dimnames(out) <- list(1:nt, c("Resid. Df", "Resid. Dev", "Df",
+                                     "Deviance", "Pr(>Chi)"))
   rownames(out) <- 1:nt
-  if (test == "none") out <- out[, 1:6]
-  class(out) <- c("Anova", "data.frame")
+  if (test == "none") out <- out[, -ncol(out)]
+  class(out) <- c("anova", "data.frame")
   attr(out, "heading") <- "Chi Square test statistic for (nonlinear) SEM\n"
   out
 }
@@ -498,9 +497,10 @@ get_xi <- function(Lambda.x) {
 
   ind <- list()
   for (i in seq_len(ncol(Lambda.x))) {
-    ind[[i]] <- seq_len(nrow(Lambda.x))[-which(Lambda.x[,i] == 0)]
-    if (length(ind[[i]]) == 0) {
-      ind[[i]] <- 1
+    if (ncol(Lambda.x) > 1) {
+      ind[[i]] <- seq_len(nrow(Lambda.x))[-which(Lambda.x[,i] == 0)]
+    } else {
+      ind[[i]] <- seq_len(nrow(Lambda.x))
     }
   }
   xs <- sapply(ind, function(x) paste0("x", x, collapse=" + "))
@@ -513,9 +513,10 @@ get_eta <- function(Lambda.y) {
 
   ind <- list()
   for (i in seq_len(ncol(Lambda.y))) {
-    ind[[i]] <- seq_len(nrow(Lambda.y))[-which(Lambda.y[,i] == 0)]
-    if (length(ind[[i]]) == 0) {
-      ind[[i]] <- 1
+    if (ncol(Lambda.y) > 1) {
+      ind[[i]] <- seq_len(nrow(Lambda.y))[-which(Lambda.y[,i] == 0)]
+    } else {
+      ind[[i]] <- seq_len(nrow(Lambda.y))
     }
   }
   xs <- sapply(ind, function(x) paste0("y", x, collapse=" + "))
