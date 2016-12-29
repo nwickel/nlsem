@@ -20,7 +20,9 @@
   string e.g. `class', `mixture', etc. Default is `class'.}
 }
 \details{
-TODO
+nlsem can only fit a certain group of models and it is only feasible to
+specify models in the lavaan syntax that can be fitted with nlsem; that
+means models with latent variables and latent interactions only.
 }
 \value{
   Gives back an object of class \code{singleClass}, \code{semm}, or

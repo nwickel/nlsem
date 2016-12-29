@@ -183,7 +183,7 @@ get_k <- function(Omega) {
 # lower right half (compare Equations 20-22 in Klein & Moosbrugger, 2000)
 get_d <- function(n, k) {
     mat <- diag(n)
-    mat[seq_len(k), seq_len(k)] <- 0
+    diag(mat)[seq_len(k)] <- 0
     mat
 }
 

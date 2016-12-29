@@ -2,6 +2,7 @@ import(stats, graphics)
 
 importFrom(mvtnorm, dmvnorm, rmvnorm)
 importFrom(gaussquad, hermite.h.quadrature.rules)
+importFrom(orthopolynom, hermite.h.recurrences)
 importFrom(nlme, fdHess)
 importFrom(lavaan, lavaanify, lavNames, lavMatrixRepresentation)
 

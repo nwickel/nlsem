@@ -1,6 +1,6 @@
 Package: nlsem
 Version: 0.7
-Date: 2016-05-12
+Date: 2016-12-30
 Title: Fitting Structural Equation Mixture Models
 Authors@R: c(person("Nora", "Umbach",
                     role = c("aut", "cre"),
@@ -15,8 +15,8 @@ Authors@R: c(person("Nora", "Umbach",
                     role="ctb"),
             person("Bernhard", "Schmitz",
                     role="ctb"))
-Depends: R (>= 3.1.0), gaussquad, mvtnorm
-Imports: nlme, lavaan
+Depends: R (>= 3.1.0), stats, graphics, orthopolynom
+Imports: nlme, lavaan, gaussquad, mvtnorm
 Description: Estimation of structural equation models with nonlinear effects
   and underlying nonnormal distributions.
 License: GPL (>= 2)
