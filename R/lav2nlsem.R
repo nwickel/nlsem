@@ -19,7 +19,8 @@ lav2nlsem <- function(model, constraints=c("indirect", "direct1",
       dat <- dat0
     }
 
-    name.eta <- lavNames(dat, "lv.y")
+    name.eta <- unique(dat$lhs[grep("^~$", dat$op)])
+    #name.eta <- lavNames(dat, "lv.y")
     num.y    <- sum(dat$lhs[grep("^=~$", dat$op)] == name.eta)
     num.x    <- sum(dat$lhs[grep("^=~$", dat$op)] != name.eta)
     name.xi  <- lavNames(dat, "lv.x")[!grepl(":", lavNames(dat, "lv.x"))]
@@ -29,55 +30,73 @@ lav2nlsem <- function(model, constraints=c("indirect", "direct1",
     name.y <- lavNames(dat, "ov")[dat$lhs %in% name.eta & dat$mat == "lambda"]
 
     # create matrices
-    d.en <- dat[dat$lhs == name.eta & dat$mat == "lambda",]
-    Lambda.y <- matrix(0, nrow=num.y, ncol=num.eta)
+    # Lambda.x and Lambda.y
+    Lambda <- matrix(0, nrow=num.x + num.y, ncol=num.xi + num.eta)
+    d.lambda <- dat[dat$mat == "lambda",]
+    Lambda[cbind(d.lambda$row, d.lambda$col)] <- d.lambda$ustart
+    colnames(Lambda) <- lavNames(dat, "lv")[!grepl(":", lavNames(dat, "lv"))]
+    rownames(Lambda) <- lavNames(dat, "ov")
 
-    Lambda.y[cbind(d.en$row, d.en$col)] <- d.en$ustart
+    Lambda.y <- as.matrix(Lambda[name.y, name.eta])
+    dimnames(Lambda.y) <- NULL
+    Lambda.x <- as.matrix(Lambda[name.x, name.xi])
+    dimnames(Lambda.x) <- NULL
 
-    # Lambda.x
-    d.ex <- dat[dat$lhs %in% name.xi & dat$mat == "lambda",]
-    d.ex$row.new <- d.ex$row - num.y
-    d.ex$col.new <- d.ex$col - num.eta
-    Lambda.x <- matrix(0, nrow=num.x, ncol=num.xi)
-
-    Lambda.x[cbind(d.ex$row.new, d.ex$col.new)] <- d.ex$ustart
-
-    effects <- lavNames(dat, "lv.x")
+    # Gamma
     d.ga <- dat[dat$rhs %in% name.xi & dat$mat == "beta",]
-    # Gamma and Beta
-    Gamma <- matrix(nrow=num.eta, ncol=num.xi)
-    d.ga$col.new <- d.ga$col - num.eta
-    Gamma[cbind(d.ga$row, d.ga$col.new)] <- d.ga$ustart
+    Gamma <- matrix(0, nrow=num.eta, ncol=num.xi)
+    colnames(Gamma) <- name.xi
+    rownames(Gamma) <- name.eta
 
-    # if (num.eta == 1) {
-    #   Beta  <- diag(num.eta)
-    # } else {
-      Beta  <- diag(num.eta)
-      d.be <- dat[dat$rhs %in% name.eta & dat$mat == "beta",]
-      Beta[cbind(d.be$row, d.be$col)] <- d.be$ustart
-    # }
-    
+    for (eta in name.eta) {
+      for (xi in name.xi) {
+        tryCatch({
+        Gamma[eta, xi] <- d.ga$ustart[d.ga$lhs == eta & d.ga$rhs == xi]
+        }, error=function(e) e)
+      }
+    }
+    dimnames(Gamma) <- NULL
+
+    # Beta
+    d.be <- dat[dat$rhs %in% name.eta & dat$mat == "beta",]
+    Beta  <- diag(num.eta)
+    colnames(Beta) <- name.eta
+    rownames(Beta) <- name.eta
+
+    for (e1 in name.eta) {
+      for (e2 in name.eta) {
+        tryCatch({
+        Beta[e1, e2] <- d.be$ustart[d.be$lhs == e1 & d.be$rhs == e2]
+        }, error=function(e) e)
+      }
+    }
+    dimnames(Beta) <- NULL
+
     # Omega
     nl.effects <- lavNames(dat, "lv.interaction")
     Omega <- matrix(0, nrow=num.xi, ncol=num.xi)
     e.s <- strsplit(nl.effects, ":")
     o.ind <- NULL
     for (i in seq_along(e.s)) {
-      o.ind <- rbind(o.ind, which(name.xi %in% e.s[[i]]))
+      ind <- which(name.xi %in% e.s[[i]])
+      if (length(ind) == 1) {
+        ind <- rep(ind, 2)
+      }
+      o.ind <- rbind(o.ind, ind)
     }
     Omega[o.ind] <- NA
 
-    # Theta.e
-    Theta.e <- diag(nrow=num.y)
-    d.Te <- dat[dat$lhs %in% name.y & dat$rhs %in% name.y,]
-    Theta.e[cbind(d.Te$row, d.Te$col)] <- d.Te$ustart
+    # Theta.d and Theta.e
+    Theta <- diag(nrow=num.x + num.y)
+    d.theta <- dat[dat$mat == "theta",]
+    Theta[cbind(d.theta$row, d.theta$col)] <- d.theta$ustart
+    colnames(Theta) <- c(name.x, name.y)
+    rownames(Theta) <- c(name.x, name.y)
 
-    # Theta.d
-    Theta.d <- diag(nrow=num.x)
-    d.Td <- dat[dat$lhs %in% name.x & dat$rhs %in% name.x,]
-    d.Td$row.new <- d.Td$row - num.y
-    d.Td$col.new <- d.Td$col - num.y
-    Theta.d[cbind(d.Td$row.new, d.Td$col.new)] <- d.Td$ustart
+    Theta.e <- as.matrix(Theta[name.y, name.y])
+    dimnames(Theta.e) <- NULL
+    Theta.d <- as.matrix(Theta[name.x, name.x])
+    dimnames(Theta.d) <- NULL
 
     # Psi
     Psi <- matrix(NA, nrow=num.eta, ncol=num.eta)
@@ -88,18 +107,17 @@ lav2nlsem <- function(model, constraints=c("indirect", "direct1",
     Phi[upper.tri(Phi)] <- 0
     
     # nu's
-    nu.y <- matrix(0, nrow=num.y, ncol=1)
-    d.nuy <- dat[dat$lhs %in% name.y & dat$mat == "nu",]
-    nu.y[cbind(d.nuy$row, d.nuy$col)] <- d.nuy$ustart
+    nu <- matrix(0, nrow=num.x + num.y, ncol=1)
+    d.nu <- dat[dat$mat == "nu",]
+    nu[cbind(d.nu$row, d.nu$col)] <- d.nu$ustart
+    rownames(nu) <- c(name.x, name.y)
 
-    nu.y[which(d.en$ustart == 1), 1] <- 0
-
-    nu.x <- matrix(0, nrow=num.x, ncol=1)
-    d.nux <- dat[dat$lhs %in% name.x & dat$mat == "nu",]
-    d.nux$row.new <- d.nux$row - num.y
-    nu.x[cbind(d.nux$row.new, d.nux$col)] <- d.nux$ustart
-
-    nu.x[which(d.ex$ustart == 1), 1] <- 0
+    nu.y <- as.matrix(nu[name.y, ])
+    nu.y[which(Lambda.y == 1, arr.ind=T)[, "row"]] <- 0
+    dimnames(nu.y) <- NULL
+    nu.x <- as.matrix(nu[name.x, ])
+    nu.x[which(Lambda.x == 1, arr.ind=T)[, "row"]] <- 0
+    dimnames(nu.x) <- NULL
 
     # alpha
     alpha <- matrix(NA, nrow=num.eta, ncol=1)

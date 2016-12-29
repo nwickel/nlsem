@@ -1,0 +1,9 @@
+bibentry(bibtype = "Article",
+         title = "Fitting Nonlinear Structural Equation Models in R with Package {nlsem}",
+         author = c(person("Nora", "Umbach"),
+                    person("Katharina", "Naumann"),
+                    person("Holger", "Brandt"),
+                    person("Augustin", "Kelava")),
+         year = "in press",
+         journal = "Journal of Statistical Software",
+         url = "https://CRAN.R-project.org/package=nlsem")
