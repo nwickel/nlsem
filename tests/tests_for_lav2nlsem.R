@@ -98,4 +98,53 @@ lav_model <- '
 
 nsemm_model <- lav2nlsem(lav_model, constraints="direct1")
 
+## with restrictions
+# nsemm model
+# ===========
+lav_model2 <- '
+  class: 1
+  xi1 =~ NA*x1 + x2 + x3
+  xi2 =~ x4 + x5 + x6
+  eta =~ y1 + y2 + y3
+
+  eta ~ xi1 + xi2 + xi1:xi2
+
+  class: 2
+  xi1 =~ 0*x1 + x2 + x3
+  xi2 =~ x4 + x5 + x6
+  eta =~ y1 + y2 + y3
+
+  eta ~ xi1 + xi2 + xi1:xi2
+
+  class: 3
+  xi1 =~ x1 + x2 + x3
+  xi2 =~ x4 + 1*x5 + x6
+  eta =~ y1 + y2 + y3
+
+  eta ~ xi1 + 0*xi2 + xi1:xi1
+'
+
+nsemm_model2 <- lav2nlsem(lav_model2, constraints="direct1")
+nsemm_model2$matrices
+
+# with parameter labels (which should be ignored)
+# ===========
+lav_model <- '
+  class: 1
+  xi1 =~ t1*x1 + x2 + x3
+  xi2 =~ x4 + x5 + x6
+  eta =~ y1 + y2 + y3
+
+  eta ~ xi1 + xi2 + xi1:xi2
+
+  class: 2
+  xi1 =~ t2*x1 + x2 + x3
+  xi2 =~ x4 + x5 + x6
+  eta =~ y1 + y2 + y3
+
+  eta ~ xi1 + xi2 + xi1:xi2
+'
+
+model <- lav2nlsem(lav_model, constraints="direct1")
+model$matrices
 

@@ -23,6 +23,11 @@
 nlsem can only fit a certain group of models and it is only feasible to
 specify models in the lavaan syntax that can be fitted with nlsem; that
 means models with latent variables and latent interactions only.
+
+Parameter restrictions in lavaan style can be used to some extent; meaning
+parameters can be fixed to a certain value with \code{1*x1}. Equality
+restrictions are handled via the \code{constraints} argument and will be
+ignored in the lavaan syntax.
 }
 \value{
   Gives back an object of class \code{singleClass}, \code{semm}, or
