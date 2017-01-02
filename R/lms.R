@@ -1,7 +1,7 @@
 # lms.R
 #
 # created: Sep/11/2014, NU
-# last mod: Aug/20/2015, NU
+# last mod: Jan/02/2017, NU
 
 #--------------- main functions ---------------
 
