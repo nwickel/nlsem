@@ -1,3 +1,9 @@
+Changes in 0.8
+
+  * New feature: Vignette was added
+  * New feature: Update of references, new CITATION file (after publication
+	in JSS)
+
 Changes in 0.7
 
   * New feature: Models can be specified using lavaan syntax now.

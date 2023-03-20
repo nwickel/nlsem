@@ -47,9 +47,10 @@
   \code{\link{specify_sem}} when specifiying structural equation model.}
 }
 \references{
-  Klein, A. &, Muthen, B. O. (2007). Quasi-Maximum Likelihood Estimation
-  of Structural Equation Models With Multiple Interaction and Quadratic
-  Effects \emph{Multivariate Behavioral Research, 42}, 647--673.
+  Klein, A. &, Muthen, B. O. (2007). Quasi-Maximum Likelihood Estimation of
+  Structural Equation Models With Multiple Interaction and Quadratic
+  Effects. \emph{Multivariate Behavior Research, 42}, 647--673.
+  doi:http://dx.doi.org/10.1080/00273170701710205
 }
 \seealso{\code{\link{specify_sem}}}
 \examples{

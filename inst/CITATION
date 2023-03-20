@@ -1,9 +1,29 @@
 bibentry(bibtype = "Article",
-         title = "Fitting Nonlinear Structural Equation Models in R with Package {nlsem}",
-         author = c(person("Nora", "Umbach"),
-                    person("Katharina", "Naumann"),
-                    person("Holger", "Brandt"),
-                    person("Augustin", "Kelava")),
-         year = "in press",
-         journal = "Journal of Statistical Software",
-         url = "https://CRAN.R-project.org/package=nlsem")
+  title        = "Fitting Nonlinear Structural Equation Models in {R} with Package {nlsem}",
+  author       = c(person(given = "Nora",
+                          family = "Umbach",
+                          email = "nora.umbach@uni-tuebingen.de"),
+                   person(given = "Katharina",
+                          family = "Naumann",
+                          email = "katharina.naumann@psycho.uni-tuebingen.de"),
+                   person(given = "Holger",
+                          family = "Brandt",
+                          email = "holger.brandt@uni-tuebingen.de"),
+                   person(given = "Augustin",
+                          family = "Kelava",
+                          email = "E-mail: }\\email{augustin.kelava@uni-tuebingen.de")),
+  journal      = "Journal of Statistical Software",
+  year         = "2017",
+  volume       = "77",
+  number       = "7",
+  pages        = "1--20",
+  doi          = "10.18637/jss.v077.i07",
+
+  header       = "To cite nlsem in publications use:",
+  textVersion  =
+  paste("Nora Umbach, Katharina Naumann, Holger Brandt, Augustin Kelava (2017).",
+        "Fitting Nonlinear Structural Equation Models in R with Package nlsem.",
+        "Journal of Statistical Software, 77(7), 1-20.",
+        "doi:10.18637/jss.v077.i07")
+)
+

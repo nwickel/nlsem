@@ -33,6 +33,11 @@ ignored in the lavaan syntax.
   Gives back an object of class \code{singleClass}, \code{semm}, or
   \code{nsemm} which can be fitted using \code{\link{em}}.
 }
+\references{
+  Rosseel, Y. (2012). lavaan: An R Package for Structural Equation
+  Modeling. \emph{Journal of Statistical Software, 48(2)}, 1 - 36.
+  doi:http://dx.doi.org/10.18637/jss.v048.i02
+}
 \seealso{\code{\link{specify_sem}}, \code{\link{create_sem}}}
 \examples{
 # create model with three latent classes

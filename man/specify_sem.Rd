@@ -103,19 +103,21 @@
 \references{
   Jedidi, K., Jagpal, H. S., & DeSarbo, W. S. (1997). STEMM: A General
   Finite Mixture Structural Equation Model, \emph{Journal of
-  Classification, 14}, 23--50.
+  Classification, 14}, 23--50. doi:http://dx.doi.org/10.1007/s003579900002
 
   Kelava, A., Nagengast, B., & Brandt, H. (2014). A nonlinear structural
   equation mixture modeling approach for non-normally distributed latent
   predictor variables. \emph{Structural Equation Modeling, 21}, 468-481.
+  doi:http://dx.doi.org/10.1080/10705511.2014.915379
 
   Klein, A. &, Moosbrugger, H. (2000). Maximum likelihood estimation of
   latent interaction effects with the LMS method. \emph{Psychometrika, 65},
-  457--474.
+  457--474. doi:http://dx.doi.org/10.1007/bf02296338
 
   Klein, A. &, Muthen, B. O. (2007). Quasi-Maximum Likelihood Estimation of
   Structural Equation Models With Multiple Interaction and Quadratic
   Effects. \emph{Multivariate Behavior Research, 42}, 647--673.
+  doi:http://dx.doi.org/10.1080/00273170701710205
 }
 \seealso{\code{\link{create_sem}}}
 \examples{
