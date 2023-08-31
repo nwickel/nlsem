@@ -30,7 +30,7 @@
 Organisation for Economic Co-Operation and Development (2010). \emph{Pisa 2009
 results: What students know and can do - Student performance in reading,
 mathematics and science} (Tech. Rep.). Paris, France. Obtained from:
-\url{http://www.oecd.org/pisa/pisaproducts/pisa2009database-downloadabledata.htm}
+\url{https://www.oecd.org/pisa/pisaproducts/pisa2009database-downloadabledata.htm}
 }
 \examples{
 data(australia)

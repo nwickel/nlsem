@@ -1,6 +1,9 @@
 Changes in 0.8-1
 
 	* Bug fix: Fixed broken CITATION file
+	* Bug fix: Fixed if conditions
+	* jordan/australia: Fixed URLs for data sets
+	* DESCRIPTION: Added URL for github repository
 
 Changes in 0.8
 

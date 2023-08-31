@@ -137,7 +137,7 @@ print.singleClass <- print.semm <- print.nsemm <- function(x, ...) {
 
   cat("Number of latent endogenous variables:", x$info$num.eta, "(with", x$info$num.y, "indicators)\n")
   cat("Number of latent exogenous variables:", x$info$num.xi, "(with", x$info$num.x, "indicators)\n")
-  if (class(x) != "singleClass") {
+  if (!inherits(x, "singleClass")) {
     cat("Number of latent classes:", x$info$num.classes, "\n")
   }
   cat("\nStructural model:\n")
@@ -156,7 +156,7 @@ print.singleClass <- print.semm <- print.nsemm <- function(x, ...) {
       cat(r, "\n")
     }
     # interaction
-    if (class(x) != "semm") {
+    if (!inherits(x, "semm")) {
       interaction <- get_interaction(x$matrices[[class]][["Omega"]])
       for (i in interaction) {
         cat(i, "\n")
@@ -182,7 +182,7 @@ print.singleClass <- print.semm <- print.nsemm <- function(x, ...) {
   }
   cat("------------------------------------------------------------\n")
 
-  if (class(x) != "singleClass") {
+  if (!inherits(x, "singleClass")) {
     constraints <- x$info$constraints
     switch(EXPR = constraints,
       indirect = {

@@ -20,3 +20,4 @@ Imports: nlme, lavaan, gaussquad, mvtnorm
 Description: Estimation of structural equation models with nonlinear effects
   and underlying nonnormal distributions.
 License: GPL (>= 2)
+URL: https://github.com/nwickel/nlsem

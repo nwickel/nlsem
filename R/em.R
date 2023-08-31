@@ -9,12 +9,12 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
                "optim"), max.mstep=1, max.singleClass=1, neg.hessian=TRUE,
                ...) {
 
-  stopifnot(class(model) == "singleClass" || class(model) == "semm" ||
-            class(model) == "nsemm")
+  stopifnot(inherits(model, "singleClass") || inherits(model, "semm") ||
+            inherits(model, "nsemm"))
 
   if (anyNA(data)) stop("Data contains NAs. Please remove.")
 
-  if (class(model) == "nsemm" & neg.hessian == TRUE) {
+  if (inherits(model, "nsemm") && isTRUE(neg.hessian)) {
     neg.hessian = FALSE
     warning("Negative Hessian cannot be computed for model of class 'nsemm'. neg.hessian will be set to FALSE.\n")
   }
@@ -35,7 +35,7 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
     stop("Number of columns in data does not match number of x's and y's.")
   }
 
-  if (class(model) == "singleClass" || class(model) == "nsemm"){
+  if (inherits(model, "singleClass") || inherits(model, "nsemm")){
       n.na <- length(which(is.na(model$matrices$class1$Omega)))
       if (any(start[-c(1:(length(start) - n.na))] == 0)){
           stop("Starting parameters for Omega should not be 0.")
@@ -56,7 +56,7 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
 
   ll.ret   <- NULL
   num.iter <- 0     # number of iterations
-  if (class(model) == "semm" || class(model) == "nsemm") {
+  if (inherits(model, "semm") || inherits(model, "nsemm")) {
     par.new <- start
   } else {
     par.new <- convert_parameters_singleClass(model, start)
@@ -233,7 +233,7 @@ em <- function(model, data, start, qml=FALSE, verbose=FALSE,
               neg.hessian=final$hessian, loglikelihoods=-ll.ret, info=info)
 
   # attach w for semm and nsemm
-  if (class(model) == "semm" || class(model) == "nsemm") out$info$w <-
+  if (inherits(model, "semm") || inherits(model, "nsemm")) out$info$w <-
     model$info$w
 
   class(out) <- "emEst"

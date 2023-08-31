@@ -52,7 +52,7 @@
 \source{
 Organisation for Economic Co-Operation and Development (2009). \emph{Pisa 2006:
 Science competencies for tomorrow's world} (Tech. Rep.). Paris, France.
-Obtained from: \url{http://www.oecd.org/pisa/pisaproducts/database-pisa2006.htm}
+Obtained from: \url{https://www.oecd.org/pisa/pisaproducts/database-pisa2006.htm}
 }
 \examples{
 data(jordan)

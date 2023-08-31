@@ -285,7 +285,7 @@ create_sem <- function(dat){
 # the model are counted); exported function
 count_free_parameters <- function(model) {
 
-  if (class(model) == "singleClass") {
+  if (inherits(model, "singleClass")) {
     constraints <- "direct1"
   } else {
     constraints <- model$info$constraints
@@ -318,7 +318,7 @@ count_free_parameters <- function(model) {
 
       res <- sum(unlist(lapply(model$matrices$class1, is.na)))
 
-      if (class(model) == "semm") {
+      if (inherits(model, "semm")) {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau")
       } else {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau", "Omega")
@@ -342,14 +342,14 @@ count_free_parameters <- function(model) {
 # mostly needed to simulate data from a prespecified model; exported function
 fill_model <- function(model, parameters) {
 
-  stopifnot(class(model) == "singleClass" || class(model) == "semm"
-            || class(model) == "nsemm")
+  stopifnot(inherits(model, "singleClass") || inherits(model, "semm")
+            || inherits(model, "nsemm"))
 
   stopifnot(count_free_parameters(model) == length(parameters))
 
   matrices <- model$matrices
 
-  if (class(model) == "singleClass") {
+  if (inherits(model, "singleClass")) {
     constraints <- "direct1"
   } else {
     constraints <- model$info$constraints
@@ -412,7 +412,7 @@ fill_model <- function(model, parameters) {
 
     direct2 = {
 
-      if (class(model) == "semm") {
+      if (inherits(model, "semm")) {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau")
       } else {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau", "Omega")
@@ -643,7 +643,7 @@ get_parnames <- function(model, constraints=c("indirect", "direct1",
     },
 
     direct2 = {
-      if (class(model) == "semm") {
+      if (inherits(model, "semm")) {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau")
       } else {
         parnames <- c("Gamma", "Beta", "Psi", "Phi", "alpha", "tau", "Omega")
@@ -654,7 +654,7 @@ get_parnames <- function(model, constraints=c("indirect", "direct1",
   par.names <- list()
   lst <- unlist(lapply(model$matrices$class1, is.na))
   par.names[["class1"]] <- names(lst[lst])
-  if (class(model) == "nsemm" || class(model) == "semm") {
+  if (inherits(model, "nsemm") || inherits(model, "semm")) {
     for (class in names(model$matrices)[-1]) {
       if (constraints != "direct1") {
         ind.parnames <- unlist(lapply(parnames, FUN=function(x) grep(x,
@@ -700,7 +700,7 @@ bounds <- function(model, constraints=c("indirect", "direct1", "direct2")) {
       phi <- paste0("Phi", diag_ind(model$info$num.eta))
   } else phi <- "Phi"
 
-  if (class(model) == "singleClass") {
+  if (inherits(model, "singleClass")) {
 
     lower <- rep(-Inf, count_free_parameters(model))
     upper <- rep(Inf, count_free_parameters(model))
@@ -708,7 +708,7 @@ bounds <- function(model, constraints=c("indirect", "direct1", "direct2")) {
     lower[model$info$par.names %in% c(t.d, t.e, psi, phi)] <- 0
     out <- list(upper=upper, lower=lower)
 
-  } else if (class(model) == "semm" || class(model) == "nsemm") {
+  } else if (inherits(model, "semm") || inherits(model, "nsemm")) {
 
     lower.class <- list()
     upper.class <- list()
